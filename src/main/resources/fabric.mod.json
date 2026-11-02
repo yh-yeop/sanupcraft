@@ -1,0 +1,31 @@
+{
+	"schemaVersion": 1,
+	"id": "sanupcraft",
+	"version": "${version}",
+	"name": "산업크래프트",
+	"description": "친구들과 같이 하는 모드팩. 모험대는 보스를 잡고, 공장은 장비를 만든다.",
+	"authors": [
+		"yh-yeop"
+	],
+	"contact": {
+		"homepage": "https://github.com/yh-yeop/sanupcraft",
+		"sources": "https://github.com/yh-yeop/sanupcraft"
+	},
+	"license": "MIT",
+	"icon": "assets/sanupcraft/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"io.github.yhyeop.sanupcraft.Sanupcraft"
+		],
+		"client": [
+			"io.github.yhyeop.sanupcraft.client.SanupcraftClient"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.20.1",
+		"minecraft": "~26.3",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}

@@ -1,0 +1,18 @@
+pluginManagement {
+	repositories {
+		maven {
+			name = 'Fabric'
+			url = 'https://maven.fabricmc.net/'
+		}
+		mavenCentral()
+		gradlePluginPortal()
+	}
+}
+
+plugins {
+	// Java 25 툴체인이 없으면 Gradle이 자동으로 받는다
+	id 'org.gradle.toolchains.foojay-resolver-convention' version '1.0.0'
+}
+
+// Should match your modid
+rootProject.name = 'sanupcraft'

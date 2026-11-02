@@ -1,0 +1,34 @@
+# 푸시 · PR마다 빌드하고 GameTest(화면 없는 서버)까지 돌린다.
+name: build
+on: [pull_request, push]
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: checkout repository
+        uses: actions/checkout@v6
+      - name: validate gradle wrapper
+        uses: gradle/actions/wrapper-validation@v6
+      - name: setup jdk
+        uses: actions/setup-java@v5
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+      - name: setup gradle
+        uses: gradle/actions/setup-gradle@v6
+      - name: make gradle wrapper executable
+        run: chmod +x ./gradlew
+      - name: build + gametest
+        run: ./gradlew build
+      - name: upload gametest log
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: gametest-log
+          path: build/run/gameTest/logs/
+      - name: capture build artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: Artifacts
+          path: build/libs/

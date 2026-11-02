@@ -1,0 +1,15 @@
+{
+	"schemaVersion": 1,
+	"id": "sanupcraft-test",
+	"version": "1.0.0",
+	"name": "산업크래프트 테스트",
+	"environment": "*",
+	"entrypoints": {
+		"fabric-gametest": [
+			"io.github.yhyeop.sanupcraft.test.SanupcraftGameTest"
+		]
+	},
+	"depends": {
+		"sanupcraft": "*"
+	}
+}
