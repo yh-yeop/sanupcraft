@@ -1,0 +1,9 @@
+{
+  "type": "sanupcraft:crushing",
+  "ingredient": "minecraft:raw_iron",
+  "result": {
+    "id": "sanupcraft:iron_dust",
+    "count": 2
+  },
+  "time": 150
+}

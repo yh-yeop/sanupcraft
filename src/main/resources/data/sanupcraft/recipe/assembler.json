@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "sanupcraft:iron_plate",
+    "I": "minecraft:iron_ingot",
+    "T": "minecraft:crafting_table",
+    "C": "#minecraft:stone_crafting_materials"
+  },
+  "pattern": [
+    "PPP",
+    "ITI",
+    "CCC"
+  ],
+  "result": {
+    "id": "sanupcraft:assembler"
+  }
+}

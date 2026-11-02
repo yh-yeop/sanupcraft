@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "sanupcraft:iron_plate",
+    "G": "sanupcraft:gear_part",
+    "C": "sanupcraft:guardian_core"
+  },
+  "pattern": [
+    "PGP",
+    "GCG",
+    "PGP"
+  ],
+  "result": {
+    "id": "sanupcraft:reinforced_machine_frame"
+  }
+}

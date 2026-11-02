@@ -1,0 +1,21 @@
+{
+  "item.sanupcraft.iron_dust": "Iron Dust",
+  "item.sanupcraft.iron_plate": "Iron Plate",
+  "item.sanupcraft.gear_part": "Gear Part",
+  "item.sanupcraft.guardian_core": "Guardian Core",
+  "item.sanupcraft.reinforced_machine_frame": "Reinforced Machine Frame",
+  "item.sanupcraft.guardian_summoner": "Guardian Summoning Stone",
+  "item.sanupcraft.steel_helmet": "Steel Helmet",
+  "item.sanupcraft.steel_chestplate": "Steel Chestplate",
+  "item.sanupcraft.steel_leggings": "Steel Leggings",
+  "item.sanupcraft.steel_boots": "Steel Boots",
+  "item.sanupcraft.steel_sword": "Steel Sword",
+  "block.sanupcraft.crusher": "Crusher",
+  "block.sanupcraft.press": "Press",
+  "block.sanupcraft.assembler": "Assembler",
+  "block.sanupcraft.guardian_altar": "Guardian Altar",
+  "block.sanupcraft.guardian_altar.busy": "A guardian is already nearby.",
+  "entity.sanupcraft.rusty_guardian": "Rusty Guardian",
+  "itemGroup.sanupcraft": "Sanupcraft",
+  "tag.item.sanupcraft.repairs_steel": "Steel Repair Materials"
+}

@@ -21,6 +21,18 @@
 | Fabric API | 0.165.0+26.3 |
 | Java | 25 (Gradle이 자동으로 받음) |
 
+## 게임 안 흐름 (M1)
+
+1. **공장**: 분쇄기(원석 → 철가루 2) → 화로(철가루 → 주괴) → 압착기(주괴 → 철판) → 조립대(철판 → 장비 부품). 기계는 화로 연료로 돈다.
+2. **장비**: 장비 부품으로 강철 갑옷 · 강철 검 (바닐라 철 장비와 같은 모양).
+3. **보스**: 수호자 제단(철판 + 철 블록 + 석재 벽돌)에 수호자 소환석(철판 + 장비 부품 + 레드스톤 블록)을 쓰면 녹슨 수호자.
+   강철 한 벌이 없으면 녹 공격이 1.5배 아프고 느려진다. 강철 검은 1.5배.
+4. **다음 단계**: 수호자의 핵으로 강화 기계 틀 (M2 기계 재료).
+
+자세한 수치는 [ROADMAP.md](ROADMAP.md)의 M1 표.
+
+![분쇄기 · 압착기 · 조립대 · 수호자 제단, 강철 갑옷, 녹슨 수호자](docs/m1-scene.png)
+
 ## 구조
 
 모드는 jar 하나이고, 시스템은 패키지로 나눈다. 커지면 그때 모드를 쪼갠다.
@@ -44,7 +56,11 @@ JDK를 따로 깔 필요 없다. Gradle이 Java 25를 `~/.gradle/jdks`에 받아
 ./gradlew runGameTest    # GameTest만
 ./gradlew runClient      # 개발용 클라이언트 실행
 ./gradlew runServer      # 개발용 서버 실행
+./gradlew runClientGameTest  # 진짜 클라이언트를 띄워 스크린샷 (build/run/clientGameTest/screenshots/)
+python tools/make_textures.py --sheet  # 임시 도트 텍스처 다시 만들기 + 미리보기
 ```
+
+`runClientGameTest`는 창을 띄우므로 Actions의 `build`에는 넣지 않았다. 화면에 보이는 것을 바꿨을 때 손으로 돌린다.
 
 결과 jar는 `build/libs/sanupcraft-<버전>.jar`. GitHub Actions도 푸시마다 같은 `build`를 돌린다.
 

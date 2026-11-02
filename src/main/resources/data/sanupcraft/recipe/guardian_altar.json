@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "sanupcraft:iron_plate",
+    "I": "minecraft:iron_block",
+    "S": "minecraft:stone_bricks"
+  },
+  "pattern": [
+    "PPP",
+    "SIS",
+    "SSS"
+  ],
+  "result": {
+    "id": "sanupcraft:guardian_altar"
+  }
+}

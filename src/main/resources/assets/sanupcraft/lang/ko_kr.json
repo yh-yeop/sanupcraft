@@ -1,0 +1,21 @@
+{
+  "item.sanupcraft.iron_dust": "철가루",
+  "item.sanupcraft.iron_plate": "철판",
+  "item.sanupcraft.gear_part": "장비 부품",
+  "item.sanupcraft.guardian_core": "수호자의 핵",
+  "item.sanupcraft.reinforced_machine_frame": "강화 기계 틀",
+  "item.sanupcraft.guardian_summoner": "수호자 소환석",
+  "item.sanupcraft.steel_helmet": "강철 투구",
+  "item.sanupcraft.steel_chestplate": "강철 흉갑",
+  "item.sanupcraft.steel_leggings": "강철 각반",
+  "item.sanupcraft.steel_boots": "강철 부츠",
+  "item.sanupcraft.steel_sword": "강철 검",
+  "block.sanupcraft.crusher": "분쇄기",
+  "block.sanupcraft.press": "압착기",
+  "block.sanupcraft.assembler": "조립대",
+  "block.sanupcraft.guardian_altar": "수호자 제단",
+  "block.sanupcraft.guardian_altar.busy": "근처에 이미 수호자가 있다.",
+  "entity.sanupcraft.rusty_guardian": "녹슨 수호자",
+  "itemGroup.sanupcraft": "산업크래프트",
+  "tag.item.sanupcraft.repairs_steel": "강철 수리 재료"
+}

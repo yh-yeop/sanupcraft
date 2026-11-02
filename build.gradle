@@ -60,7 +60,7 @@ fabricApi {
 		createSourceSet = true
 		modId = "sanupcraft-test"
 		enableGameTests = true
-		enableClientGameTests = false
+		enableClientGameTests = true
 		eula = true
 	}
 }

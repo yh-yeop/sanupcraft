@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "sanupcraft:block/guardian_altar_top",
+    "side": "sanupcraft:block/guardian_altar_side",
+    "bottom": "sanupcraft:block/guardian_altar_bottom"
+  }
+}

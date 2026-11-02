@@ -1,0 +1,8 @@
+{
+  "type": "sanupcraft:crushing",
+  "ingredient": "minecraft:cobblestone",
+  "result": {
+    "id": "minecraft:gravel"
+  },
+  "time": 100
+}

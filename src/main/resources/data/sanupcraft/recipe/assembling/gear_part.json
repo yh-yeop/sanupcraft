@@ -1,0 +1,8 @@
+{
+  "type": "sanupcraft:assembling",
+  "ingredient": "sanupcraft:iron_plate",
+  "result": {
+    "id": "sanupcraft:gear_part"
+  },
+  "time": 160
+}

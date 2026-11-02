@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "G": "sanupcraft:gear_part"
+  },
+  "pattern": [
+    "GGG",
+    "G G"
+  ],
+  "result": {
+    "id": "sanupcraft:steel_helmet"
+  }
+}

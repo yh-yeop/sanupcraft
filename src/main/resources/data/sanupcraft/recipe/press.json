@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "I": "minecraft:iron_ingot",
+    "P": "minecraft:piston",
+    "C": "#minecraft:stone_crafting_materials"
+  },
+  "pattern": [
+    "III",
+    "IPI",
+    "CCC"
+  ],
+  "result": {
+    "id": "sanupcraft:press"
+  }
+}

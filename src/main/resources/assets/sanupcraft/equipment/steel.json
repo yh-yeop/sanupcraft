@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "sanupcraft:steel"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "sanupcraft:steel"
+      }
+    ]
+  }
+}

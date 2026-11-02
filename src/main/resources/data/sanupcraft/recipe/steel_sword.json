@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "G": "sanupcraft:gear_part",
+    "S": "minecraft:stick"
+  },
+  "pattern": [
+    "G",
+    "G",
+    "S"
+  ],
+  "result": {
+    "id": "sanupcraft:steel_sword"
+  }
+}
