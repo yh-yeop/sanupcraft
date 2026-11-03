@@ -8,5 +8,6 @@
     "GameTest로 서버를 화면 없이 띄워 기계 · 보스 동작을 자동 검사"
   ],
   "tags": ["Java", "Fabric", "Minecraft 모드", "멀티플레이"],
-  "icon": "icon.svg"
+  "icon": "icon.svg",
+  "stage": "alpha"
 }
