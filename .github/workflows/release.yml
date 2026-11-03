@@ -1,0 +1,51 @@
+# v* 태그를 올리면 빌드 · GameTest 후 릴리스를 만든다.
+# 하이픈이 들어간 태그(v0.1.0-beta.1 등)는 프리릴리스(테스트용).
+name: release
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+      - uses: gradle/actions/wrapper-validation@v6
+      - uses: actions/setup-java@v5
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+      - uses: gradle/actions/setup-gradle@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: version from tag
+        run: echo "VERSION=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+      - name: build + gametest
+        run: chmod +x ./gradlew && ./gradlew build -Pversion="$VERSION"
+      - name: mrpack
+        run: python tools/make_mrpack.py "build/libs/sanupcraft-$VERSION.jar" "$VERSION"
+      - name: checksums
+        run: |
+          mkdir dist
+          cp "build/libs/sanupcraft-$VERSION.jar" "build/sanupcraft-$VERSION.mrpack" dist/
+          cd dist && for f in *; do sha256sum "$f" > "$f.sha256"; done
+      - name: release notes
+        run: |
+          {
+            cat .github/release-notes.md
+            echo
+            echo "### 모드팩에 든 편의 모드"
+            echo
+            cat build/mrpack-mods.md
+          } > notes.md
+      - name: publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          flags=""
+          case "$GITHUB_REF_NAME" in *-*) flags="--prerelease" ;; esac
+          gh release create "$GITHUB_REF_NAME" dist/* --title "산업크래프트 $VERSION" --notes-file notes.md $flags
