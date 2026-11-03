@@ -69,7 +69,7 @@ python tools/make_textures.py --sheet  # 임시 도트 텍스처 다시 만들�
 [릴리스](https://github.com/yh-yeop/sanupcraft/releases)에서 받는다.
 
 - **플레이하는 사람**: `sanupcraft-<버전>.mrpack`을 [Modrinth App](https://modrinth.com/app) 또는 [Prism Launcher](https://prismlauncher.org/)에서 "모드팩 가져오기"로 연다. Minecraft 26.3 · Fabric · 편의 모드가 한 번에 깔린다.
-- **서버 여는 사람**: [Fabric 서버](https://fabricmc.net/use/server/)(26.3)를 만들고 `mods` 폴더에 `sanupcraft-<버전>.jar`와 Fabric API를 넣는다. 음성 채팅을 쓰면 Simple Voice Chat도 넣고 UDP 24454를 연다. 서버에 필요한 모드 목록은 릴리스 본문 표의 "서버에도" 칸.
+- **서버 여는 사람**: [Fabric 서버](https://fabricmc.net/use/server/)(26.3)를 만들고 `mods` 폴더에 `sanupcraft-<버전>.jar`와 Fabric API를 넣는다. 시체 모드 Player Corpse도 서버에 넣는다. 음성 채팅을 쓰면 Simple Voice Chat도 넣고 UDP 24454를 연다. 서버에 필요한 모드 목록은 릴리스 본문 표의 "서버에도" 칸.
 
 편의 모드 목록은 [tools/make_mrpack.py](tools/make_mrpack.py)의 `MODS`. 릴리스할 때 Modrinth에서 26.3 Fabric용 최신 파일을 골라 묶는다.
 
