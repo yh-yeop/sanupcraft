@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.fabricmc.loader.api.FabricLoader;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.resources.ResourceKey;
@@ -17,6 +18,10 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.Recipe;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.HopperBlock;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
+import net.minecraft.world.level.block.entity.HopperBlockEntity;
 
 import io.github.yhyeop.sanupcraft.Sanupcraft;
 import io.github.yhyeop.sanupcraft.boss.GuardianAltarBlock;
@@ -90,6 +95,25 @@ public class SanupcraftGameTest {
 			helper.assertTrue(recipes.byKey(key).isPresent(), "레시피가 없음: " + id);
 		}
 		helper.succeed();
+	}
+
+	/** 깔때기 자동화: 위 → 재료, 옆 → 연료, 아래 → 결과를 상자로. (Lithium이 깔때기 동작을 바꾸므로 같이 확인) */
+	@GameTest(maxTicks = 400)
+	public void hoppersRunTheCrusher(GameTestHelper helper) {
+		BlockPos crusher = new BlockPos(2, 2, 2);
+		BlockPos input = crusher.above();
+		BlockPos fuel = crusher.east();
+		BlockPos output = crusher.below();
+		BlockPos chest = output.east();
+		helper.setBlock(crusher, ModMachines.CRUSHER);
+		helper.setBlock(input, Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING, Direction.DOWN));
+		helper.setBlock(fuel, Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING, Direction.WEST));
+		helper.setBlock(output, Blocks.HOPPER.defaultBlockState().setValue(HopperBlock.FACING, Direction.EAST));
+		helper.setBlock(chest, Blocks.CHEST);
+		helper.getBlockEntity(input, HopperBlockEntity.class).setItem(0, new ItemStack(Items.RAW_IRON));
+		helper.getBlockEntity(fuel, HopperBlockEntity.class).setItem(0, new ItemStack(Items.COAL));
+		ChestBlockEntity box = helper.getBlockEntity(chest, ChestBlockEntity.class);
+		helper.succeedWhen(() -> helper.assertValueEqual(box.countItem(ModItems.IRON_DUST), 2, "상자에 든 철가루"));
 	}
 
 	// ---- 장비 ----

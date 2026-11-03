@@ -62,6 +62,18 @@ python tools/make_textures.py --sheet  # 임시 도트 텍스처 다시 만들�
 
 `runClientGameTest`는 창을 띄우므로 Actions의 `build`에는 넣지 않았다. 화면에 보이는 것을 바꿨을 때 손으로 돌린다.
 
+### 편의 모드와 같이 시험 (충돌 확인)
+
+모드팩에 든 편의 모드를 받아서 개발용 서버 · 클라이언트에 같이 올린다. 편의 모드 버전을 바꾸거나 릴리스하기 전에 돌린다.
+
+```bash
+python tools/make_mrpack.py build/libs/sanupcraft-0.1.0.jar 0.1.0 --download build/packmods
+./gradlew runGameTest --no-configuration-cache -PpackMods=build/packmods/server      # 서버 모드와 GameTest 16개
+./gradlew runClientGameTest --no-configuration-cache -PpackMods=build/packmods/all   # 전부 넣고 스크린샷 + 시체 확인
+```
+
+`-PpackMods`는 절대 경로가 안전하다 (실행 폴더가 `build/run/...`이라서). 결과는 [ROADMAP.md](ROADMAP.md)의 "충돌 확인 기록".
+
 결과 jar는 `build/libs/sanupcraft-<버전>.jar`. GitHub Actions도 푸시마다 같은 `build`를 돌린다.
 
 ## 친구들 설치 방법

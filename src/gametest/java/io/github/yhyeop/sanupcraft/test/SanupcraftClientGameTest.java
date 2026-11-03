@@ -1,18 +1,29 @@
 package io.github.yhyeop.sanupcraft.test;
 
+import java.util.List;
+
 import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestServerContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
 
+import net.fabricmc.loader.api.FabricLoader;
+
+import net.minecraft.client.gui.screens.DeathScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.core.BlockPos;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.decoration.Mannequin;
+import net.minecraft.world.phys.AABB;
 
+import io.github.yhyeop.sanupcraft.Sanupcraft;
 import io.github.yhyeop.sanupcraft.client.MachineScreen;
 
 /**
  * 진짜 클라이언트를 띄워 텍스처 · 기계 화면 · 갑옷 · 보스가 그려지는지 스크린샷으로 남긴다.
  * 판정은 하지 않고 사람이 본다: build/run/clientGameTest/screenshots/
+ * 편의 모드와 같이 돌리면(-PpackMods) 시체 모드가 강철 갑옷을 남기는지도 확인한다.
  */
 public class SanupcraftClientGameTest implements FabricClientGameTest {
 	@Override
@@ -68,6 +79,37 @@ public class SanupcraftClientGameTest implements FabricClientGameTest {
 			context.getInput().pressKey(options -> options.keyUse);
 			context.waitForScreen(MachineScreen.class);
 			context.takeScreenshot("sanupcraft-machine-screen");
+			context.setScreen(() -> null);
+
+			if (FabricLoader.getInstance().isModLoaded("corpsegraves")) {
+				checkCorpse(context, server);
+			}
 		}
+	}
+
+	/** 모드팩의 시체 모드: 강철 갑옷을 입고 죽으면 시체(마네킹)가 갑옷을 입은 채 남는다. */
+	private static void checkCorpse(ClientGameTestContext context, TestServerContext server) {
+		server.runCommand("item replace entity @a armor.head with sanupcraft:steel_helmet");
+		server.runCommand("item replace entity @a armor.chest with sanupcraft:steel_chestplate");
+		server.runCommand("item replace entity @a armor.legs with sanupcraft:steel_leggings");
+		server.runCommand("item replace entity @a armor.feet with sanupcraft:steel_boots");
+		server.runCommand("tp @a 4.5 -60 -2.5 180 0");
+		context.waitTicks(5);
+		server.runCommand("kill @a");
+		context.waitForScreen(DeathScreen.class);
+		context.waitTicks(30);
+		context.clickScreenButton("deathScreen.respawn");
+		context.waitForScreen(null);
+		server.runCommand("tp @a 4.5 -60 1.5 180 20");
+		server.waitFor(s -> !corpses(s).isEmpty(), 200);
+		context.waitTicks(20);
+		server.runOnServer(s -> corpses(s).forEach(m -> Sanupcraft.LOGGER.info("시체 장비: {} / {} / {} / {}",
+				m.getItemBySlot(EquipmentSlot.HEAD), m.getItemBySlot(EquipmentSlot.CHEST),
+				m.getItemBySlot(EquipmentSlot.LEGS), m.getItemBySlot(EquipmentSlot.FEET))));
+		context.takeScreenshot("sanupcraft-corpse");
+	}
+
+	private static List<Mannequin> corpses(MinecraftServer server) {
+		return server.overworld().getEntitiesOfClass(Mannequin.class, new AABB(-16, -64, -16, 16, -50, 16), m -> true);
 	}
 }

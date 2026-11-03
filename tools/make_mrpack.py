@@ -6,10 +6,15 @@ Modrinth App · Prism Launcher 등에서 파일 하나로 가져오면 Fabric + 
 
     python tools/make_mrpack.py build/libs/sanupcraft-0.1.0.jar 0.1.0
     → build/sanupcraft-0.1.0.mrpack
+
+충돌 확인용으로 편의 모드 jar도 받으려면 (fabric-api 제외, sha512 확인):
+    python tools/make_mrpack.py build/libs/sanupcraft-0.1.0.jar 0.1.0 --download build/packmods
+    → build/packmods/all/ (전부), build/packmods/server/ (서버에도 넣는 것)
 """
 import hashlib
 import json
 import os
+import shutil
 import sys
 import urllib.parse
 import urllib.request
@@ -93,6 +98,30 @@ def main():
     with open(table, "w", encoding="utf-8", newline="\n") as f:
         f.write("| 모드 | 버전 | 서버에도 | 하는 일 |\n|---|---|---|---|\n" + "\n".join(lines) + "\n")
     print(out)
+
+    if "--download" in sys.argv:
+        download(files, sys.argv[sys.argv.index("--download") + 1])
+
+
+def download(files, target):
+    """편의 모드 jar를 받아 all/ · server/ 로 나눈다. fabric-api는 개발 환경에 이미 있으므로 뺀다."""
+    for sub in ("all", "server"):
+        shutil.rmtree(os.path.join(target, sub), ignore_errors=True)
+        os.makedirs(os.path.join(target, sub))
+    for f in files:
+        name = os.path.basename(f["path"])
+        if name.startswith("fabric-api"):
+            continue
+        req = urllib.request.Request(f["downloads"][0], headers={"User-Agent": USER_AGENT})
+        with urllib.request.urlopen(req, timeout=60) as res:
+            data = res.read()
+        if hashlib.sha512(data).hexdigest() != f["hashes"]["sha512"]:
+            raise SystemExit(f"{name}: sha512가 맞지 않음")
+        with open(os.path.join(target, "all", name), "wb") as out:
+            out.write(data)
+        if f["env"]["server"] == "required":
+            shutil.copy(os.path.join(target, "all", name), os.path.join(target, "server", name))
+    print(f"받음: {target}")
 
 
 if __name__ == "__main__":

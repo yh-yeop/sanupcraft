@@ -90,3 +90,11 @@ publishing {
 		// retrieving dependencies.
 	}
 }
+
+// 편의 모드와 같이 시험: ./gradlew runGameTest -PpackMods=<jar 폴더> (fabric-api 제외, 플랫폼 경로 구분자로 여러 개)
+if (project.hasProperty("packMods")) {
+	def packMods = project.property("packMods")
+	loom.runs.matching { it.name in ["gameTest", "clientGameTest"] }.configureEach {
+		vmArg "-Dfabric.addMods=${packMods}"
+	}
+}
