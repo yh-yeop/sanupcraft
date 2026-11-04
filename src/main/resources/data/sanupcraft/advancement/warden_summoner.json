@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:warden_summoner"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:warden_summoner"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.warden_summoner.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.warden_summoner.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ],
+  "parent": "sanupcraft:heatproof"
+}

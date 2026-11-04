@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "sanupcraft:iron_plate",
+    "E": "minecraft:ender_pearl",
+    "S": "minecraft:shulker_shell",
+    "F": "sanupcraft:reinforced_machine_frame",
+    "C": "minecraft:chest"
+  },
+  "pattern": [
+    "PEP",
+    "SFS",
+    "PCP"
+  ],
+  "result": {
+    "id": "sanupcraft:ender_receiver"
+  }
+}

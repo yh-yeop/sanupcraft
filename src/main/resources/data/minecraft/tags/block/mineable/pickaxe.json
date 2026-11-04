@@ -6,6 +6,9 @@
     "sanupcraft:guardian_altar",
     "sanupcraft:boiler",
     "sanupcraft:belt_motor",
-    "sanupcraft:steam_pipe"
+    "sanupcraft:steam_pipe",
+    "sanupcraft:heart_forge",
+    "sanupcraft:ender_sender",
+    "sanupcraft:ender_receiver"
   ]
 }

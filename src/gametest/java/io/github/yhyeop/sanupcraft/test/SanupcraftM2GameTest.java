@@ -205,15 +205,15 @@ public class SanupcraftM2GameTest {
 		helper.succeed();
 	}
 
-	/** 다른 테스트의 보스가 근처에 있으면 안 되므로 따로 돌린다. */
+	/** 파수꾼은 네더에서만 깨어난다 (M3). 오버월드 제단에서는 부르지 못하고, 수호자는 그대로 부를 수 있다. */
 	@GameTest(environment = "sanupcraft-test:alone_warden")
-	public void altarSummonsWarden(GameTestHelper helper) {
+	public void wardenWontWakeInOverworld(GameTestHelper helper) {
 		BlockPos altar = new BlockPos(3, 1, 3);
 		helper.setBlock(altar, ModBoss.GUARDIAN_ALTAR);
-		FurnaceWarden warden = GuardianAltarBlock.summon(helper.getLevel(), helper.absolutePos(altar), ModBoss.FURNACE_WARDEN);
-		helper.assertTrue(warden != null, "제단이 파수꾼을 부르지 못함");
-		helper.assertTrue(GuardianAltarBlock.summon(helper.getLevel(), helper.absolutePos(altar)) == null, "보스가 있는데 수호자를 또 부름");
-		helper.assertEntityPresent(ModBoss.FURNACE_WARDEN);
+		helper.assertFalse(GuardianAltarBlock.canWakeHere(helper.getLevel(), ModBoss.FURNACE_WARDEN), "오버월드에서 깨어날 수 있다고 함");
+		helper.assertTrue(GuardianAltarBlock.summon(helper.getLevel(), helper.absolutePos(altar), ModBoss.FURNACE_WARDEN) == null, "오버월드에서 파수꾼을 부름");
+		helper.assertEntityNotPresent(ModBoss.FURNACE_WARDEN);
+		helper.assertTrue(GuardianAltarBlock.summon(helper.getLevel(), helper.absolutePos(altar)) != null, "수호자를 부르지 못함");
 		helper.succeed();
 	}
 

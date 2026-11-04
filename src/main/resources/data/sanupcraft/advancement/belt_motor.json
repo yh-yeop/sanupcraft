@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:belt_motor"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:belt_motor"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.belt_motor.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.belt_motor.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ],
+  "parent": "sanupcraft:boiler"
+}

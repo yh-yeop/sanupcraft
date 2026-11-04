@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:heatproof_chestplate"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:heatproof_chestplate"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.heatproof.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.heatproof.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ],
+  "parent": "sanupcraft:belt_motor"
+}

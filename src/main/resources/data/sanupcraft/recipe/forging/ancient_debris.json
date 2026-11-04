@@ -1,0 +1,9 @@
+{
+  "type": "sanupcraft:forging",
+  "ingredient": "minecraft:ancient_debris",
+  "result": {
+    "id": "minecraft:netherite_scrap",
+    "count": 2
+  },
+  "time": 400
+}

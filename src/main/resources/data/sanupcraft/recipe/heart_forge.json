@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "N": "minecraft:nether_bricks",
+    "H": "sanupcraft:warden_heart",
+    "B": "minecraft:blaze_rod",
+    "F": "sanupcraft:reinforced_machine_frame"
+  },
+  "pattern": [
+    "NHN",
+    "BFB",
+    "NNN"
+  ],
+  "result": {
+    "id": "sanupcraft:heart_forge"
+  }
+}

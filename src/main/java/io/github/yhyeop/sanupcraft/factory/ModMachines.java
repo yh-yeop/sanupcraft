@@ -15,15 +15,16 @@ import net.minecraft.world.level.material.MapColor;
 import io.github.yhyeop.sanupcraft.Sanupcraft;
 import io.github.yhyeop.sanupcraft.core.ModRegistry;
 
-/** 공장 1단계: 분쇄기 → (화로) → 압착기 → 조립대. */
+/** 공장 1단계: 분쇄기 → (화로) → 압착기 → 조립대. 3단계: 심장 제련로 (네더 재료). */
 public final class ModMachines {
 	public static final MachineBlock CRUSHER = machine("crusher", MachineKind.CRUSHER);
 	public static final MachineBlock PRESS = machine("press", MachineKind.PRESS);
 	public static final MachineBlock ASSEMBLER = machine("assembler", MachineKind.ASSEMBLER);
+	public static final MachineBlock HEART_FORGE = machine("heart_forge", MachineKind.FORGE);
 
 	public static final BlockEntityType<MachineBlockEntity> MACHINE_BLOCK_ENTITY = Registry.register(
 			BuiltInRegistries.BLOCK_ENTITY_TYPE, Sanupcraft.id("machine"),
-			new BlockEntityType<>(MachineBlockEntity::new, Set.of(CRUSHER, PRESS, ASSEMBLER)));
+			new BlockEntityType<>(MachineBlockEntity::new, Set.of(CRUSHER, PRESS, ASSEMBLER, HEART_FORGE)));
 
 	public static final MenuType<MachineMenu> MACHINE_MENU = Registry.register(
 			BuiltInRegistries.MENU, Sanupcraft.id("machine"), new MenuType<>(MachineMenu::new, FeatureFlags.VANILLA_SET));

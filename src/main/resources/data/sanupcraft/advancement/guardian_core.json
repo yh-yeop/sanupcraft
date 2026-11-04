@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:guardian_core"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:guardian_core"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.guardian_core.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.guardian_core.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ],
+  "parent": "sanupcraft:steel"
+}

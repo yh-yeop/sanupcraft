@@ -15,6 +15,7 @@ import io.github.yhyeop.sanupcraft.factory.ModMachines;
 import io.github.yhyeop.sanupcraft.gear.HeatproofGear;
 import io.github.yhyeop.sanupcraft.gear.SteelGear;
 import io.github.yhyeop.sanupcraft.logistics.ModLogistics;
+import io.github.yhyeop.sanupcraft.playtest.PlaytestCommand;
 import io.github.yhyeop.sanupcraft.power.ModPower;
 
 public class Sanupcraft implements ModInitializer {
@@ -33,6 +34,7 @@ public class Sanupcraft implements ModInitializer {
 		ModBoss.init();
 		ModTab.init();
 		CorpseGravesCompat.init();
+		PlaytestCommand.init();
 		LOGGER.info("sanupcraft 로드");
 	}
 

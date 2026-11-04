@@ -37,7 +37,19 @@
 4. **보스 2**: 같은 제단에 파수꾼 소환석(핵 조각 + 마그마 블록)을 쓰면 용광로 파수꾼. 내열 한 벌이 없으면 과열(1.5배 + 불). 내열 검은 1.5배.
 5. **다음 단계**: 파수꾼의 심장 (M3 재료).
 
-자세한 수치는 [ROADMAP.md](ROADMAP.md)의 M1 · M2 표.
+## 게임 안 흐름 (M3 · 네더 · 엔드)
+
+바닐라 진행(철 → 네더 → 엔드)의 각 단계에서 모드가 다음 바닐라 단계로 가는 이유가 된다.
+
+1. **장비 서열**: 철 = 강철(녹 막기) < 다이아 = 내열(불 · 용암 저항) < 네더라이트. 모드 장비는 세트 효과로 쓴다.
+2. **네더로**: 파수꾼 소환석에 블레이즈 막대가 들어가고, 파수꾼은 네더 제단에서만 깨어난다. 내열 한 벌은 네더 탐험 · 고대 잔해 채굴 도구.
+3. **심장 제련로**: 파수꾼의 심장으로 만든다. 고대 잔해 1 → 네더라이트 파편 2, 블레이즈 막대 1 → 가루 4 (엔더의 눈 → 엔드).
+4. **엔드에서**: 셜커 껍데기로 엔더 송신기 · 수신기. 같은 염료 색끼리 차원을 넘어 아이템을 보낸다 (네더 채굴장 → 오버월드 공장).
+5. **길잡이**: 발전 과제 "산업크래프트" 탭에 다음 할 일이 적혀 있다.
+
+자세한 수치는 [ROADMAP.md](ROADMAP.md)의 M1 · M2 · M3 표. 혼자 시험하는 방법은 [docs/PLAYTEST.md](docs/PLAYTEST.md).
+
+![네더: 심장 제련로 · 제단 · 용광로 파수꾼](docs/m3-nether.png)
 
 ![증기 공장과 용광로 파수꾼](docs/m2-warden.png)
 
@@ -50,12 +62,13 @@
 | 패키지 (`io.github.yhyeop.sanupcraft.*`) | 하는 일 |
 |---|---|
 | `core` | 공용 아이템 · 재료 등록, 보스 전리품 ↔ 기계 레시피 연결 |
-| `factory` | 1단계 기계 (분쇄기 · 압착기 · 조립대) |
+| `factory` | 기계 (분쇄기 · 압착기 · 조립대, 3단계 심장 제련로) |
 | `boss` | 보스 AI · 패턴, 던전 구조물, 전리품 |
 | `power` | 보일러 · 증기 파이프 (2단계 동력) |
-| `logistics` | 컨베이어 벨트 · 벨트 모터 |
+| `logistics` | 컨베이어 벨트 · 벨트 모터, 엔더 송신기 · 수신기 |
 | `gear` | 모험대 장비 (강철 · 내열) |
 | `compat` | 모드팩 편의 모드 맞춤 (시체 모드) |
+| `playtest` | `/sanupcraft playtest <단계>` 실테스트 꾸러미 |
 
 `src/main` 공통 · 서버, `src/client` 클라이언트 전용(렌더링), `src/gametest` 자동 검사.
 
@@ -67,6 +80,7 @@ JDK를 따로 깔 필요 없다. Gradle이 Java 25를 `~/.gradle/jdks`에 받아
 ./gradlew build          # 컴파일 + GameTest (서버를 화면 없이 띄워 검사)
 ./gradlew runGameTest    # GameTest만
 ./gradlew runClient      # 개발용 클라이언트 실행
+./gradlew runPlaytest    # 싱글 실테스트 (월드가 run/playtest에 남음, docs/PLAYTEST.md)
 ./gradlew runServer      # 개발용 서버 실행
 ./gradlew runClientGameTest  # 진짜 클라이언트를 띄워 스크린샷 (build/run/clientGameTest/screenshots/)
 python tools/make_textures.py --sheet  # 임시 도트 텍스처 다시 만들기 + 미리보기

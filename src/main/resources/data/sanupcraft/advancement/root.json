@@ -1,0 +1,34 @@
+{
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "minecraft:raw_iron"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:gear_part"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.root.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.root.description"
+    },
+    "frame": "task",
+    "background": "minecraft:gui/advancements/backgrounds/stone",
+    "show_toast": false,
+    "announce_to_chat": false
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ]
+}

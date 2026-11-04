@@ -10,6 +10,7 @@ import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContex
 import net.fabricmc.loader.api.FabricLoader;
 
 import net.minecraft.client.gui.screens.DeathScreen;
+import net.minecraft.client.gui.screens.advancements.AdvancementsScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.MinecraftServer;
@@ -83,6 +84,7 @@ public class SanupcraftClientGameTest implements FabricClientGameTest {
 			context.setScreen(() -> null);
 
 			m2Scene(context, server, singleplayer);
+			m3Playtest(context, server, singleplayer);
 
 			if (FabricLoader.getInstance().isModLoaded("corpsegraves")) {
 				checkCorpse(context, server);
@@ -121,6 +123,46 @@ public class SanupcraftClientGameTest implements FabricClientGameTest {
 		context.waitTicks(10);
 		context.takeScreenshot("sanupcraft-warden");
 		server.runCommand("gamemode survival @a");
+	}
+
+	/**
+	 * M3 · 실테스트 명령: /sanupcraft playtest nether (내열 한 벌 + 네더 발판) → 심장 제련로 →
+	 * playtest end (엔드 발판 + 엔더 운반기), 길잡이 발전 과제 화면.
+	 */
+	private static void m3Playtest(ClientGameTestContext context, TestServerContext server, TestSingleplayerContext singleplayer) {
+		server.runCommand("gamemode survival @a");
+		server.runCommand("clear @a");
+		server.runCommand("execute as @p run sanupcraft playtest nether");
+		context.waitTicks(40);
+		singleplayer.getConnection().waitForChunksRender();
+		server.runCommand("execute as @p at @p run tp @s ~ ~ ~ 0 20");
+		server.runCommand("execute at @p run setblock ~ ~ ~2 sanupcraft:heart_forge[facing=north,lit=true]");
+		server.runCommand("execute at @p run setblock ~1 ~ ~2 sanupcraft:guardian_altar");
+		server.runCommand("execute at @p run fill ~-2 ~-1 ~3 ~2 ~-1 ~10 minecraft:obsidian");
+		server.runCommand("execute at @p run fill ~-2 ~ ~3 ~2 ~3 ~10 minecraft:air");
+		server.runCommand("execute at @p run summon sanupcraft:furnace_warden ~ ~ ~7 {NoAI:1b,Rotation:[180f,0f]}");
+		context.waitTicks(20);
+		context.takeScreenshot("sanupcraft-m3-nether");
+
+		server.runCommand("kill @e[type=sanupcraft:furnace_warden]");
+		server.runCommand("clear @a");
+		server.runCommand("execute as @p run sanupcraft playtest end");
+		context.waitTicks(40);
+		singleplayer.getConnection().waitForChunksRender();
+		server.runCommand("execute as @p at @p run tp @s ~ ~ ~ 0 20");
+		server.runCommand("execute at @p run setblock ~-1 ~ ~2 sanupcraft:ender_sender");
+		server.runCommand("execute at @p run setblock ~1 ~ ~2 sanupcraft:ender_receiver");
+		context.waitTicks(20);
+		context.takeScreenshot("sanupcraft-m3-end");
+
+		server.runCommand("advancement grant @a until sanupcraft:ender_link");
+		context.waitTicks(10);
+		context.setScreen(() -> new AdvancementsScreen(context.computeOnClient(client -> client.getConnection().getAdvancements())));
+		context.waitTicks(10);
+		context.takeScreenshot("sanupcraft-m3-guide");
+		context.setScreen(() -> null);
+		server.runCommand("execute in minecraft:overworld run tp @a 0.5 -60 0.5");
+		context.waitTicks(20);
 	}
 
 	/** 모드팩의 시체 모드: 강철 갑옷을 입고 죽으면 시체(마네킹)가 갑옷을 입은 채 남는다 (CorpseGravesCompat). */

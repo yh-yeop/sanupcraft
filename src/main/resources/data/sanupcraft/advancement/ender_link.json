@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:ender_sender"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:ender_sender"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.ender_link.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.ender_link.description"
+    },
+    "frame": "challenge"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ],
+  "parent": "sanupcraft:shulker_shell"
+}

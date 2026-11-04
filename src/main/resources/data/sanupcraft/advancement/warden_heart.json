@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:warden_heart"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:warden_heart"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.warden_heart.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.warden_heart.description"
+    },
+    "frame": "challenge"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ],
+  "parent": "sanupcraft:warden_summoner"
+}

@@ -614,6 +614,61 @@ def main_m2(made):
     made.append(save(recolor(armor_layer(True), HEAT), "entity/equipment/humanoid_leggings/heatproof.png"))
 
 
+# ---------- M3 ----------
+NETHER = {"a": "#1c0b0e", "b": "#3b1418", "c": "#5a1e22", "d": "#7a2b2e", "e": "#a14040"}
+ENDER = {"a": "#0e0a16", "b": "#2a1d3d", "c": "#45305f", "d": "#6b4c8c", "e": "#a98bd0"}
+
+
+def heart_forge_front(lit):
+    im = recolor(panel(seed=71), NETHER)
+    for y in range(5, 13):
+        for x in range(4, 12):
+            im.putpixel((x, y), px("a"))
+    heart = from_art(HEART).resize((8, 8), Image.NEAREST)
+    if not lit:
+        heart = recolor(heart, {"r": "#2b1010", "s": "#3d1a14", "t": "#4a2216", "u": "#5c2b1a"})
+    im.alpha_composite(heart, (4, 5))
+    return im
+
+
+def heart_forge_top():
+    im = recolor(panel(seed=72), NETHER)
+    for y in range(5, 11):
+        for x in range(5, 11):
+            im.putpixel((x, y), px("t" if 6 <= x <= 9 and 6 <= y <= 9 else "a"))
+    return im
+
+
+def ender_face(kind, part):
+    im = recolor(panel(seed=81 if kind == "sender" else 82), ENDER)
+    if part == "top":
+        for y in range(4, 12):
+            for x in range(4, 12):
+                d = math.hypot(x - 7.5, y - 7.5)
+                if d < 2.0:
+                    im.putpixel((x, y), hex_px("#2fd3b4"))
+                elif d < 3.6:
+                    im.putpixel((x, y), hex_px("#0f6d5e"))
+    elif part == "side":
+        # 송신기: 위쪽 화살표, 수신기: 아래쪽 화살표
+        arrow = [(7, 4), (8, 4), (6, 5), (9, 5), (5, 6), (10, 6), (7, 5), (8, 5), (7, 6), (8, 6), (7, 7), (8, 7), (7, 8), (8, 8), (7, 9), (8, 9), (7, 10), (8, 10)]
+        for x, y in arrow:
+            yy = y if kind == "sender" else 15 - y
+            im.putpixel((x, yy), hex_px("#2fd3b4"))
+    return im
+
+
+def main_m3(made):
+    made.append(save(heart_forge_front(False), "block/heart_forge_front.png"))
+    made.append(save(heart_forge_front(True), "block/heart_forge_front_on.png"))
+    made.append(save(recolor(panel(seed=73), NETHER), "block/heart_forge_side.png"))
+    made.append(save(heart_forge_top(), "block/heart_forge_top.png"))
+    for kind in ("sender", "receiver"):
+        made.append(save(ender_face(kind, "top"), f"block/ender_{kind}_top.png"))
+        made.append(save(ender_face(kind, "side"), f"block/ender_{kind}_side.png"))
+    made.append(save(recolor(panel(seed=83), ENDER), "block/ender_link_bottom.png"))
+
+
 def save(im, rel, scale=1):
     path = os.path.join(OUT, *rel.split("/"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -640,6 +695,7 @@ def main():
     made.append(save(armor_layer(False), "entity/equipment/humanoid/steel.png"))
     made.append(save(armor_layer(True), "entity/equipment/humanoid_leggings/steel.png"))
     main_m2(made)
+    main_m3(made)
 
     if "--sheet" in sys.argv:
         tiles = [Image.open(p) for p in made]

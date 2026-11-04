@@ -91,10 +91,22 @@ publishing {
 	}
 }
 
+// 싱글 실테스트: ./gradlew runPlaytest (월드가 run/playtest에 남는다, docs/PLAYTEST.md)
+loom {
+	runs {
+		playtest {
+			client()
+			name = "Playtest"
+			runDir = "run/playtest"
+			programArgs "--username", "Tester"
+		}
+	}
+}
+
 // 편의 모드와 같이 시험: ./gradlew runGameTest -PpackMods=<jar 폴더> (fabric-api 제외, 플랫폼 경로 구분자로 여러 개)
 if (project.hasProperty("packMods")) {
 	def packMods = project.property("packMods")
-	loom.runs.matching { it.name in ["gameTest", "clientGameTest"] }.configureEach {
+	loom.runs.matching { it.name in ["gameTest", "clientGameTest", "playtest"] }.configureEach {
 		vmArg "-Dfabric.addMods=${packMods}"
 	}
 }

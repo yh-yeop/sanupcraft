@@ -4,11 +4,11 @@
   "key": {
     "P": "sanupcraft:iron_plate",
     "S": "sanupcraft:core_shard",
-    "M": "minecraft:magma_block"
+    "B": "minecraft:blaze_rod"
   },
   "pattern": [
     "PSP",
-    "SMS",
+    "SBS",
     "PSP"
   ],
   "result": {

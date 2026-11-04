@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:steel_chestplate"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:steel_chestplate"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.steel.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.steel.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ],
+  "parent": "sanupcraft:iron_plate"
+}

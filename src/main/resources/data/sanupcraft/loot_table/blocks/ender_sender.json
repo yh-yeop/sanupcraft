@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "sanupcraft:ender_sender"
+        }
+      ]
+    }
+  ],
+  "random_sequence": "sanupcraft:blocks/ender_sender"
+}

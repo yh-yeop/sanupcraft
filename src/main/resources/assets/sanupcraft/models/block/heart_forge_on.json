@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "sanupcraft:block/heart_forge_front_on",
+    "side": "sanupcraft:block/heart_forge_side",
+    "top": "sanupcraft:block/heart_forge_top"
+  }
+}

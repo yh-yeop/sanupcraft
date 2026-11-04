@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:heart_forge"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:heart_forge"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.heart_forge.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.heart_forge.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ],
+  "parent": "sanupcraft:warden_heart"
+}

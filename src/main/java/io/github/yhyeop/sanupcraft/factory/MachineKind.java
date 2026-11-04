@@ -11,7 +11,9 @@ import io.github.yhyeop.sanupcraft.Sanupcraft;
 public enum MachineKind {
 	CRUSHER("crushing"),
 	PRESS("pressing"),
-	ASSEMBLER("assembling");
+	ASSEMBLER("assembling"),
+	/** 심장 제련로 (3단계): 고대 잔해 → 네더라이트 파편 2, 블레이즈 막대 → 가루 4. */
+	FORGE("forging");
 
 	private final String recipeName;
 	private RecipeType<MachineRecipe> recipeType;

@@ -25,6 +25,7 @@ import net.minecraft.world.phys.BlockHitResult;
 /**
  * 수호자 제단. 소환석을 들고 우클릭하면 제단 위에 보스가 나온다.
  * 수호자 소환석 → 녹슨 수호자, 파수꾼 소환석 → 용광로 파수꾼. 근처에 보스가 있으면 부르지 않는다.
+ * 용광로 파수꾼은 네더의 열기에서만 깨어난다 (제단을 네더에 지어야 함).
  */
 public class GuardianAltarBlock extends Block {
 	/** 이 거리 안에 보스가 이미 있으면 소환하지 않는다. */
@@ -42,6 +43,10 @@ public class GuardianAltarBlock extends Block {
 		}
 		if (!(level instanceof ServerLevel serverLevel)) {
 			return InteractionResult.SUCCESS;
+		}
+		if (!canWakeHere(serverLevel, boss)) {
+			player.sendOverlayMessage(Component.translatable("block.sanupcraft.guardian_altar.too_cold"));
+			return InteractionResult.FAIL;
 		}
 		if (summon(serverLevel, pos, boss) == null) {
 			player.sendOverlayMessage(Component.translatable("block.sanupcraft.guardian_altar.busy"));
@@ -66,8 +71,16 @@ public class GuardianAltarBlock extends Block {
 		return summon(level, altarPos, ModBoss.RUSTY_GUARDIAN);
 	}
 
-	/** 제단 위에 보스를 부른다. 근처에 보스가 있으면 null. */
+	/** 이 차원에서 깨어나는 보스인가. 파수꾼은 네더에서만. */
+	public static boolean canWakeHere(ServerLevel level, EntityType<?> type) {
+		return type != ModBoss.FURNACE_WARDEN || level.dimension() == Level.NETHER;
+	}
+
+	/** 제단 위에 보스를 부른다. 깨어날 수 없는 차원이거나 근처에 보스가 있으면 null. */
 	public static <T extends Monster> @Nullable T summon(ServerLevel level, BlockPos altarPos, EntityType<T> type) {
+		if (!canWakeHere(level, type)) {
+			return null;
+		}
 		AABB area = new AABB(altarPos).inflate(ONE_PER_RADIUS);
 		if (!level.getEntitiesOfClass(Monster.class, area, GuardianAltarBlock::isBoss).isEmpty()) {
 			return null;

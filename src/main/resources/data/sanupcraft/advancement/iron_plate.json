@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:iron_plate"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:iron_plate"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.iron_plate.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.iron_plate.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ],
+  "parent": "sanupcraft:crusher"
+}

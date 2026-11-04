@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "sanupcraft:block/ender_sender"
+    }
+  }
+}

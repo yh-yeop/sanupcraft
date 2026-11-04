@@ -21,8 +21,9 @@ import io.github.yhyeop.sanupcraft.Sanupcraft;
 import io.github.yhyeop.sanupcraft.core.ModRegistry;
 
 /**
- * 공장에서 만드는 모험대 장비. 철보다 튼튼하고(다이아 근처), 한 벌을 다 입으면 녹슨 수호자의 녹 공격을 막는다.
- * 강철 검은 수호자에게 피해가 더 들어간다.
+ * 공장에서 만드는 모험대 장비. 방어력은 철과 같고(단단함 1, 더 오래 감), 쓸모는 세트 효과다:
+ * 한 벌을 다 입으면 녹슨 수호자의 녹 공격을 막는다. 강철 검은 수호자에게 피해가 더 들어간다.
+ * 다이아 · 네더라이트를 대신하지 않도록 철 수준에 맞췄다.
  */
 public final class SteelGear {
 	/** 강철 장비 수리 재료 (철판). */
@@ -30,7 +31,7 @@ public final class SteelGear {
 	public static final ResourceKey<EquipmentAsset> STEEL_ASSET = ResourceKey.create(EquipmentAssets.ROOT_ID, Sanupcraft.id("steel"));
 
 	public static final ArmorMaterial STEEL_ARMOR = new ArmorMaterial(
-			22, defense(3, 6, 7, 3), 12, SoundEvents.ARMOR_EQUIP_IRON, 1.0F, 0.0F, REPAIRS_STEEL, STEEL_ASSET);
+			22, defense(2, 5, 6, 2), 12, SoundEvents.ARMOR_EQUIP_IRON, 1.0F, 0.0F, REPAIRS_STEEL, STEEL_ASSET);
 	public static final ToolMaterial STEEL_TOOL = new ToolMaterial(
 			BlockTags.INCORRECT_FOR_IRON_TOOL, 500, 6.5F, 2.5F, 14, REPAIRS_STEEL);
 
