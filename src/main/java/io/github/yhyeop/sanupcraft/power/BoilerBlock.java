@@ -109,11 +109,12 @@ public class BoilerBlock extends BaseEntityBlock {
 		if (boiler.water() <= 0) {
 			return "block.sanupcraft.boiler.hint.no_water";
 		}
-		if (!boiler.isLit() && boiler.fuelCount() <= 0) {
-			return "block.sanupcraft.boiler.hint.no_fuel";
-		}
+		// 증기가 가득이면 연료를 아끼려고 불이 잠시 멎는다 (isLit 거짓) — 연료 없음보다 먼저 본다
 		if (boiler.steam() >= BoilerBlockEntity.STEAM_CAPACITY) {
 			return "block.sanupcraft.boiler.hint.steam_full";
+		}
+		if (!boiler.isLit() && boiler.fuelCount() <= 0) {
+			return "block.sanupcraft.boiler.hint.no_fuel";
 		}
 		return "block.sanupcraft.boiler.hint.ok";
 	}
