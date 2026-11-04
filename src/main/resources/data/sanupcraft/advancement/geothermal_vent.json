@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:geothermal_vent"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:geothermal_vent"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.geothermal_vent.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.geothermal_vent.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ],
+  "parent": "sanupcraft:warden_summoner"
+}

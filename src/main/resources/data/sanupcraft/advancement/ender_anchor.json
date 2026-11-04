@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:ender_anchor"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:ender_anchor"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.ender_anchor.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.ender_anchor.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ],
+  "parent": "sanupcraft:ender_link"
+}

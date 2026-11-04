@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:heatproof_drill"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:heatproof_drill"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.heatproof_drill.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.heatproof_drill.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ],
+  "parent": "sanupcraft:heart_forge"
+}

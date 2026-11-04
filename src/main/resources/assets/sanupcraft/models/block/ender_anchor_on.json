@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "sanupcraft:block/ender_anchor_top_on",
+    "side": "sanupcraft:block/ender_anchor_side",
+    "bottom": "sanupcraft:block/ender_link_bottom"
+  }
+}

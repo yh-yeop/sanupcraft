@@ -1,0 +1,15 @@
+{
+  "type": "sanupcraft:crushing",
+  "ingredient": "minecraft:magma_block",
+  "result": {
+    "id": "minecraft:magma_cream",
+    "count": 2
+  },
+  "byproduct": {
+    "item": {
+      "id": "minecraft:netherrack"
+    },
+    "chance": 0.5
+  },
+  "time": 150
+}

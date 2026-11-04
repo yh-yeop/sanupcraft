@@ -1,0 +1,15 @@
+{
+  "type": "sanupcraft:crushing",
+  "ingredient": "minecraft:gilded_blackstone",
+  "result": {
+    "id": "sanupcraft:gold_dust",
+    "count": 2
+  },
+  "byproduct": {
+    "item": {
+      "id": "minecraft:blackstone"
+    },
+    "chance": 1.0
+  },
+  "time": 150
+}

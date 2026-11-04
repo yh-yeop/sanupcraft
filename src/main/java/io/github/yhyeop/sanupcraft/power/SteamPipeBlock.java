@@ -46,6 +46,7 @@ public class SteamPipeBlock extends PipeBlock {
 	private static boolean connectsTo(BlockGetter level, BlockPos pos, BlockState state) {
 		return state.getBlock() instanceof SteamPipeBlock
 				|| state.getBlock() instanceof BoilerBlock
+				|| state.getBlock() instanceof GeothermalVentBlock
 				|| level.getBlockEntity(pos) instanceof SteamConsumer;
 	}
 

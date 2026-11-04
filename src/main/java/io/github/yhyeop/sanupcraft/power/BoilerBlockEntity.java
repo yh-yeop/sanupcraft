@@ -1,6 +1,5 @@
 package io.github.yhyeop.sanupcraft.power;
 
-import java.util.List;
 import java.util.Optional;
 
 import net.minecraft.core.BlockPos;
@@ -41,7 +40,6 @@ public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer {
 	public static final int STEAM_PER_TICK = 4;
 	public static final int BUCKET = 1000;
 	private static final int WATER_FROM_SOURCE_PER_TICK = 100;
-	private static final int NETWORK_REFRESH_TICKS = 20;
 	/** 증기를 못 만든 채 이 틱이 지나면 LIT를 끈다 (연료는 그대로 남아 있음). */
 	private static final int LIT_HOLD_TICKS = 10;
 	private static final int[] SLOTS = {0};
@@ -51,12 +49,9 @@ public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer {
 	private int steam;
 	private int litTime;
 	private int litDuration;
-	private List<SteamConsumer> consumers = List.of();
-	private int refresh;
 	/** 증기를 만들지 못한 연속 틱 수 (저장하지 않음). */
 	private int idleTicks = LIT_HOLD_TICKS;
-	/** 증기를 나눠 줄 때 시작할 기계 순서. 모자랄 때 늘 같은 기계만 굶지 않게 틱마다 돌린다. */
-	private int rotation;
+	private final SteamOutlet outlet = new SteamOutlet();
 
 	public BoilerBlockEntity(BlockPos pos, BlockState state) {
 		super(ModPower.BOILER_BLOCK_ENTITY, pos, state);
@@ -89,38 +84,13 @@ public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer {
 			}
 		}
 		boiler.idleTicks = made > 0 ? 0 : Math.min(boiler.idleTicks + 1, LIT_HOLD_TICKS);
-		boiler.distribute(level, pos);
+		boiler.steam = boiler.outlet.distribute(level, pos, boiler.steam);
 
 		boolean isLit = boiler.isLit();
 		if (state.getValue(BoilerBlock.LIT) != isLit) {
 			level.setBlockAndUpdate(pos, state.setValue(BoilerBlock.LIT, isLit));
 		}
 		setChanged(level, pos, state);
-	}
-
-	/** 이어진 기계들에 증기를 고르게 나눠 준다. 시작 기계를 틱마다 돌려서, 모자랄 때도 모든 기계가 번갈아 받는다. */
-	private void distribute(ServerLevel level, BlockPos pos) {
-		if (--refresh <= 0) {
-			consumers = SteamNetwork.findConsumers(level, pos);
-			refresh = NETWORK_REFRESH_TICKS;
-		}
-		if (steam <= 0 || consumers.isEmpty()) {
-			return;
-		}
-		int count = consumers.size();
-		int share = Math.max(1, steam / count);
-		int start = rotation % count;
-		rotation = (start + 1) % count;
-		for (int i = 0; i < count; i++) {
-			if (steam <= 0) {
-				break;
-			}
-			SteamConsumer consumer = consumers.get((start + i) % count);
-			if (consumer instanceof BlockEntity be && be.isRemoved()) {
-				continue;
-			}
-			steam -= consumer.acceptSteam(Math.min(share, steam));
-		}
 	}
 
 	private boolean touchesWaterSource(ServerLevel level, BlockPos pos) {

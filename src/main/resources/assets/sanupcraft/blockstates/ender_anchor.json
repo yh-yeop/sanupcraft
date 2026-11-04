@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "active=false": {
+      "model": "sanupcraft:block/ender_anchor"
+    },
+    "active=true": {
+      "model": "sanupcraft:block/ender_anchor_on"
+    }
+  }
+}

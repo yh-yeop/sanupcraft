@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "sanupcraft:block/geothermal_vent"
+    },
+    "lit=true": {
+      "model": "sanupcraft:block/geothermal_vent_on"
+    }
+  }
+}

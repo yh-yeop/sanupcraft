@@ -1,0 +1,9 @@
+{
+  "type": "sanupcraft:crushing",
+  "ingredient": "minecraft:quartz_block",
+  "result": {
+    "id": "minecraft:quartz",
+    "count": 4
+  },
+  "time": 100
+}

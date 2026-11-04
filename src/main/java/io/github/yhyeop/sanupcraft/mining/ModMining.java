@@ -7,6 +7,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -22,6 +23,10 @@ public final class ModMining {
 			.strength(5.0F, 6.0F)
 			.requiresCorrectToolForDrops()
 			.sound(SoundType.METAL));
+
+	/** 내열 드릴 (네더 단계): 굴착기에 끼우면 다이아 곡괭이 등급으로 캔다 (고대 잔해 · 흑요석). */
+	public static final Item HEATPROOF_DRILL = ModRegistry.item("heatproof_drill",
+			new Item.Properties().stacksTo(1).fireResistant().rarity(Rarity.UNCOMMON));
 
 	public static final BlockEntityType<QuarryBlockEntity> QUARRY_BLOCK_ENTITY = Registry.register(
 			BuiltInRegistries.BLOCK_ENTITY_TYPE, Sanupcraft.id("steam_quarry"), new BlockEntityType<>(QuarryBlockEntity::new, Set.of(STEAM_QUARRY)));

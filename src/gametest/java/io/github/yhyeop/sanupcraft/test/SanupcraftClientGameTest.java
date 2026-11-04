@@ -172,7 +172,20 @@ public class SanupcraftClientGameTest implements FabricClientGameTest {
 		context.waitTicks(20);
 		context.takeScreenshot("sanupcraft-m3-nether");
 
+		// 네더 전초기지: 바닥 아래 용암 원천 → 지열 분출구 → 파이프 → 심장 제련로 (증기로 켜짐), 옆에 엔더 닻
 		server.runCommand("kill @e[type=sanupcraft:furnace_warden]");
+		server.runCommand("execute as @p run sanupcraft playtest outpost");
+		context.waitTicks(20);
+		server.runCommand("execute as @p at @p run tp @s ~ ~ ~ 0 20");
+		server.runCommand("execute at @p run setblock ~ ~-1 ~2 minecraft:lava");
+		server.runCommand("execute at @p run setblock ~-1 ~-1 ~2 minecraft:lava");
+		server.runCommand("execute at @p run setblock ~ ~ ~2 sanupcraft:geothermal_vent");
+		server.runCommand("execute at @p run setblock ~-1 ~ ~2 sanupcraft:steam_pipe");
+		server.runCommand("execute at @p run setblock ~-2 ~ ~2 sanupcraft:heart_forge[facing=north]");
+		server.runCommand("execute at @p run setblock ~2 ~ ~2 sanupcraft:ender_anchor");
+		server.runCommand("execute at @p run setblock ~1 ~ ~3 sanupcraft:steam_quarry");
+		context.waitTicks(40);
+		context.takeScreenshot("sanupcraft-m4-outpost");
 		server.runCommand("clear @a");
 		server.runCommand("execute as @p run sanupcraft playtest end");
 		context.waitTicks(40);
@@ -183,7 +196,7 @@ public class SanupcraftClientGameTest implements FabricClientGameTest {
 		context.waitTicks(20);
 		context.takeScreenshot("sanupcraft-m3-end");
 
-		server.runCommand("advancement grant @a until sanupcraft:ender_link");
+		server.runCommand("advancement grant @a until sanupcraft:ender_anchor");
 		context.waitTicks(10);
 		context.setScreen(() -> new AdvancementsScreen(context.computeOnClient(client -> client.getConnection().getAdvancements())));
 		context.waitTicks(10);

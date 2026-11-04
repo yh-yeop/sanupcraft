@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "minecraft:purpur_block",
+    "B": "minecraft:dragon_breath",
+    "S": "minecraft:shulker_shell",
+    "F": "sanupcraft:reinforced_machine_frame",
+    "E": "minecraft:ender_eye"
+  },
+  "pattern": [
+    "PBP",
+    "SFS",
+    "PEP"
+  ],
+  "result": {
+    "id": "sanupcraft:ender_anchor"
+  }
+}

@@ -51,6 +51,7 @@ public final class PlaytestCommand {
 		NETHER("내열 한 벌로 네더 탐험", Level.NETHER, PlaytestCommand::kitNether),
 		BOSS2("네더 제단 · 용광로 파수꾼", Level.NETHER, PlaytestCommand::kitBoss2),
 		FORGE("심장 제련로 · 고대 잔해", Level.NETHER, PlaytestCommand::kitForge),
+		OUTPOST("네더 전초기지: 지열 분출구 · 내열 드릴 굴착기 · 엔더 닻", Level.NETHER, PlaytestCommand::kitOutpost),
 		HOME("오버월드로 돌아오기", Level.OVERWORLD, PlaytestCommand::kitHome),
 		END("엔드 · 엔더 운반기", Level.END, PlaytestCommand::kitEnd);
 
@@ -223,6 +224,27 @@ public final class PlaytestCommand {
 		food(p);
 	}
 
+	/** 네더 전초기지: 용암 옆 지열 분출구 → 파이프 → 내열 드릴 굴착기 · 심장 제련로, 송신기로 오버월드에 보내고 엔더 닻으로 붙잡아 둔다. */
+	private static void kitOutpost(ServerPlayer p) {
+		kitNether(p);
+		give(p, ModPower.GEOTHERMAL_VENT.asItem(), 2);
+		give(p, ModPower.STEAM_PIPE.asItem(), 32);
+		give(p, ModMining.STEAM_QUARRY.asItem(), 1);
+		give(p, ModMining.HEATPROOF_DRILL, 1);
+		give(p, ModMachines.HEART_FORGE.asItem(), 1);
+		give(p, ModLogistics.ENDER_SENDER.asItem(), 1);
+		give(p, ModLogistics.ENDER_RECEIVER.asItem(), 1);
+		give(p, Items.DYE.orange(), 2);
+		give(p, ModLogistics.ENDER_ANCHOR.asItem(), 1);
+		give(p, Items.POPPED_CHORUS_FRUIT, 16);
+		give(p, Items.LAVA_BUCKET, 4);
+		give(p, Items.CHEST, 2);
+		give(p, Items.HOPPER, 4);
+		give(p, Items.NETHER_QUARTZ_ORE, 8);
+		give(p, Items.NETHER_GOLD_ORE, 8);
+		give(p, ModMachines.CRUSHER.asItem(), 1);
+	}
+
 	/** 네더에서 돌아온 뒤: 오버월드에서 파수꾼 소환석이 안 먹는 것(네더에서만 깨어난다)을 확인할 수 있게 제단과 소환석을 준다. */
 	private static void kitHome(ServerPlayer p) {
 		give(p, ModBoss.GUARDIAN_ALTAR.asItem(), 1);
@@ -236,6 +258,9 @@ public final class PlaytestCommand {
 		give(p, Items.DYE.red(), 4);
 		give(p, Items.DYE.blue(), 4);
 		give(p, Items.SHULKER_SHELL, 4);
+		give(p, ModLogistics.ENDER_ANCHOR.asItem(), 1);
+		give(p, Items.POPPED_CHORUS_FRUIT, 16);
+		give(p, Items.DRAGON_BREATH, 1);
 		give(p, Items.ENDER_PEARL, 16);
 		give(p, Items.HOPPER, 4);
 		give(p, Items.CHEST, 2);

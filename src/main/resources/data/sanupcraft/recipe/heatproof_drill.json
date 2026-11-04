@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "N": "minecraft:netherite_scrap",
+    "P": "sanupcraft:steel_plate",
+    "D": "minecraft:diamond",
+    "B": "minecraft:blaze_rod"
+  },
+  "pattern": [
+    " N ",
+    "PDP",
+    " B "
+  ],
+  "result": {
+    "id": "sanupcraft:heatproof_drill"
+  }
+}

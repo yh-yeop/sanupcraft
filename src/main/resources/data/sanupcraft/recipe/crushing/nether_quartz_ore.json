@@ -1,0 +1,15 @@
+{
+  "type": "sanupcraft:crushing",
+  "ingredient": "minecraft:nether_quartz_ore",
+  "result": {
+    "id": "minecraft:quartz",
+    "count": 2
+  },
+  "byproduct": {
+    "item": {
+      "id": "minecraft:quartz"
+    },
+    "chance": 0.25
+  },
+  "time": 150
+}

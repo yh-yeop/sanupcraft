@@ -1,0 +1,15 @@
+{
+  "type": "sanupcraft:crushing",
+  "ingredient": "minecraft:nether_gold_ore",
+  "result": {
+    "id": "sanupcraft:gold_dust"
+  },
+  "byproduct": {
+    "item": {
+      "id": "minecraft:gold_nugget",
+      "count": 3
+    },
+    "chance": 0.5
+  },
+  "time": 150
+}

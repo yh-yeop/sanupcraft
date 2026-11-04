@@ -853,6 +853,82 @@ def main_redesign(made):
     made.append(save(quarry_bottom(), "block/steam_quarry_bottom.png"))
 
 
+# ---------- M4 · 네더 · 엔드 심화 ----------
+DRILL = [
+    "................",
+    "...........aa...",
+    "..........acda..",
+    ".........acdeda.",
+    "........acdeda..",
+    ".......acdeda...",
+    "......abcdda....",
+    ".....abbcda.....",
+    "....mabbca......",
+    "...mnmaba.......",
+    "..mnom.a........",
+    ".mnom...........",
+    "mnom............",
+    "nom.............",
+    "om..............",
+    "................",
+]
+
+
+def vent_top(lit):
+    im = recolor(panel(seed=101), NETHER)
+    for y in range(3, 13):
+        for x in range(3, 13):
+            if y % 3 == 0:
+                continue
+            glow = lit and (x + y) % 2 == 0
+            im.putpixel((x, y), hex_px("#ffb347") if glow else (hex_px("#d85a1a") if lit else px("a")))
+    return im
+
+
+def vent_side():
+    im = recolor(panel(seed=102), NETHER)
+    rnd = random.Random(103)
+    for _ in range(9):
+        x, y = rnd.randrange(2, 14), rnd.randrange(2, 14)
+        im.putpixel((x, y), hex_px("#e0782e"))
+    for x in range(16):
+        im.putpixel((x, 15), hex_px("#a8481f"))
+    return im
+
+
+def anchor_face(part, on=False):
+    im = recolor(panel(seed=111 if part == "side" else 112), ENDER)
+    teal = hex_px("#c95cff" if on else "#2fd3b4")
+    if part == "top":
+        for y in range(3, 13):
+            for x in range(3, 13):
+                d = math.hypot(x - 7.5, y - 7.5)
+                if d < 1.6:
+                    im.putpixel((x, y), teal)
+                elif 3.2 < d < 4.4:
+                    im.putpixel((x, y), hex_px("#6b4c8c" if not on else "#a98bd0"))
+    else:
+        # 닻 모양
+        for y in range(3, 12):
+            im.putpixel((7, y), teal)
+            im.putpixel((8, y), teal)
+        for x in range(5, 11):
+            im.putpixel((x, 4), teal)
+        for x, y in ((4, 10), (5, 11), (6, 12), (11, 10), (10, 11), (9, 12), (7, 12), (8, 12)):
+            im.putpixel((x, y), teal)
+    return im
+
+
+def main_m4(made):
+    made.append(save(recolor(from_art(DRILL), HEAT), "item/heatproof_drill.png"))
+    made.append(save(vent_top(False), "block/geothermal_vent_top.png"))
+    made.append(save(vent_top(True), "block/geothermal_vent_top_on.png"))
+    made.append(save(vent_side(), "block/geothermal_vent_side.png"))
+    made.append(save(anchor_face("top"), "block/ender_anchor_top.png"))
+    made.append(save(anchor_face("top", True), "block/ender_anchor_top_on.png"))
+    made.append(save(anchor_face("side"), "block/ender_anchor_side.png"))
+
+
 def save(im, rel, scale=1):
     path = os.path.join(OUT, *rel.split("/"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -882,6 +958,7 @@ def main():
     main_m3(made)
     main_gui(made)
     main_redesign(made)
+    main_m4(made)
 
     if "--sheet" in sys.argv:
         tiles = [Image.open(p) for p in made]

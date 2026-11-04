@@ -26,6 +26,7 @@ import io.github.yhyeop.sanupcraft.power.SteamConsumer;
  * 철 곡괭이로는 드롭이 안 나오는 블록(흑요석 · 고대 잔해 등)은 건너뛴다.
  * 쓰레기 버림(기본 켜짐)이면 {@link ModMining#QUARRY_JUNK}(돌 · 흙 · 심층암 · 네더랙 …)은 버리고 원석 · 광물만 올려 보낸다.
  * 처리량이 분쇄기보다 훨씬 커서, 버리지 않으면 위 상자 · 벨트가 돌로 금방 막힌다.
+ * 내열 드릴({@link ModMining#HEATPROOF_DRILL})을 끼우면 다이아 곡괭이 등급이 되어 고대 잔해 · 흑요석도 캔다 (네더 전초기지).
  */
 public class QuarryBlockEntity extends BlockEntity implements SteamConsumer {
 	public static final int RADIUS = 4;
@@ -36,6 +37,8 @@ public class QuarryBlockEntity extends BlockEntity implements SteamConsumer {
 	/** 한 번에 빈 칸을 이만큼까지 건너뛴다 (공기 층에서 멈추지 않게). */
 	private static final int MAX_SCAN = 81;
 	private static final ItemStack TOOL = new ItemStack(Items.IRON_PICKAXE);
+	/** 내열 드릴을 끼우면 이 도구로 캔 것처럼 된다. */
+	private static final ItemStack DRILL_TOOL = new ItemStack(Items.DIAMOND_PICKAXE);
 	/** 마지막으로 블록을 캔 뒤 이만큼 틱 동안은 증기가 잠깐 모자라도 가동 표시(POWERED)를 유지한다 (깜빡임 방지). */
 	private static final int POWERED_HOLD_TICKS = 20;
 
@@ -51,6 +54,7 @@ public class QuarryBlockEntity extends BlockEntity implements SteamConsumer {
 	private int mined;
 	private boolean finished;
 	private boolean voidJunk = true;
+	private boolean drill;
 	/** 버린 아이템 수 (상태 표시용). */
 	private int voided;
 	/** 마지막으로 블록을 캔 게임 시각 (저장하지 않는다). */
@@ -125,10 +129,11 @@ public class QuarryBlockEntity extends BlockEntity implements SteamConsumer {
 			return false;
 		}
 		// 철 곡괭이로는 드롭이 안 나오는 블록은 남긴다 (드롭 계산은 도구 등급을 안 보므로 직접 거른다)
-		if (state.requiresCorrectToolForDrops() && !TOOL.isCorrectToolForDrops(state)) {
+		ItemStack tool = drill ? DRILL_TOOL : TOOL;
+		if (state.requiresCorrectToolForDrops() && !tool.isCorrectToolForDrops(state)) {
 			return false;
 		}
-		for (ItemStack drop : Block.getDrops(state, level, target, null, null, TOOL)) {
+		for (ItemStack drop : Block.getDrops(state, level, target, null, null, tool)) {
 			if (voidJunk && drop.is(ModMining.QUARRY_JUNK)) {
 				voided += drop.getCount();
 			} else {
@@ -166,6 +171,9 @@ public class QuarryBlockEntity extends BlockEntity implements SteamConsumer {
 			for (ItemStack stack : pending) {
 				Containers.dropItemStack(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stack);
 			}
+			if (drill) {
+				Containers.dropItemStack(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, new ItemStack(ModMining.HEATPROOF_DRILL));
+			}
 		}
 		pending.clear();
 	}
@@ -200,6 +208,20 @@ public class QuarryBlockEntity extends BlockEntity implements SteamConsumer {
 	public void setVoidJunk(boolean value) {
 		voidJunk = value;
 		setChanged();
+	}
+
+	public boolean hasDrill() {
+		return drill;
+	}
+
+	/** 내열 드릴을 끼운다. 이미 있으면 false. 끼우면 다 판 층부터 다시 볼 필요는 없다 (지나간 층의 남은 블록은 그대로). */
+	public boolean installDrill() {
+		if (drill) {
+			return false;
+		}
+		drill = true;
+		setChanged();
+		return true;
 	}
 
 	public int voided() {
@@ -237,6 +259,7 @@ public class QuarryBlockEntity extends BlockEntity implements SteamConsumer {
 		mined = input.getIntOr("mined", 0);
 		finished = input.getBooleanOr("finished", false);
 		voidJunk = input.getBooleanOr("void_junk", true);
+		drill = input.getBooleanOr("drill", false);
 		voided = input.getIntOr("voided", 0);
 		pending.clear();
 		input.read("pending", ItemStack.CODEC.listOf()).ifPresent(pending::addAll);
@@ -252,6 +275,7 @@ public class QuarryBlockEntity extends BlockEntity implements SteamConsumer {
 		output.putInt("mined", mined);
 		output.putBoolean("finished", finished);
 		output.putBoolean("void_junk", voidJunk);
+		output.putBoolean("drill", drill);
 		output.putInt("voided", voided);
 		output.store("pending", ItemStack.CODEC.listOf(), pending);
 	}
