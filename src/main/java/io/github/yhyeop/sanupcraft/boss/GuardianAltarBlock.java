@@ -9,6 +9,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.Difficulty;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
@@ -24,7 +25,8 @@ import net.minecraft.world.phys.BlockHitResult;
 
 /**
  * 수호자 제단. 소환석을 들고 우클릭하면 제단 위에 보스가 나온다.
- * 수호자 소환석 → 녹슨 수호자, 파수꾼 소환석 → 용광로 파수꾼. 근처에 보스가 있으면 부르지 않는다.
+ * 수호자 소환석 → 녹슨 수호자, 파수꾼 소환석 → 용광로 파수꾼. 근처에 보스가 있거나, 위 공간이 막혔거나,
+ * 평화로움이면 부르지 않고 소환석도 쓰지 않는다.
  * 용광로 파수꾼은 네더의 열기에서만 깨어난다 (제단을 네더에 지어야 함).
  */
 public class GuardianAltarBlock extends Block {
@@ -48,12 +50,35 @@ public class GuardianAltarBlock extends Block {
 			player.sendOverlayMessage(Component.translatable("block.sanupcraft.guardian_altar.too_cold"));
 			return InteractionResult.FAIL;
 		}
+		if (serverLevel.getDifficulty() == Difficulty.PEACEFUL) {
+			player.sendOverlayMessage(Component.translatable("block.sanupcraft.guardian_altar.peaceful"));
+			return InteractionResult.FAIL;
+		}
+		if (hasBossNearby(serverLevel, pos)) {
+			player.sendOverlayMessage(Component.translatable("block.sanupcraft.guardian_altar.busy"));
+			return InteractionResult.FAIL;
+		}
+		if (!hasRoom(serverLevel, pos, boss)) {
+			player.sendOverlayMessage(Component.translatable("block.sanupcraft.guardian_altar.no_room"));
+			return InteractionResult.FAIL;
+		}
 		if (summon(serverLevel, pos, boss) == null) {
 			player.sendOverlayMessage(Component.translatable("block.sanupcraft.guardian_altar.busy"));
 			return InteractionResult.FAIL;
 		}
 		stack.consume(1, player);
 		return InteractionResult.SUCCESS_SERVER;
+	}
+
+	/** 제단 위에 보스가 서 있을 공간이 있는가. 블록만 본다 (엔티티는 무시). */
+	public static boolean hasRoom(ServerLevel level, BlockPos altarPos, EntityType<?> type) {
+		return level.noBlockCollision(null, type.getSpawnAABB(altarPos.getX() + 0.5, altarPos.getY() + 1.0, altarPos.getZ() + 0.5));
+	}
+
+	/** 이 거리 안에 보스가 이미 있는가. */
+	public static boolean hasBossNearby(ServerLevel level, BlockPos altarPos) {
+		AABB area = new AABB(altarPos).inflate(ONE_PER_RADIUS);
+		return !level.getEntitiesOfClass(Monster.class, area, GuardianAltarBlock::isBoss).isEmpty();
 	}
 
 	private static @Nullable EntityType<? extends Monster> bossFor(ItemStack stack) {
@@ -81,8 +106,7 @@ public class GuardianAltarBlock extends Block {
 		if (!canWakeHere(level, type)) {
 			return null;
 		}
-		AABB area = new AABB(altarPos).inflate(ONE_PER_RADIUS);
-		if (!level.getEntitiesOfClass(Monster.class, area, GuardianAltarBlock::isBoss).isEmpty()) {
+		if (hasBossNearby(level, altarPos)) {
 			return null;
 		}
 		T boss = type.create(level, EntitySpawnReason.TRIGGERED);

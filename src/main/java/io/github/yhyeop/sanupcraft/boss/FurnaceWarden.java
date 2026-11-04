@@ -2,9 +2,16 @@ package io.github.yhyeop.sanupcraft.boss;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
+import org.jspecify.annotations.Nullable;
+
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -15,6 +22,8 @@ import net.minecraft.world.BossEvent;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -27,7 +36,10 @@ import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -36,11 +48,12 @@ import io.github.yhyeop.sanupcraft.gear.HeatproofGear;
 /**
  * 용광로 파수꾼. 두 번째 보스. 패턴 3개를 돌아가며 쓴다.
  * <ul>
- *   <li>증기 분출: 20틱 동안 포효하며 입에 증기가 모인다 → 앞쪽 부채꼴(7칸, 좌우 35도) 피해. 옆이나 뒤로 돌면 된다.</li>
+ *   <li>증기 분출: 20틱 동안 포효하며 입에 증기가 모인다. 10틱에 방향을 잠그고(부채꼴 경계가 불꽃 선으로 보인다) → 앞쪽 부채꼴(7칸, 좌우 35도) 피해. 옆이나 뒤로 돌면 된다.</li>
  *   <li>화염 장판: 주변 플레이어 발밑(최대 3곳)에 25틱 동안 불꽃 고리 → 반경 2.5칸 폭발. 고리 밖으로 나가면 된다.</li>
- *   <li>도약 내려찍기: 15틱 웅크렸다가 대상에게 뛰어올라 착지하면 반경 4칸 피해 + 띄우기.</li>
+ *   <li>도약 내려찍기: 15틱 웅크렸다가 대상에게 뛰어올라 착지하면 반경 4칸 피해 + 띄우기. 뛰는 순간 예상 착지점에 고리가 보인다.</li>
  * </ul>
- * 과열: 내열 갑옷 한 벌을 다 입지 않은 대상은 피해 1.5배 + 불 붙음. 내열 검으로 때리면 피해 1.5배.
+ * 과열: 내열 갑옷 한 벌을 다 입지 않은 대상은 피해 1.5배 + 불 붙음. 패턴 타격은 방패를 깨고 들어간다.
+ * 내열 검으로 때리면 피해 1.5배. 거미줄에 걸리지 않고 구속이 안 걸린다.
  * 불 · 낙하 피해를 받지 않는다. 체력이 절반 아래면 패턴 간격이 짧아진다.
  */
 public class FurnaceWarden extends Monster {
@@ -48,6 +61,8 @@ public class FurnaceWarden extends Monster {
 	public static final float HEAT_MULTIPLIER = 1.5F;
 	public static final float HEATPROOF_SWORD_MULTIPLIER = 1.5F;
 	public static final int HEAT_FIRE_TICKS = 100;
+	/** 패턴 타격이 방패를 깨는 시간 (초). 바닐라 워든과 같다. */
+	public static final float SHIELD_BREAK_SECONDS = 5.0F;
 	public static final float BLAST_DAMAGE = 10.0F;
 	public static final double BLAST_RANGE = 7.0;
 	public static final double BLAST_HALF_ANGLE = Math.toRadians(35.0);
@@ -58,6 +73,7 @@ public class FurnaceWarden extends Monster {
 	public static final byte EVENT_ATTACK = 4;
 	public static final byte EVENT_ROAR = 61;
 
+	private static final int BLAST_LOCK = 10;
 	private static final int BLAST_WINDUP = 20;
 	private static final int BLAST_END = 30;
 	private static final int RING_WINDUP = 25;
@@ -67,6 +83,7 @@ public class FurnaceWarden extends Monster {
 	private static final int LEAP_TIMEOUT = 70;
 	private static final int COOLDOWN = 70;
 	private static final int COOLDOWN_ENRAGED = 40;
+	private static final int WARNING_COOLDOWN = 200;
 
 	public enum Pattern {
 		NONE, STEAM_BLAST, FIRE_RINGS, LEAP
@@ -84,6 +101,11 @@ public class FurnaceWarden extends Monster {
 	private boolean airborne;
 	private int attackTick;
 	private int roarTick;
+	private boolean blastLocked;
+	private float blastYaw;
+	private Vec3 leapLanding = Vec3.ZERO;
+	/** 플레이어별 과열 경고를 마지막으로 보낸 게임 시간. */
+	private final Map<UUID, Long> warnedAt = new HashMap<>();
 
 	public FurnaceWarden(EntityType<? extends FurnaceWarden> type, Level level) {
 		super(type, level);
@@ -114,6 +136,11 @@ public class FurnaceWarden extends Monster {
 		targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
 	}
 
+	/** 보스 바에 보이는 제목 (시험용). */
+	public Component bossBarName() {
+		return bossEvent.getName();
+	}
+
 	public Pattern pattern() {
 		return pattern;
 	}
@@ -129,6 +156,7 @@ public class FurnaceWarden extends Monster {
 		getNavigation().stop();
 		switch (next) {
 			case STEAM_BLAST -> {
+				blastLocked = false;
 				level.broadcastEntityEvent(this, EVENT_ROAR);
 				playSound(SoundEvents.RAVAGER_ROAR, 2.0F, 0.6F);
 			}
@@ -168,6 +196,11 @@ public class FurnaceWarden extends Monster {
 			return;
 		}
 
+		tickPattern(level);
+	}
+
+	/** 패턴을 한 틱 진행한다. AI 틱이 부르고, 시험이 직접 불러 결정적으로 돌릴 수도 있다. */
+	public void tickPattern(ServerLevel level) {
 		patternTick++;
 		switch (pattern) {
 			case STEAM_BLAST -> tickBlast(level);
@@ -181,17 +214,36 @@ public class FurnaceWarden extends Monster {
 	private void endPattern() {
 		pattern = Pattern.NONE;
 		patternTick = 0;
+		blastLocked = false;
 		cooldown = isEnraged() ? COOLDOWN_ENRAGED : COOLDOWN;
 	}
 
 	private void tickBlast(ServerLevel level) {
 		LivingEntity target = getTarget();
-		if (patternTick < BLAST_WINDUP) {
+		if (patternTick < BLAST_LOCK) {
 			if (target != null) {
 				getLookControl().setLookAt(target, 20.0F, 20.0F);
 			}
 			Vec3 mouth = mouth();
 			level.sendParticles(ParticleTypes.CLOUD, mouth.x, mouth.y, mouth.z, 3, 0.3, 0.2, 0.3, 0.01);
+			return;
+		}
+		if (patternTick == BLAST_LOCK) {
+			blastYaw = getYHeadRot();
+			blastLocked = true;
+		}
+		if (patternTick < BLAST_WINDUP) {
+			faceBlastDirection();
+			Vec3 mouth = mouth();
+			level.sendParticles(ParticleTypes.CLOUD, mouth.x, mouth.y, mouth.z, 3, 0.3, 0.2, 0.3, 0.01);
+			if (patternTick % 2 == 0) {
+				Vec3 left = Vec3.directionFromRotation(0.0F, blastYaw + (float) Math.toDegrees(BLAST_HALF_ANGLE));
+				Vec3 right = Vec3.directionFromRotation(0.0F, blastYaw - (float) Math.toDegrees(BLAST_HALF_ANGLE));
+				for (int i = 1; i <= 7; i++) {
+					level.sendParticles(ParticleTypes.FLAME, mouth.x + left.x * i, mouth.y, mouth.z + left.z * i, 1, 0.0, 0.0, 0.0, 0.0);
+					level.sendParticles(ParticleTypes.FLAME, mouth.x + right.x * i, mouth.y, mouth.z + right.z * i, 1, 0.0, 0.0, 0.0, 0.0);
+				}
+			}
 			return;
 		}
 		if (patternTick == BLAST_WINDUP) {
@@ -203,8 +255,18 @@ public class FurnaceWarden extends Monster {
 		}
 	}
 
-	/** 증기 분출 판정: 바라보는 방향 부채꼴 안 플레이어. 맞은 수를 돌려준다. */
+	/** 잠긴 분출 방향으로 몸 · 머리를 돌려 둔다 (대상을 따라가지 않는다). */
+	private void faceBlastDirection() {
+		setYRot(blastYaw);
+		setYHeadRot(blastYaw);
+		setYBodyRot(blastYaw);
+	}
+
+	/** 증기 분출 판정: 방향이 잠겨 있으면 그 방향, 아니면 바라보는 방향의 부채꼴 안 플레이어. 맞은 수를 돌려준다. */
 	public int steamBlast(ServerLevel level) {
+		if (blastLocked) {
+			faceBlastDirection();
+		}
 		setYBodyRot(getYHeadRot());
 		setYRot(getYHeadRot());
 		Vec3 forward = Vec3.directionFromRotation(0.0F, getYHeadRot());
@@ -224,7 +286,7 @@ public class FurnaceWarden extends Monster {
 			}
 			double angle = Math.acos(Mth.clamp(flat.normalize().dot(forward), -1.0, 1.0));
 			if (angle <= BLAST_HALF_ANGLE) {
-				hitWithHeat(level, player, BLAST_DAMAGE);
+				hitWithHeat(level, player, BLAST_DAMAGE, true);
 				player.push(forward.x * 0.8, 0.3, forward.z * 0.8);
 				hits++;
 			}
@@ -262,7 +324,7 @@ public class FurnaceWarden extends Monster {
 			level.sendParticles(ParticleTypes.FLAME, center.x, center.y + 0.3, center.z, 30, RING_RADIUS / 2, 0.3, RING_RADIUS / 2, 0.05);
 			for (Player player : level.getEntitiesOfClass(Player.class, new AABB(center, center).inflate(RING_RADIUS, 2.0, RING_RADIUS))) {
 				if (!hit.contains(player) && horizontalDistance(player.position(), center) <= RING_RADIUS) {
-					hitWithHeat(level, player, RING_DAMAGE);
+					hitWithHeat(level, player, RING_DAMAGE, true);
 					player.push(0.0, 0.5, 0.0);
 					hit.add(player);
 				}
@@ -293,9 +355,18 @@ public class FurnaceWarden extends Monster {
 			double distance = Math.min(flat.length(), 12.0);
 			Vec3 push = distance > 0.01 ? flat.normalize().scale(distance * 0.075) : Vec3.ZERO;
 			setDeltaMovement(push.x, 1.0, push.z);
+			leapLanding = predictLanding(position(), new Vec3(push.x, 1.0, push.z));
 			airborne = true;
 			playSound(SoundEvents.RAVAGER_ROAR, 1.5F, 1.2F);
 			return;
+		}
+		if (airborne && patternTick % 3 == 0) {
+			double reach = LEAP_RADIUS + getBbWidth() / 2;
+			for (int i = 0; i < 32; i++) {
+				double a = i * Math.PI * 2.0 / 32.0;
+				level.sendParticles(ParticleTypes.FLAME, leapLanding.x + Math.cos(a) * reach, leapLanding.y + 0.1,
+						leapLanding.z + Math.sin(a) * reach, 1, 0.0, 0.0, 0.0, 0.0);
+			}
 		}
 		if (airborne && patternTick > LEAP_CROUCH + 5 && onGround()) {
 			airborne = false;
@@ -306,6 +377,23 @@ public class FurnaceWarden extends Monster {
 		if (patternTick >= LEAP_TIMEOUT) {
 			endPattern();
 		}
+	}
+
+	/**
+	 * 도약 착지점 예측. 틱마다 위치 += 속도, 속도 y = (y - 0.08) * 0.98, 속도 xz *= 0.91 (공중 마찰).
+	 * 시작 높이 아래로 내려가거나 40틱이 지나면 멈춘다. 높이는 시작 높이로 돌려준다.
+	 */
+	public static Vec3 predictLanding(Vec3 start, Vec3 velocity) {
+		Vec3 pos = start;
+		Vec3 v = velocity;
+		for (int tick = 0; tick < 40; tick++) {
+			pos = pos.add(v);
+			if (pos.y < start.y) {
+				break;
+			}
+			v = new Vec3(v.x * 0.91, (v.y - 0.08) * 0.98, v.z * 0.91);
+		}
+		return new Vec3(pos.x, start.y, pos.z);
 	}
 
 	/** 착지 판정: 반경 안 플레이어에게 피해 + 띄우기. 맞은 수를 돌려준다. */
@@ -319,7 +407,7 @@ public class FurnaceWarden extends Monster {
 			if (horizontalDistance(player.position(), position()) > LEAP_RADIUS + getBbWidth() / 2) {
 				continue;
 			}
-			hitWithHeat(level, player, LEAP_DAMAGE);
+			hitWithHeat(level, player, LEAP_DAMAGE, true);
 			Vec3 away = player.position().subtract(position());
 			Vec3 push = new Vec3(away.x, 0.0, away.z).normalize().scale(0.9);
 			player.push(push.x, 0.7, push.z);
@@ -328,14 +416,66 @@ public class FurnaceWarden extends Monster {
 		return hits;
 	}
 
-	/** 과열: 내열 갑옷 한 벌이 없으면 더 아프고 불이 붙는다. */
+	/** 과열 (근접). */
 	public boolean hitWithHeat(ServerLevel level, LivingEntity target, float damage) {
+		return hitWithHeat(level, target, damage, false);
+	}
+
+	/**
+	 * 과열: 내열 갑옷 한 벌이 없으면 더 아프고 불이 붙는다.
+	 * 패턴 타격(pattern)은 맞히기 직전에 대상의 방패를 깨고 그대로 들어간다.
+	 */
+	public boolean hitWithHeat(ServerLevel level, LivingEntity target, float damage, boolean pattern) {
+		if (pattern) {
+			breakShield(level, target);
+		}
 		boolean heatproof = HeatproofGear.wearsFullSet(target);
 		boolean hurt = target.hurtServer(level, damageSources().mobAttack(this), heatproof ? damage : damage * HEAT_MULTIPLIER);
 		if (hurt && !heatproof) {
 			target.igniteForTicks(HEAT_FIRE_TICKS);
+			warnHeat(level, target);
 		}
 		return hurt;
+	}
+
+	/** 막는 중인 방패를 깨고 쿨다운을 건다. */
+	private static void breakShield(ServerLevel level, LivingEntity target) {
+		ItemStack shield = target.getItemBlockingWith();
+		if (shield == null) {
+			return;
+		}
+		BlocksAttacks blocksAttacks = shield.get(DataComponents.BLOCKS_ATTACKS);
+		if (blocksAttacks != null) {
+			blocksAttacks.disable(level, target, SHIELD_BREAK_SECONDS, shield);
+		}
+	}
+
+	/** 세트 없이 과열을 맞은 플레이어에게 안내한다 (플레이어마다 200틱에 한 번). */
+	private void warnHeat(ServerLevel level, LivingEntity target) {
+		if (!(target instanceof ServerPlayer player)) {
+			return;
+		}
+		long now = level.getGameTime();
+		warnedAt.values().removeIf(last -> now - last >= WARNING_COOLDOWN);
+		if (warnedAt.putIfAbsent(player.getUUID(), now) == null) {
+			player.sendOverlayMessage(Component.translatable("entity.sanupcraft.furnace_warden.heat_warning"));
+		}
+	}
+
+	/** 근접으로 한 번 막히면 방패가 5초 꺼진다 (바닐라 워든과 같다). */
+	@Override
+	public float getSecondsToDisableBlocking() {
+		return SHIELD_BREAK_SECONDS;
+	}
+
+	/** 거미줄 같은 블록에 느려지지 않는다 (도약이 막히지 않게). */
+	@Override
+	public void makeStuckInBlock(BlockState state, Vec3 speedMultiplier) {
+	}
+
+	@Override
+	public boolean canBeAffected(MobEffectInstance newEffect) {
+		return newEffect.is(MobEffects.SLOWNESS) ? false : super.canBeAffected(newEffect);
 	}
 
 	@Override
@@ -413,6 +553,13 @@ public class FurnaceWarden extends Monster {
 
 	public int getRoarTick() {
 		return roarTick;
+	}
+
+	/** 이름표로 이름을 바꾸면 보스 바 제목도 바꾼다 (저장된 이름을 불러올 때도 이 경로를 지난다). */
+	@Override
+	public void setCustomName(@Nullable Component name) {
+		super.setCustomName(name);
+		bossEvent.setName(getDisplayName());
 	}
 
 	@Override

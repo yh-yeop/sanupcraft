@@ -1,12 +1,18 @@
 package io.github.yhyeop.sanupcraft.boss;
 
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import org.jspecify.annotations.Nullable;
+
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -34,19 +40,24 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.Silverfish;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
+import io.github.yhyeop.sanupcraft.gear.HeatproofGear;
 import io.github.yhyeop.sanupcraft.gear.SteelGear;
 
 /**
  * 녹슨 수호자. 첫 마일스톤 보스. 패턴 3개를 돌아가며 쓴다.
  * <ul>
- *   <li>돌진: 20틱 동안 웅크렸다가 바라본 방향으로 돌진. 옆으로 피하면 된다.</li>
- *   <li>내려찍기: 25틱 동안 주변에 경고 입자 → 반경 5칸 피해 + 띄우기. 경고를 보고 벗어나면 된다.</li>
+ *   <li>돌진: 20틱 동안 웅크린다. 12틱에 대상 쪽으로 방향을 잠그고(경로가 입자로 보인다) 8틱 뒤 그 방향으로 돌진. 옆으로 피하면 된다.</li>
+ *   <li>내려찍기: 25틱 동안 판정 반경과 같은 경고 고리 → 피해 + 띄우기. 경고를 보고 벗어나면 된다.</li>
  *   <li>졸개 소환: 좀벌레 3마리.</li>
  * </ul>
- * 녹 공격: 강철 갑옷 한 벌을 다 입지 않은 대상은 피해 1.5배 + 구속. 강철 검으로 때리면 피해 1.5배.
+ * 녹 공격: 강철(또는 내열) 갑옷 한 벌을 다 입지 않은 대상은 피해 1.5배 + 구속. 패턴 타격은 방패를 깨고 들어간다.
+ * 강철 검 · 내열 검으로 때리면 피해 1.5배. 거미줄에 걸리지 않고 구속이 안 걸린다.
  * 체력이 절반 아래면 패턴 간격이 짧아진다.
  */
 public class RustyGuardian extends Monster {
@@ -57,8 +68,11 @@ public class RustyGuardian extends Monster {
 	public static final float SLAM_DAMAGE = 10.0F;
 	public static final double SLAM_RADIUS = 5.0;
 	public static final int MINIONS_PER_SUMMON = 3;
+	/** 패턴 타격이 방패를 깨는 시간 (초). 바닐라 워든과 같다. */
+	public static final float SHIELD_BREAK_SECONDS = 5.0F;
 	private static final int MAX_MINIONS_NEARBY = 8;
 
+	private static final int CHARGE_LOCK = 12;
 	private static final int CHARGE_WINDUP = 20;
 	private static final int CHARGE_END = 36;
 	private static final int SLAM_WINDUP = 25;
@@ -67,6 +81,7 @@ public class RustyGuardian extends Monster {
 	private static final int SUMMON_END = 20;
 	private static final int COOLDOWN = 80;
 	private static final int COOLDOWN_ENRAGED = 45;
+	private static final int WARNING_COOLDOWN = 200;
 
 	public enum Pattern {
 		NONE, CHARGE, SLAM, SUMMON
@@ -83,6 +98,8 @@ public class RustyGuardian extends Monster {
 	private Vec3 chargeDirection = Vec3.ZERO;
 	private final Set<UUID> hitThisCharge = new HashSet<>();
 	private int attackAnimationTick;
+	/** 플레이어별 녹 경고를 마지막으로 보낸 게임 시간. */
+	private final Map<UUID, Long> warnedAt = new HashMap<>();
 
 	public RustyGuardian(EntityType<? extends RustyGuardian> type, Level level) {
 		super(type, level);
@@ -110,6 +127,11 @@ public class RustyGuardian extends Monster {
 		goalSelector.addGoal(8, new RandomLookAroundGoal(this));
 		targetSelector.addGoal(1, new HurtByTargetGoal(this));
 		targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
+	}
+
+	/** 보스 바에 보이는 제목 (시험용). */
+	public Component bossBarName() {
+		return bossEvent.getName();
 	}
 
 	public Pattern pattern() {
@@ -149,6 +171,11 @@ public class RustyGuardian extends Monster {
 			return;
 		}
 
+		tickPattern(level);
+	}
+
+	/** 패턴을 한 틱 진행한다. AI 틱이 부르고, 시험이 직접 불러 결정적으로 돌릴 수도 있다. */
+	public void tickPattern(ServerLevel level) {
 		patternTick++;
 		switch (pattern) {
 			case CHARGE -> tickCharge(level);
@@ -159,6 +186,11 @@ public class RustyGuardian extends Monster {
 		}
 	}
 
+	/** 잠긴 돌진 방향 (잠그기 전에는 0). */
+	public Vec3 chargeDirection() {
+		return chargeDirection;
+	}
+
 	private void endPattern() {
 		pattern = Pattern.NONE;
 		patternTick = 0;
@@ -167,24 +199,33 @@ public class RustyGuardian extends Monster {
 
 	private void tickCharge(ServerLevel level) {
 		LivingEntity target = getTarget();
-		if (patternTick < CHARGE_WINDUP) {
+		if (patternTick < CHARGE_LOCK) {
 			if (target != null) {
 				getLookControl().setLookAt(target, 30.0F, 30.0F);
 			}
 			level.sendParticles(ParticleTypes.SMOKE, getX(), getY() + 0.3, getZ(), 4, 0.6, 0.1, 0.6, 0.02);
 			return;
 		}
-		if (patternTick == CHARGE_WINDUP) {
+		if (patternTick == CHARGE_LOCK) {
 			Vec3 aim = target != null ? target.position().subtract(position()) : getLookAngle();
 			chargeDirection = new Vec3(aim.x, 0.0, aim.z).normalize();
 			hitThisCharge.clear();
 		}
+		if (patternTick < CHARGE_WINDUP) {
+			faceChargeDirection();
+			if (patternTick % 2 == 0) {
+				for (int i = 1; i <= 14; i++) {
+					level.sendParticles(ParticleTypes.CRIT, getX() + chargeDirection.x * i, getY() + 0.1, getZ() + chargeDirection.z * i, 1, 0.0, 0.0, 0.0, 0.0);
+				}
+			}
+			return;
+		}
 		if (patternTick < CHARGE_END) {
 			setDeltaMovement(chargeDirection.x * 0.9, getDeltaMovement().y, chargeDirection.z * 0.9);
-			setYRot((float) (Mth.atan2(chargeDirection.z, chargeDirection.x) * Mth.RAD_TO_DEG) - 90.0F);
+			faceChargeDirection();
 			for (Player player : level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(0.6))) {
 				if (hitThisCharge.add(player.getUUID())) {
-					hitWithRust(level, player, CHARGE_DAMAGE);
+					hitWithRust(level, player, CHARGE_DAMAGE, true);
 					player.push(chargeDirection.x * 1.2, 0.4, chargeDirection.z * 1.2);
 				}
 			}
@@ -193,13 +234,22 @@ public class RustyGuardian extends Monster {
 		endPattern();
 	}
 
+	/** 잠긴 돌진 방향으로 몸 · 머리를 돌려 둔다. */
+	private void faceChargeDirection() {
+		float yaw = (float) (Mth.atan2(chargeDirection.z, chargeDirection.x) * Mth.RAD_TO_DEG) - 90.0F;
+		setYRot(yaw);
+		setYHeadRot(yaw);
+		setYBodyRot(yaw);
+	}
+
 	private void tickSlam(ServerLevel level) {
 		if (patternTick < SLAM_WINDUP) {
-			if (patternTick % 5 == 0) {
-				for (int i = 0; i < 24; i++) {
-					double angle = i * Math.PI * 2.0 / 24.0;
-					level.sendParticles(ParticleTypes.CRIT, getX() + Math.cos(angle) * SLAM_RADIUS, getY() + 0.1,
-							getZ() + Math.sin(angle) * SLAM_RADIUS, 1, 0.0, 0.0, 0.0, 0.0);
+			if (patternTick % 3 == 0) {
+				double reach = slamReach();
+				for (int i = 0; i < 32; i++) {
+					double angle = i * Math.PI * 2.0 / 32.0;
+					level.sendParticles(ParticleTypes.CRIT, getX() + Math.cos(angle) * reach, getY() + 0.1,
+							getZ() + Math.sin(angle) * reach, 1, 0.0, 0.0, 0.0, 0.0);
 				}
 			}
 			if (patternTick == SLAM_WINDUP - 10) {
@@ -216,17 +266,23 @@ public class RustyGuardian extends Monster {
 		}
 	}
 
+	/** 내려찍기가 닿는 수평 거리. 경고 고리와 판정이 같은 반경을 쓴다. */
+	public double slamReach() {
+		return SLAM_RADIUS + getBbWidth() / 2;
+	}
+
 	/** 내려찍기 판정. 반경 안 플레이어에게 피해 + 띄우기. 맞은 수를 돌려준다. */
 	public int slam(ServerLevel level) {
 		playSound(SoundEvents.ANVIL_LAND, 2.0F, 0.5F);
 		level.sendParticles(ParticleTypes.EXPLOSION, getX(), getY() + 0.2, getZ(), 6, SLAM_RADIUS / 2, 0.1, SLAM_RADIUS / 2, 0.0);
 		int hits = 0;
-		List<Player> players = level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(SLAM_RADIUS, 2.0, SLAM_RADIUS));
+		double reach = slamReach();
+		List<Player> players = level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(reach, 2.0, reach));
 		for (Player player : players) {
-			if (player.distanceTo(this) > SLAM_RADIUS + getBbWidth() / 2) {
+			if (horizontalDistance(player.position(), position()) > reach) {
 				continue;
 			}
-			hitWithRust(level, player, SLAM_DAMAGE);
+			hitWithRust(level, player, SLAM_DAMAGE, true);
 			Vec3 away = player.position().subtract(position());
 			Vec3 push = new Vec3(away.x, 0.0, away.z).normalize().scale(0.8);
 			player.push(push.x, 0.7, push.z);
@@ -266,14 +322,72 @@ public class RustyGuardian extends Monster {
 		return summoned;
 	}
 
-	/** 녹 공격: 강철 갑옷 한 벌이 없으면 피해가 커지고 느려진다. */
+	/** 녹 공격 (근접). */
 	public boolean hitWithRust(ServerLevel level, LivingEntity target, float damage) {
+		return hitWithRust(level, target, damage, false);
+	}
+
+	/**
+	 * 녹 공격: 강철 갑옷 한 벌이 없으면 피해가 커지고 느려진다.
+	 * 패턴 타격(pattern)은 맞히기 직전에 대상의 방패를 깨고 그대로 들어간다.
+	 */
+	public boolean hitWithRust(ServerLevel level, LivingEntity target, float damage, boolean pattern) {
+		if (pattern) {
+			breakShield(level, target);
+		}
 		boolean rustproof = SteelGear.wearsFullSet(target);
 		boolean hurt = target.hurtServer(level, damageSources().mobAttack(this), rustproof ? damage : damage * RUST_MULTIPLIER);
 		if (hurt && !rustproof) {
 			target.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 60, 1), this);
+			warnRust(level, target);
 		}
 		return hurt;
+	}
+
+	/** 막는 중인 방패를 깨고 쿨다운을 건다. */
+	private static void breakShield(ServerLevel level, LivingEntity target) {
+		ItemStack shield = target.getItemBlockingWith();
+		if (shield == null) {
+			return;
+		}
+		BlocksAttacks blocksAttacks = shield.get(DataComponents.BLOCKS_ATTACKS);
+		if (blocksAttacks != null) {
+			blocksAttacks.disable(level, target, SHIELD_BREAK_SECONDS, shield);
+		}
+	}
+
+	/** 세트 없이 녹 공격을 맞은 플레이어에게 안내한다 (플레이어마다 200틱에 한 번). */
+	private void warnRust(ServerLevel level, LivingEntity target) {
+		if (!(target instanceof ServerPlayer player)) {
+			return;
+		}
+		long now = level.getGameTime();
+		warnedAt.values().removeIf(last -> now - last >= WARNING_COOLDOWN);
+		if (warnedAt.putIfAbsent(player.getUUID(), now) == null) {
+			player.sendOverlayMessage(Component.translatable("entity.sanupcraft.rusty_guardian.rust_warning"));
+		}
+	}
+
+	private static double horizontalDistance(Vec3 a, Vec3 b) {
+		double dx = a.x - b.x;
+		double dz = a.z - b.z;
+		return Math.sqrt(dx * dx + dz * dz);
+	}
+
+	/** 근접으로 한 번 막히면 방패가 5초 꺼진다 (바닐라 워든과 같다). */
+	@Override
+	public float getSecondsToDisableBlocking() {
+		return SHIELD_BREAK_SECONDS;
+	}
+
+	/** 거미줄 같은 블록에 느려지지 않는다 (돌진이 막히지 않게). */
+	@Override
+	public void makeStuckInBlock(BlockState state, Vec3 speedMultiplier) {
+	}
+
+	@Override
+	public boolean canBeAffected(MobEffectInstance newEffect) {
+		return newEffect.is(MobEffects.SLOWNESS) ? false : super.canBeAffected(newEffect);
 	}
 
 	@Override
@@ -301,7 +415,7 @@ public class RustyGuardian extends Monster {
 			return false;
 		}
 		if (source.getEntity() instanceof LivingEntity attacker && source.getDirectEntity() == attacker
-				&& attacker.getMainHandItem().is(SteelGear.STEEL_SWORD)) {
+				&& (attacker.getMainHandItem().is(SteelGear.STEEL_SWORD) || attacker.getMainHandItem().is(HeatproofGear.HEATPROOF_SWORD))) {
 			damage *= STEEL_SWORD_MULTIPLIER;
 		}
 		boolean hurt = super.hurtServer(level, source, damage);
@@ -330,6 +444,13 @@ public class RustyGuardian extends Monster {
 
 	public int getAttackAnimationTick() {
 		return attackAnimationTick;
+	}
+
+	/** 이름표로 이름을 바꾸면 보스 바 제목도 바꾼다 (저장된 이름을 불러올 때도 이 경로를 지난다). */
+	@Override
+	public void setCustomName(@Nullable Component name) {
+		super.setCustomName(name);
+		bossEvent.setName(getDisplayName());
 	}
 
 	@Override
