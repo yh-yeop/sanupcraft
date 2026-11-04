@@ -11,6 +11,7 @@ import net.minecraft.util.RandomSource;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.ItemStack;
@@ -25,7 +26,7 @@ import net.minecraft.world.phys.BlockHitResult;
 
 /**
  * 엔더 송신기 · 수신기. 염료를 들고 우클릭하면 그 색이 채널이 된다. 빈손 우클릭: 송신기는 채널과 이어진 수신기 수를 보여 주고,
- * 수신기는 연다 (웅크리고 우클릭하면 채널을 보여 준다).
+ * 수신기는 연다. 웅크리고 빈손 우클릭: 주인이면 잠그기 · 풀기, 아니면 채널과 잠금 상태를 보여 준다.
  */
 public class EnderLinkBlock extends BaseEntityBlock {
 	private final boolean sender;
@@ -50,12 +51,24 @@ public class EnderLinkBlock extends BaseEntityBlock {
 	}
 
 	@Override
+	public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity by, ItemStack itemStack) {
+		super.setPlacedBy(level, pos, state, by, itemStack);
+		if (!level.isClientSide() && by instanceof Player player && level.getBlockEntity(pos) instanceof EnderLinkBlockEntity link) {
+			link.setOwner(player);
+		}
+	}
+
+	@Override
 	protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
 		DyeColor color = stack.get(DataComponents.DYE);
 		if (color == null || !(level.getBlockEntity(pos) instanceof EnderLinkBlockEntity link)) {
 			return InteractionResult.TRY_WITH_EMPTY_HAND;
 		}
 		if (!level.isClientSide()) {
+			if (!link.canUse(player)) {
+				player.sendOverlayMessage(lockedMessage(link));
+				return InteractionResult.FAIL;
+			}
 			link.setChannel(color);
 			player.sendOverlayMessage(channelMessage(link));
 		}
@@ -65,19 +78,39 @@ public class EnderLinkBlock extends BaseEntityBlock {
 	@Override
 	protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
 		if (!level.isClientSide() && level.getBlockEntity(pos) instanceof EnderLinkBlockEntity link) {
-			if (link.isSender()) {
+			if (player.isSecondaryUseActive()) {
+				toggleLock(link, player);
+			} else if (link.isSender()) {
 				int count = link.linkedReceivers();
 				Component channel = colorName(link);
 				player.sendOverlayMessage(count > 0
 						? Component.translatable("block.sanupcraft.ender_link.sender_status", channel, count)
 						: Component.translatable("block.sanupcraft.ender_link.no_receiver", channel));
-			} else if (player.isSecondaryUseActive()) {
-				player.sendOverlayMessage(channelMessage(link));
+			} else if (!link.canUse(player)) {
+				player.sendOverlayMessage(lockedMessage(link));
 			} else {
 				player.openMenu(link);
 			}
 		}
 		return InteractionResult.SUCCESS;
+	}
+
+	/** 주인(또는 OP)이면 잠금을 바꾸고, 아니면 채널과 잠금 상태만 보여 준다. */
+	private static void toggleLock(EnderLinkBlockEntity link, Player player) {
+		if (!link.canManage(player)) {
+			player.sendOverlayMessage(link.isLocked() ? lockedMessage(link) : channelMessage(link));
+			return;
+		}
+		if (link.owner() == null) {
+			link.setOwner(player);
+		}
+		link.setLocked(!link.isLocked());
+		player.sendOverlayMessage(Component.translatable(link.isLocked() ? "block.sanupcraft.ender_link.lock_on" : "block.sanupcraft.ender_link.lock_off",
+				colorName(link)));
+	}
+
+	private static Component lockedMessage(EnderLinkBlockEntity link) {
+		return Component.translatable("block.sanupcraft.ender_link.locked", colorName(link), link.ownerName());
 	}
 
 	private static Component channelMessage(EnderLinkBlockEntity link) {

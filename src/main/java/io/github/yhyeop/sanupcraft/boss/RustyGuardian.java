@@ -44,8 +44,11 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
+import io.github.yhyeop.sanupcraft.core.ModItems;
 import io.github.yhyeop.sanupcraft.gear.HeatproofGear;
 import io.github.yhyeop.sanupcraft.gear.SteelGear;
 
@@ -58,9 +61,9 @@ import io.github.yhyeop.sanupcraft.gear.SteelGear;
  * </ul>
  * 녹 공격: 강철(또는 내열) 갑옷 한 벌을 다 입지 않은 대상은 피해 1.5배 + 구속. 패턴 타격은 방패를 깨고 들어간다.
  * 강철 검 · 내열 검으로 때리면 피해 1.5배. 거미줄에 걸리지 않고 구속이 안 걸린다.
- * 체력이 절반 아래면 패턴 간격이 짧아진다.
+ * 체력이 절반 아래면 패턴 간격이 짧아진다. 여러 명이면 체력 · 졸개 수가 늘고, 기여자 각자 핵을 받는다 ({@link BossParty}).
  */
-public class RustyGuardian extends Monster {
+public class RustyGuardian extends Monster implements PartyBoss {
 	public static final double MAX_HEALTH = 300.0;
 	public static final float RUST_MULTIPLIER = 1.5F;
 	public static final float STEEL_SWORD_MULTIPLIER = 1.5F;
@@ -100,6 +103,7 @@ public class RustyGuardian extends Monster {
 	private int attackAnimationTick;
 	/** 플레이어별 녹 경고를 마지막으로 보낸 게임 시간. */
 	private final Map<UUID, Long> warnedAt = new HashMap<>();
+	private final BossParty party = new BossParty();
 
 	public RustyGuardian(EntityType<? extends RustyGuardian> type, Level level) {
 		super(type, level);
@@ -127,6 +131,16 @@ public class RustyGuardian extends Monster {
 		goalSelector.addGoal(8, new RandomLookAroundGoal(this));
 		targetSelector.addGoal(1, new HurtByTargetGoal(this));
 		targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
+	}
+
+	@Override
+	public BossParty party() {
+		return party;
+	}
+
+	/** 한 번에 부르는 졸개 수. 3명마다 하나씩 는다 (혼자 3, 10명 6). */
+	public int minionsPerSummon() {
+		return MINIONS_PER_SUMMON + (party.size() - 1) / 3;
 	}
 
 	/** 보스 바에 보이는 제목 (시험용). */
@@ -303,7 +317,7 @@ public class RustyGuardian extends Monster {
 	/** 졸개 소환. 주변에 이미 많으면 덜 부른다. 부른 수를 돌려준다. */
 	public int summonMinions(ServerLevel level) {
 		int nearby = level.getEntitiesOfClass(Silverfish.class, getBoundingBox().inflate(16.0)).size();
-		int count = Math.min(MINIONS_PER_SUMMON, MAX_MINIONS_NEARBY - nearby);
+		int count = Math.min(minionsPerSummon(), MAX_MINIONS_NEARBY - nearby);
 		int summoned = 0;
 		for (int i = 0; i < count; i++) {
 			Silverfish minion = EntityTypes.SILVERFISH.create(level, EntitySpawnReason.MOB_SUMMONED);
@@ -423,6 +437,33 @@ public class RustyGuardian extends Monster {
 			playSound(SoundEvents.IRON_GOLEM_DAMAGE, 1.0F, 0.6F);
 		}
 		return hurt;
+	}
+
+	/** 실제로 깎인 체력을 공격한 플레이어에게 센다 (죽기 전에 불리므로 마지막 일격도 들어간다). */
+	@Override
+	protected void actuallyHurt(ServerLevel level, DamageSource source, float damage) {
+		float before = getHealth();
+		super.actuallyHurt(level, source, damage);
+		party.record(source.getEntity(), before - getHealth());
+	}
+
+	/** 핵은 전리품 표가 아니라 기여자 각자에게 준다. */
+	@Override
+	protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
+		super.dropCustomDeathLoot(level, source, killedByPlayer);
+		party.giveKeyItem(level, this, ModItems.GUARDIAN_CORE);
+	}
+
+	@Override
+	protected void addAdditionalSaveData(ValueOutput output) {
+		super.addAdditionalSaveData(output);
+		party.save(output);
+	}
+
+	@Override
+	protected void readAdditionalSaveData(ValueInput input) {
+		super.readAdditionalSaveData(input);
+		party.load(input);
 	}
 
 	@Override

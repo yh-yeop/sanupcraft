@@ -25,6 +25,11 @@ public enum MachineKind {
 		this.recipeName = recipeName;
 	}
 
+	/** 레시피 이름 (`crushing` 등). 레시피 타입 id · 데이터 폴더 이름이다. */
+	public String recipeName() {
+		return recipeName;
+	}
+
 	/** 재료 칸이 두 개인 기계인가. */
 	public boolean twoInputs() {
 		return this == ALLOY;

@@ -1,5 +1,7 @@
 package io.github.yhyeop.sanupcraft.boss;
 
+import java.util.Locale;
+
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
@@ -28,6 +30,7 @@ import net.minecraft.world.phys.BlockHitResult;
  * 수호자 소환석 → 녹슨 수호자, 파수꾼 소환석 → 용광로 파수꾼. 근처에 보스가 있거나, 위 공간이 막혔거나,
  * 평화로움이면 부르지 않고 소환석도 쓰지 않는다.
  * 용광로 파수꾼은 네더의 열기에서만 깨어난다 (제단을 네더에 지어야 함).
+ * 부를 때 주변 인원수로 보스 체력을 늘린다 ({@link BossParty}).
  */
 public class GuardianAltarBlock extends Block {
 	/** 이 거리 안에 보스가 이미 있으면 소환하지 않는다. */
@@ -62,9 +65,15 @@ public class GuardianAltarBlock extends Block {
 			player.sendOverlayMessage(Component.translatable("block.sanupcraft.guardian_altar.no_room"));
 			return InteractionResult.FAIL;
 		}
-		if (summon(serverLevel, pos, boss) == null) {
+		Monster summoned = summon(serverLevel, pos, boss);
+		if (summoned == null) {
 			player.sendOverlayMessage(Component.translatable("block.sanupcraft.guardian_altar.busy"));
 			return InteractionResult.FAIL;
+		}
+		if (summoned instanceof PartyBoss partyBoss && partyBoss.party().size() > 1) {
+			int size = partyBoss.party().size();
+			player.sendOverlayMessage(Component.translatable("block.sanupcraft.guardian_altar.party",
+					size, String.format(Locale.ROOT, "%.1f", BossParty.healthScale(size))));
 		}
 		stack.consume(1, player);
 		return InteractionResult.SUCCESS_SERVER;
@@ -114,6 +123,9 @@ public class GuardianAltarBlock extends Block {
 			return null;
 		}
 		boss.snapTo(altarPos.getX() + 0.5, altarPos.getY() + 1.0, altarPos.getZ() + 0.5, level.getRandom().nextFloat() * 360.0F, 0.0F);
+		if (boss instanceof PartyBoss partyBoss) {
+			partyBoss.party().scale(boss, BossParty.countPlayers(level, boss.position()));
+		}
 		level.addFreshEntity(boss);
 		level.playSound(null, altarPos, SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 1.0F, 1.2F);
 		level.sendParticles(ParticleTypes.LARGE_SMOKE, boss.getX(), boss.getY() + 1.0, boss.getZ(), 40, 0.8, 1.2, 0.8, 0.02);

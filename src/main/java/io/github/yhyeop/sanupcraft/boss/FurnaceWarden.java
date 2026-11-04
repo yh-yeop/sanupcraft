@@ -40,23 +40,27 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
+import io.github.yhyeop.sanupcraft.core.ModItems;
 import io.github.yhyeop.sanupcraft.gear.HeatproofGear;
 
 /**
  * 용광로 파수꾼. 두 번째 보스. 패턴 3개를 돌아가며 쓴다.
  * <ul>
  *   <li>증기 분출: 20틱 동안 포효하며 입에 증기가 모인다. 10틱에 방향을 잠그고(부채꼴 경계가 불꽃 선으로 보인다) → 앞쪽 부채꼴(7칸, 좌우 35도) 피해. 옆이나 뒤로 돌면 된다.</li>
- *   <li>화염 장판: 주변 플레이어 발밑(최대 3곳)에 25틱 동안 불꽃 고리 → 반경 2.5칸 폭발. 고리 밖으로 나가면 된다.</li>
+ *   <li>화염 장판: 주변 플레이어 발밑(인원수만큼 3 ~ 6곳)에 25틱 동안 불꽃 고리 → 반경 2.5칸 폭발. 고리 밖으로 나가면 된다.</li>
  *   <li>도약 내려찍기: 15틱 웅크렸다가 대상에게 뛰어올라 착지하면 반경 4칸 피해 + 띄우기. 뛰는 순간 예상 착지점에 고리가 보인다.</li>
  * </ul>
  * 과열: 내열 갑옷 한 벌을 다 입지 않은 대상은 피해 1.5배 + 불 붙음. 패턴 타격은 방패를 깨고 들어간다.
  * 내열 검으로 때리면 피해 1.5배. 거미줄에 걸리지 않고 구속이 안 걸린다.
  * 불 · 낙하 피해를 받지 않는다. 체력이 절반 아래면 패턴 간격이 짧아진다.
+ * 여러 명이면 체력이 늘고, 기여자 각자 심장을 받는다 ({@link BossParty}).
  */
-public class FurnaceWarden extends Monster {
+public class FurnaceWarden extends Monster implements PartyBoss {
 	public static final double MAX_HEALTH = 450.0;
 	public static final float HEAT_MULTIPLIER = 1.5F;
 	public static final float HEATPROOF_SWORD_MULTIPLIER = 1.5F;
@@ -78,7 +82,9 @@ public class FurnaceWarden extends Monster {
 	private static final int BLAST_END = 30;
 	private static final int RING_WINDUP = 25;
 	private static final int RING_END = 35;
-	private static final int MAX_RINGS = 3;
+	/** 화염 장판 수: 인원수만큼, 3 ~ 6개. */
+	private static final int MIN_RINGS = 3;
+	private static final int MAX_RINGS = 6;
 	private static final int LEAP_CROUCH = 15;
 	private static final int LEAP_TIMEOUT = 70;
 	private static final int COOLDOWN = 70;
@@ -106,6 +112,7 @@ public class FurnaceWarden extends Monster {
 	private Vec3 leapLanding = Vec3.ZERO;
 	/** 플레이어별 과열 경고를 마지막으로 보낸 게임 시간. */
 	private final Map<UUID, Long> warnedAt = new HashMap<>();
+	private final BossParty party = new BossParty();
 
 	public FurnaceWarden(EntityType<? extends FurnaceWarden> type, Level level) {
 		super(type, level);
@@ -137,6 +144,16 @@ public class FurnaceWarden extends Monster {
 	}
 
 	/** 보스 바에 보이는 제목 (시험용). */
+	@Override
+	public BossParty party() {
+		return party;
+	}
+
+	/** 한 번에 까는 화염 장판 수 (인원수, 3 ~ 6). */
+	public int maxRings() {
+		return Mth.clamp(party.size(), MIN_RINGS, MAX_RINGS);
+	}
+
 	public Component bossBarName() {
 		return bossEvent.getName();
 	}
@@ -163,7 +180,7 @@ public class FurnaceWarden extends Monster {
 			case FIRE_RINGS -> {
 				rings.clear();
 				for (Player player : level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(20.0), p -> !p.isSpectator() && !p.isCreative())) {
-					if (rings.size() < MAX_RINGS) {
+					if (rings.size() < maxRings()) {
 						rings.add(player.position());
 					}
 				}
@@ -519,6 +536,33 @@ public class FurnaceWarden extends Monster {
 			playSound(SoundEvents.RAVAGER_HURT, 1.0F, 0.6F);
 		}
 		return hurt;
+	}
+
+	/** 실제로 깎인 체력을 공격한 플레이어에게 센다 (죽기 전에 불리므로 마지막 일격도 들어간다). */
+	@Override
+	protected void actuallyHurt(ServerLevel level, DamageSource source, float damage) {
+		float before = getHealth();
+		super.actuallyHurt(level, source, damage);
+		party.record(source.getEntity(), before - getHealth());
+	}
+
+	/** 심장은 전리품 표가 아니라 기여자 각자에게 준다. */
+	@Override
+	protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
+		super.dropCustomDeathLoot(level, source, killedByPlayer);
+		party.giveKeyItem(level, this, ModItems.WARDEN_HEART);
+	}
+
+	@Override
+	protected void addAdditionalSaveData(ValueOutput output) {
+		super.addAdditionalSaveData(output);
+		party.save(output);
+	}
+
+	@Override
+	protected void readAdditionalSaveData(ValueInput input) {
+		super.readAdditionalSaveData(input);
+		party.load(input);
 	}
 
 	@Override

@@ -416,3 +416,17 @@ Sonnet 4기가 각자 작업 트리에서 고치고 `./gradlew build`로 확인�
 - 2단계로 올린 것: 없음 (같은 문제로 테스트가 연속 실패한 적 없음).
 - 2단계 후보 (주인 결정 필요): B6 엔더 채널 소유자, D6 + A10 인원수 보스 체력 · 기여자 전리품, C2 JEI 플러그인, A5 굴착기 쓰레기 버리기.
 - 보류 (실테스트 뒤 판단): A9 해머 근접 피해, D4 기둥 공략 대응, D9 방치된 보스 회복, D12 패턴 추가.
+
+## 5. 2단계 후보 구현 (2026-11-04)
+주인이 "실테스트 먼저, 그동안 고도화"를 고른 뒤, 1.5단계에서 넘긴 2단계 후보 넷을 기본값으로 구현했다. 숫자 · 범위는 ROADMAP "2단계"에 모았고 실테스트 뒤 다시 정한다.
+
+| 후보 | 고른 기본값 | 고친 곳 | 시험 |
+|---|---|---|---|
+| D6 + A10 보스 인원 | 체력 × min(3, 1 + 0.5(n−1)), 장판 3~6, 졸개 3 + (n−1)/3, 5% 이상 기여자 각자 핵 · 심장 | `boss/BossParty`(새), `PartyBoss`(새), `RustyGuardian`, `FurnaceWarden`, `GuardianAltarBlock`, 전리품 표 2개 | `SanupcraftStage2GameTest` 5개 |
+| A5 굴착기 쓰레기 | 태그 `quarry_junk`, 기본 켜짐, 웅크리고 빈손 우클릭으로 끄기 | `mining/QuarryBlockEntity`, `QuarryBlock`, `ModMining`, 태그 | 1개 (+ 기존 2개는 버림 끄고 돌림) |
+| B6 엔더 채널 | 최소 안전판: 놓은 사람 = 주인, 잠그면 주인 · OP만 열기 · 채널 바꾸기 (기본 열림) | `logistics/EnderLinkBlock`, `EnderLinkBlockEntity` | 1개 |
+| C2 JEI | 기계 5종 화면 · 기계 블록이 촉매 · 부산물 확률 · 처리 시간 | `client/jei`(새), `build.gradle`(compileOnly), `fabric.mod.json`(`jei_mod_plugin`) | 클라이언트 시험 로그 "기계 레시피 19개" |
+
+- `./gradlew runGameTest`: **94개 전부 통과** (전: 87).
+- `runClientGameTest` + 편의 모드 11개: 통과, JEI 플러그인 오류 없음.
+- 남은 보류: A9 · D4 · D9 · D12 (실테스트 뒤).

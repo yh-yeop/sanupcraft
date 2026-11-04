@@ -20,6 +20,9 @@
 		],
 		"client": [
 			"io.github.yhyeop.sanupcraft.client.SanupcraftClient"
+		],
+		"jei_mod_plugin": [
+			"io.github.yhyeop.sanupcraft.client.jei.SanupcraftJeiPlugin"
 		]
 	},
 	"depends": {
@@ -27,5 +30,8 @@
 		"minecraft": "~26.3",
 		"java": ">=25",
 		"fabric-api": "*"
+	},
+	"suggests": {
+		"jei": "*"
 	}
 }

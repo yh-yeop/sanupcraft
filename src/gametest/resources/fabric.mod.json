@@ -13,7 +13,8 @@
 			"io.github.yhyeop.sanupcraft.test.SanupcraftFixFactoryGameTest",
 			"io.github.yhyeop.sanupcraft.test.SanupcraftFixLogisticsGameTest",
 			"io.github.yhyeop.sanupcraft.test.SanupcraftFixBossGameTest",
-			"io.github.yhyeop.sanupcraft.test.SanupcraftFixGuideGameTest"
+			"io.github.yhyeop.sanupcraft.test.SanupcraftFixGuideGameTest",
+			"io.github.yhyeop.sanupcraft.test.SanupcraftStage2GameTest"
 		],
 		"fabric-client-gametest": [
 			"io.github.yhyeop.sanupcraft.test.SanupcraftClientGameTest"

@@ -4,6 +4,9 @@ import java.util.Set;
 
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -22,6 +25,9 @@ public final class ModMining {
 
 	public static final BlockEntityType<QuarryBlockEntity> QUARRY_BLOCK_ENTITY = Registry.register(
 			BuiltInRegistries.BLOCK_ENTITY_TYPE, Sanupcraft.id("steam_quarry"), new BlockEntityType<>(QuarryBlockEntity::new, Set.of(STEAM_QUARRY)));
+
+	/** 굴착기가 (쓰레기 버림이 켜져 있으면) 버리는 흔한 돌 · 흙. 데이터팩으로 바꿀 수 있다. */
+	public static final TagKey<Item> QUARRY_JUNK = TagKey.create(Registries.ITEM, Sanupcraft.id("quarry_junk"));
 
 	private ModMining() {
 	}

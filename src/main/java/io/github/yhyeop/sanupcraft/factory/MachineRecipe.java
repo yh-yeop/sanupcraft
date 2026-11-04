@@ -91,6 +91,18 @@ public class MachineRecipe implements Recipe<MachineInput> {
 		return count;
 	}
 
+	public Ingredient ingredient() {
+		return ingredient;
+	}
+
+	public Optional<Ingredient> ingredient2() {
+		return ingredient2;
+	}
+
+	public int count2() {
+		return count2;
+	}
+
 	public boolean hasSecondIngredient() {
 		return ingredient2.isPresent();
 	}
@@ -172,7 +184,7 @@ public class MachineRecipe implements Recipe<MachineInput> {
 		return ModMachines.RECIPE_BOOK_CATEGORY;
 	}
 
-	static MapCodec<MachineRecipe> codec(MachineKind kind) {
+	public static MapCodec<MachineRecipe> codec(MachineKind kind) {
 		return RecordCodecBuilder.mapCodec(i -> i.group(
 				Recipe.CommonInfo.MAP_CODEC.forGetter(r -> r.commonInfo),
 				Ingredient.CODEC.fieldOf("ingredient").forGetter(r -> r.ingredient),

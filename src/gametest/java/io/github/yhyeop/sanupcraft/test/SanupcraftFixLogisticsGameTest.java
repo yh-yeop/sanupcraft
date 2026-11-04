@@ -109,6 +109,7 @@ public class SanupcraftFixLogisticsGameTest {
 		helper.setBlock(quarryPos.below(), Blocks.STONE);
 		helper.setBlock(quarryPos, ModMining.STEAM_QUARRY);
 		QuarryBlockEntity quarry = helper.getBlockEntity(quarryPos, QuarryBlockEntity.class);
+		quarry.setVoidJunk(false); // 돌도 남은 것으로 쌓이게
 		quarry.acceptSteam(QuarryBlockEntity.STEAM_CAPACITY);
 		AtomicBoolean removed = new AtomicBoolean();
 		helper.succeedWhen(() -> {

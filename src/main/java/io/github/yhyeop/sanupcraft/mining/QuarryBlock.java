@@ -22,7 +22,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
 
-/** 증기 굴착기. 증기 파이프를 잇고 위에 상자(또는 깔때기 · 벨트)를 둔다. 빈손 우클릭: 상태. */
+/** 증기 굴착기. 증기 파이프를 잇고 위에 상자(또는 깔때기 · 벨트)를 둔다. 빈손 우클릭: 상태, 웅크리고 빈손 우클릭: 쓰레기 버림 켜기 · 끄기. */
 public class QuarryBlock extends BaseEntityBlock {
 	public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
 
@@ -45,6 +45,12 @@ public class QuarryBlock extends BaseEntityBlock {
 
 	@Override
 	protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
+		if (!level.isClientSide() && level.getBlockEntity(pos) instanceof QuarryBlockEntity quarry && player.isSecondaryUseActive()) {
+			quarry.setVoidJunk(!quarry.voidsJunk());
+			player.sendOverlayMessage(Component.translatable(quarry.voidsJunk()
+					? "block.sanupcraft.steam_quarry.void_on" : "block.sanupcraft.steam_quarry.void_off"));
+			return InteractionResult.SUCCESS;
+		}
 		if (!level.isClientSide() && level.getBlockEntity(pos) instanceof QuarryBlockEntity quarry) {
 			// 시작 전에는 layer가 0이라 첫 층(굴착기 바로 아래)을 대신 보여 준다
 			int layer = quarry.started() ? quarry.layer() : pos.getY() - 1;
@@ -57,6 +63,9 @@ public class QuarryBlock extends BaseEntityBlock {
 				case FINISHED -> Component.translatable("block.sanupcraft.steam_quarry.finished", layer, quarry.mined(), steam, capacity);
 				case RUNNING -> Component.translatable("block.sanupcraft.steam_quarry.status", layer, quarry.mined(), steam, capacity);
 			};
+			if (quarry.voidsJunk() && quarry.voided() > 0) {
+				message = message.copy().append(" · ").append(Component.translatable("block.sanupcraft.steam_quarry.voided", quarry.voided()));
+			}
 			player.sendOverlayMessage(message);
 		}
 		return InteractionResult.SUCCESS;

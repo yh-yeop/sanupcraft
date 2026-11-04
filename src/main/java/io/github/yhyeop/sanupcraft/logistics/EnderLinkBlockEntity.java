@@ -5,12 +5,17 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+
+import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.permissions.Permissions;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.Containers;
@@ -34,6 +39,8 @@ import net.minecraft.world.level.storage.ValueOutput;
  *   <li>송신기: 깔때기 · 벨트가 넣는 아이템을 같은 채널의 수신기로 보낸다. 받을 수신기가 없으면 받지 않는다.</li>
  *   <li>수신기: 9칸 상자. 우클릭으로 열고, 깔때기로 뽑아 갈 수 있다.</li>
  * </ul>
+ * 잠금: 놓은 사람(주인)이 웅크리고 빈손 우클릭으로 잠그면 주인 · OP만 수신기를 열고 채널을 바꾼다 (기본 열림).
+ * 깔때기 · 송신기를 통한 자동 운반은 잠금과 상관없이 그대로 돈다.
  */
 public class EnderLinkBlockEntity extends BaseContainerBlockEntity {
 	public static final int RECEIVER_SLOTS = 9;
@@ -45,6 +52,9 @@ public class EnderLinkBlockEntity extends BaseContainerBlockEntity {
 	private DyeColor channel = DyeColor.WHITE;
 	private NonNullList<ItemStack> items;
 	private boolean registered;
+	private @Nullable UUID owner;
+	private String ownerName = "";
+	private boolean locked;
 
 	public EnderLinkBlockEntity(BlockPos pos, BlockState state) {
 		super(ModLogistics.ENDER_LINK_BLOCK_ENTITY, pos, state);
@@ -65,6 +75,43 @@ public class EnderLinkBlockEntity extends BaseContainerBlockEntity {
 		channel = color;
 		setChanged();
 		register();
+	}
+
+	public @Nullable UUID owner() {
+		return owner;
+	}
+
+	public String ownerName() {
+		return ownerName;
+	}
+
+	public void setOwner(Player player) {
+		owner = player.getUUID();
+		ownerName = player.getGameProfile().name();
+		setChanged();
+	}
+
+	public boolean isLocked() {
+		return locked;
+	}
+
+	public void setLocked(boolean value) {
+		locked = value;
+		setChanged();
+	}
+
+	public boolean isOwner(Player player) {
+		return owner != null && owner.equals(player.getUUID());
+	}
+
+	/** 잠금을 켜고 끌 수 있는가: 주인, OP, 또는 주인이 없을 때 (처음 잠그는 사람이 주인이 된다). */
+	public boolean canManage(Player player) {
+		return owner == null || isOwner(player) || player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER);
+	}
+
+	/** 열기 · 채널 바꾸기를 할 수 있는가. 잠기지 않았으면 누구나. */
+	public boolean canUse(Player player) {
+		return !locked || canManage(player);
 	}
 
 	public static void serverTick(Level level, BlockPos pos, BlockState state, EnderLinkBlockEntity link) {
@@ -224,7 +271,7 @@ public class EnderLinkBlockEntity extends BaseContainerBlockEntity {
 
 	@Override
 	public boolean stillValid(Player player) {
-		return !sender && Container.stillValidBlockEntity(this, player);
+		return !sender && canUse(player) && Container.stillValidBlockEntity(this, player);
 	}
 
 	@Override
@@ -233,6 +280,9 @@ public class EnderLinkBlockEntity extends BaseContainerBlockEntity {
 		items = NonNullList.withSize(getContainerSize(), ItemStack.EMPTY);
 		ContainerHelper.loadAllItems(input, items);
 		channel = input.read("channel", DyeColor.CODEC).orElse(DyeColor.WHITE);
+		owner = input.read("owner", UUIDUtil.CODEC).orElse(null);
+		ownerName = input.getStringOr("owner_name", "");
+		locked = input.getBooleanOr("locked", false);
 	}
 
 	@Override
@@ -240,5 +290,8 @@ public class EnderLinkBlockEntity extends BaseContainerBlockEntity {
 		super.saveAdditional(output);
 		ContainerHelper.saveAllItems(output, items);
 		output.store("channel", DyeColor.CODEC, channel);
+		output.storeNullable("owner", UUIDUtil.CODEC, owner);
+		output.putString("owner_name", ownerName);
+		output.putBoolean("locked", locked);
 	}
 }

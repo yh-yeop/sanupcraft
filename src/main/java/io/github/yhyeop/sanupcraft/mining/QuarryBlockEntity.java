@@ -24,6 +24,8 @@ import io.github.yhyeop.sanupcraft.power.SteamConsumer;
  * 증기 굴착기: 아래 9x9를 위층부터 한 층씩 바닥까지 캔다. 철 곡괭이로 캔 것처럼 떨어뜨린 것을 바로 위 상자 · 깔때기 · 벨트에 넣는다.
  * 위가 꽉 차거나 비어 있으면 멈춘다. 상자 · 화로처럼 블록 엔티티가 있는 블록과 액체 · 부술 수 없는 블록,
  * 철 곡괭이로는 드롭이 안 나오는 블록(흑요석 · 고대 잔해 등)은 건너뛴다.
+ * 쓰레기 버림(기본 켜짐)이면 {@link ModMining#QUARRY_JUNK}(돌 · 흙 · 심층암 · 네더랙 …)은 버리고 원석 · 광물만 올려 보낸다.
+ * 처리량이 분쇄기보다 훨씬 커서, 버리지 않으면 위 상자 · 벨트가 돌로 금방 막힌다.
  */
 public class QuarryBlockEntity extends BlockEntity implements SteamConsumer {
 	public static final int RADIUS = 4;
@@ -48,6 +50,9 @@ public class QuarryBlockEntity extends BlockEntity implements SteamConsumer {
 	private boolean started;
 	private int mined;
 	private boolean finished;
+	private boolean voidJunk = true;
+	/** 버린 아이템 수 (상태 표시용). */
+	private int voided;
 	/** 마지막으로 블록을 캔 게임 시각 (저장하지 않는다). */
 	private long lastMinedTick = Long.MIN_VALUE / 2;
 	private final List<ItemStack> pending = new ArrayList<>();
@@ -123,7 +128,13 @@ public class QuarryBlockEntity extends BlockEntity implements SteamConsumer {
 		if (state.requiresCorrectToolForDrops() && !TOOL.isCorrectToolForDrops(state)) {
 			return false;
 		}
-		pending.addAll(Block.getDrops(state, level, target, null, null, TOOL));
+		for (ItemStack drop : Block.getDrops(state, level, target, null, null, TOOL)) {
+			if (voidJunk && drop.is(ModMining.QUARRY_JUNK)) {
+				voided += drop.getCount();
+			} else {
+				pending.add(drop);
+			}
+		}
 		level.levelEvent(LevelEvent.PARTICLES_DESTROY_BLOCK, target, Block.getId(state));
 		level.removeBlock(target, false);
 		mined++;
@@ -182,6 +193,19 @@ public class QuarryBlockEntity extends BlockEntity implements SteamConsumer {
 		return started;
 	}
 
+	public boolean voidsJunk() {
+		return voidJunk;
+	}
+
+	public void setVoidJunk(boolean value) {
+		voidJunk = value;
+		setChanged();
+	}
+
+	public int voided() {
+		return voided;
+	}
+
 	/**
 	 * 지금 상태. 순서: 못 보낸 것이 남았거나 위에 상자 · 깔때기 · 벨트가 없으면 BLOCKED, 다 팠으면 FINISHED,
 	 * 아직 안 시작했으면 NOT_STARTED, 증기가 한 블록치보다 적으면 NO_STEAM, 아니면 RUNNING.
@@ -212,6 +236,8 @@ public class QuarryBlockEntity extends BlockEntity implements SteamConsumer {
 		started = input.getBooleanOr("started", false);
 		mined = input.getIntOr("mined", 0);
 		finished = input.getBooleanOr("finished", false);
+		voidJunk = input.getBooleanOr("void_junk", true);
+		voided = input.getIntOr("voided", 0);
 		pending.clear();
 		input.read("pending", ItemStack.CODEC.listOf()).ifPresent(pending::addAll);
 	}
@@ -225,6 +251,8 @@ public class QuarryBlockEntity extends BlockEntity implements SteamConsumer {
 		output.putBoolean("started", started);
 		output.putInt("mined", mined);
 		output.putBoolean("finished", finished);
+		output.putBoolean("void_junk", voidJunk);
+		output.putInt("voided", voided);
 		output.store("pending", ItemStack.CODEC.listOf(), pending);
 	}
 }

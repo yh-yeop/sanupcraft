@@ -6,15 +6,6 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "sanupcraft:warden_heart"
-        }
-      ]
-    },
-    {
-      "rolls": 1,
-      "entries": [
-        {
-          "type": "minecraft:item",
           "name": "sanupcraft:core_shard",
           "modifier": {
             "type": "minecraft:set_count",

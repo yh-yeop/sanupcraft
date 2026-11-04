@@ -9,6 +9,12 @@ repositories {
 	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
 	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
 	// for more information about repositories.
+	maven {
+		// JEI API (기계 레시피를 JEI에 띄우는 플러그인용. 실행에는 필요 없다)
+		name = "BlameJared"
+		url = "https://maven.blamejared.com/"
+		content { includeGroup "mezz.jei" }
+	}
 }
 
 loom {
@@ -29,6 +35,9 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+	// JEI는 모드팩에 들어가는 선택 모드. API만 컴파일에 쓰고 jar에는 넣지 않는다
+	compileOnly "mezz.jei:jei-${project.minecraft_version}-fabric-api:${project.jei_version}"
 }
 
 processResources {

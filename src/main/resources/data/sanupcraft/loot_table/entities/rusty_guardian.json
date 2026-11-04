@@ -6,15 +6,6 @@
       "entries": [
         {
           "type": "minecraft:item",
-          "name": "sanupcraft:guardian_core"
-        }
-      ]
-    },
-    {
-      "rolls": 1,
-      "entries": [
-        {
-          "type": "minecraft:item",
           "name": "sanupcraft:iron_plate",
           "modifier": {
             "type": "minecraft:set_count",

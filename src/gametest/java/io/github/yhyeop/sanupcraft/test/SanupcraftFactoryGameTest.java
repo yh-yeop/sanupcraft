@@ -155,6 +155,7 @@ public class SanupcraftFactoryGameTest {
 		helper.setBlock(quarryPos, ModMining.STEAM_QUARRY);
 		helper.setBlock(quarryPos.above(), Blocks.CHEST);
 		QuarryBlockEntity quarry = helper.getBlockEntity(quarryPos, QuarryBlockEntity.class);
+		quarry.setVoidJunk(false); // 돌도 올려 보내게 (버림은 SanupcraftStage2GameTest)
 		quarry.acceptSteam(QuarryBlockEntity.STEAM_CAPACITY);
 		ChestBlockEntity chest = helper.getBlockEntity(quarryPos.above(), ChestBlockEntity.class);
 		helper.succeedWhen(() -> {
