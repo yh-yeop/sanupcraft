@@ -122,7 +122,7 @@ python tools/make_mrpack.py build/libs/sanupcraft-0.1.0.jar 0.1.0 --download bui
 ### 릴리스 만들기
 
 ```bash
-git tag v0.1.0-beta.1 && git push origin v0.1.0-beta.1
+git tag v0.2.0-beta.1 && git push origin v0.2.0-beta.1
 ```
 
 `v*` 태그를 올리면 Actions가 빌드 · GameTest 후 jar · mrpack · `.sha256`을 릴리스에 올린다. 하이픈이 든 태그는 프리릴리스(테스트용). 버전은 태그에서 따온다.
