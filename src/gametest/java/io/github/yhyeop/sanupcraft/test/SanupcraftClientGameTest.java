@@ -34,6 +34,13 @@ public class SanupcraftClientGameTest implements FabricClientGameTest {
 			TestServerContext server = singleplayer.getServer();
 			singleplayer.getConnection().waitForChunksRender();
 
+			// 새 월드: 들어오자마자 "산업크래프트" 길잡이 탭이 보여야 한다 (루트는 접속하면 달성)
+			context.waitTicks(20);
+			context.setScreen(() -> new AdvancementsScreen(context.computeOnClient(client -> client.getConnection().getAdvancements())));
+			context.waitTicks(5);
+			context.takeScreenshot("sanupcraft-guide-new-world");
+			context.setScreen(() -> null);
+
 			// 플레이어는 (0, ~, 0)에서 북쪽(-z)을 본다. 앞 4칸에 기계 줄, 그 뒤에 갑옷 거치대와 보스.
 			server.runCommand("gamemode creative @a");
 			server.runCommand("time set noon");

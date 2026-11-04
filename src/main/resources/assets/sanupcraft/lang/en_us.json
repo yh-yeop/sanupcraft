@@ -42,7 +42,7 @@
   "commands.sanupcraft.playtest.done": "Playtest stage: %s",
   "commands.sanupcraft.playtest.unknown": "Unknown stage. Use one of: %s",
   "advancements.sanupcraft.root.title": "Sanupcraft",
-  "advancements.sanupcraft.root.description": "Mine raw iron. A Crusher (3 iron ingots, 2 flint, 4 cobblestone) turns each into 2 Iron Dust.",
+  "advancements.sanupcraft.root.description": "Factories open boss fights, bosses open factories. Start by mining iron.",
   "advancements.sanupcraft.crusher.title": "Double the Iron",
   "advancements.sanupcraft.crusher.description": "Smelt Iron Dust in a furnace. Next: a Press (with a piston) turns ingots into plates.",
   "advancements.sanupcraft.iron_plate.title": "Flat Out",
@@ -66,5 +66,7 @@
   "advancements.sanupcraft.shulker_shell.title": "Shell Game",
   "advancements.sanupcraft.shulker_shell.description": "Shulker shells from End cities make Ender Senders and Receivers.",
   "advancements.sanupcraft.ender_link.title": "Across Dimensions",
-  "advancements.sanupcraft.ender_link.description": "Dye a sender and a receiver the same color: items cross dimensions. Nether mine → Overworld factory."
+  "advancements.sanupcraft.ender_link.description": "Dye a sender and a receiver the same color: items cross dimensions. Nether mine → Overworld factory.",
+  "advancements.sanupcraft.raw_iron.title": "Iron Age",
+  "advancements.sanupcraft.raw_iron.description": "Mine raw iron. A Crusher (3 iron ingots, 2 flint, 4 cobblestone) turns each into 2 Iron Dust."
 }
