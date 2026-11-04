@@ -24,7 +24,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 
 /**
- * 엔더 송신기 · 수신기. 염료를 들고 우클릭하면 그 색이 채널이 된다. 빈손 우클릭: 송신기는 채널을 보여 주고, 수신기는 연다.
+ * 엔더 송신기 · 수신기. 염료를 들고 우클릭하면 그 색이 채널이 된다. 빈손 우클릭: 송신기는 채널과 이어진 수신기 수를 보여 주고,
+ * 수신기는 연다 (웅크리고 우클릭하면 채널을 보여 준다).
  */
 public class EnderLinkBlock extends BaseEntityBlock {
 	private final boolean sender;
@@ -65,6 +66,12 @@ public class EnderLinkBlock extends BaseEntityBlock {
 	protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
 		if (!level.isClientSide() && level.getBlockEntity(pos) instanceof EnderLinkBlockEntity link) {
 			if (link.isSender()) {
+				int count = link.linkedReceivers();
+				Component channel = colorName(link);
+				player.sendOverlayMessage(count > 0
+						? Component.translatable("block.sanupcraft.ender_link.sender_status", channel, count)
+						: Component.translatable("block.sanupcraft.ender_link.no_receiver", channel));
+			} else if (player.isSecondaryUseActive()) {
 				player.sendOverlayMessage(channelMessage(link));
 			} else {
 				player.openMenu(link);
@@ -74,7 +81,11 @@ public class EnderLinkBlock extends BaseEntityBlock {
 	}
 
 	private static Component channelMessage(EnderLinkBlockEntity link) {
-		return Component.translatable("block.sanupcraft.ender_link.channel", Component.translatable("color.minecraft." + link.channel().getName()));
+		return Component.translatable("block.sanupcraft.ender_link.channel", colorName(link));
+	}
+
+	private static Component colorName(EnderLinkBlockEntity link) {
+		return Component.translatable("color.minecraft." + link.channel().getName());
 	}
 
 	@Override

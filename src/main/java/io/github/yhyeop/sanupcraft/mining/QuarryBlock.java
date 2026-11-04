@@ -46,8 +46,18 @@ public class QuarryBlock extends BaseEntityBlock {
 	@Override
 	protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
 		if (!level.isClientSide() && level.getBlockEntity(pos) instanceof QuarryBlockEntity quarry) {
-			String key = quarry.finished() ? "block.sanupcraft.steam_quarry.finished" : "block.sanupcraft.steam_quarry.status";
-			player.sendOverlayMessage(Component.translatable(key, quarry.layer(), quarry.mined(), quarry.steam(), QuarryBlockEntity.STEAM_CAPACITY));
+			// 시작 전에는 layer가 0이라 첫 층(굴착기 바로 아래)을 대신 보여 준다
+			int layer = quarry.started() ? quarry.layer() : pos.getY() - 1;
+			int steam = quarry.steam();
+			int capacity = QuarryBlockEntity.STEAM_CAPACITY;
+			Component message = switch (quarry.status()) {
+				case NOT_STARTED -> Component.translatable("block.sanupcraft.steam_quarry.not_started", steam, capacity);
+				case NO_STEAM -> Component.translatable("block.sanupcraft.steam_quarry.no_steam", layer, quarry.mined(), steam, capacity);
+				case BLOCKED -> Component.translatable("block.sanupcraft.steam_quarry.blocked", layer, quarry.mined());
+				case FINISHED -> Component.translatable("block.sanupcraft.steam_quarry.finished", layer, quarry.mined(), steam, capacity);
+				case RUNNING -> Component.translatable("block.sanupcraft.steam_quarry.status", layer, quarry.mined(), steam, capacity);
+			};
+			player.sendOverlayMessage(message);
 		}
 		return InteractionResult.SUCCESS;
 	}

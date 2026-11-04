@@ -7,6 +7,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
+import net.minecraft.world.Containers;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
@@ -21,7 +22,8 @@ import io.github.yhyeop.sanupcraft.power.SteamConsumer;
 
 /**
  * 증기 굴착기: 아래 9x9를 위층부터 한 층씩 바닥까지 캔다. 철 곡괭이로 캔 것처럼 떨어뜨린 것을 바로 위 상자 · 깔때기 · 벨트에 넣는다.
- * 위가 꽉 차거나 비어 있으면 멈춘다. 상자 · 화로처럼 블록 엔티티가 있는 블록과 액체 · 부술 수 없는 블록은 건너뛴다.
+ * 위가 꽉 차거나 비어 있으면 멈춘다. 상자 · 화로처럼 블록 엔티티가 있는 블록과 액체 · 부술 수 없는 블록,
+ * 철 곡괭이로는 드롭이 안 나오는 블록(흑요석 · 고대 잔해 등)은 건너뛴다.
  */
 public class QuarryBlockEntity extends BlockEntity implements SteamConsumer {
 	public static final int RADIUS = 4;
@@ -32,6 +34,13 @@ public class QuarryBlockEntity extends BlockEntity implements SteamConsumer {
 	/** 한 번에 빈 칸을 이만큼까지 건너뛴다 (공기 층에서 멈추지 않게). */
 	private static final int MAX_SCAN = 81;
 	private static final ItemStack TOOL = new ItemStack(Items.IRON_PICKAXE);
+	/** 마지막으로 블록을 캔 뒤 이만큼 틱 동안은 증기가 잠깐 모자라도 가동 표시(POWERED)를 유지한다 (깜빡임 방지). */
+	private static final int POWERED_HOLD_TICKS = 20;
+
+	/** 굴착기 상태 (빈손 우클릭 표시용). */
+	public enum Status {
+		NOT_STARTED, RUNNING, NO_STEAM, BLOCKED, FINISHED
+	}
 
 	private int steam;
 	private int cursor;
@@ -39,6 +48,8 @@ public class QuarryBlockEntity extends BlockEntity implements SteamConsumer {
 	private boolean started;
 	private int mined;
 	private boolean finished;
+	/** 마지막으로 블록을 캔 게임 시각 (저장하지 않는다). */
+	private long lastMinedTick = Long.MIN_VALUE / 2;
 	private final List<ItemStack> pending = new ArrayList<>();
 
 	public QuarryBlockEntity(BlockPos pos, BlockState state) {
@@ -46,7 +57,7 @@ public class QuarryBlockEntity extends BlockEntity implements SteamConsumer {
 	}
 
 	public static void serverTick(ServerLevel level, BlockPos pos, BlockState state, QuarryBlockEntity quarry) {
-		boolean running = quarry.work(level, pos);
+		boolean running = quarry.work(level, pos) || level.getGameTime() - quarry.lastMinedTick < POWERED_HOLD_TICKS;
 		if (state.getValue(QuarryBlock.POWERED) != running) {
 			level.setBlockAndUpdate(pos, state.setValue(QuarryBlock.POWERED, running));
 		}
@@ -77,6 +88,7 @@ public class QuarryBlockEntity extends BlockEntity implements SteamConsumer {
 			advance();
 			if (mine(level, target)) {
 				steam -= STEAM_PER_BLOCK;
+				lastMinedTick = level.getGameTime();
 				setChanged();
 				return true;
 			}
@@ -107,6 +119,10 @@ public class QuarryBlockEntity extends BlockEntity implements SteamConsumer {
 				|| level.getBlockEntity(target) != null || state.getBlock() instanceof QuarryBlock) {
 			return false;
 		}
+		// 철 곡괭이로는 드롭이 안 나오는 블록은 남긴다 (드롭 계산은 도구 등급을 안 보므로 직접 거른다)
+		if (state.requiresCorrectToolForDrops() && !TOOL.isCorrectToolForDrops(state)) {
+			return false;
+		}
 		pending.addAll(Block.getDrops(state, level, target, null, null, TOOL));
 		level.levelEvent(LevelEvent.PARTICLES_DESTROY_BLOCK, target, Block.getId(state));
 		level.removeBlock(target, false);
@@ -131,6 +147,18 @@ public class QuarryBlockEntity extends BlockEntity implements SteamConsumer {
 		return pending.isEmpty();
 	}
 
+	/** 굴착기가 사라질 때 아직 못 보낸 것은 그 자리에 떨군다. */
+	@Override
+	public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+		super.preRemoveSideEffects(pos, state);
+		if (level != null) {
+			for (ItemStack stack : pending) {
+				Containers.dropItemStack(level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stack);
+			}
+		}
+		pending.clear();
+	}
+
 	@Override
 	public int acceptSteam(int amount) {
 		int accepted = Math.min(amount, STEAM_CAPACITY - steam);
@@ -148,6 +176,27 @@ public class QuarryBlockEntity extends BlockEntity implements SteamConsumer {
 
 	public int layer() {
 		return layer;
+	}
+
+	public boolean started() {
+		return started;
+	}
+
+	/**
+	 * 지금 상태. 순서: 못 보낸 것이 남았거나 위에 상자 · 깔때기 · 벨트가 없으면 BLOCKED, 다 팠으면 FINISHED,
+	 * 아직 안 시작했으면 NOT_STARTED, 증기가 한 블록치보다 적으면 NO_STEAM, 아니면 RUNNING.
+	 */
+	public Status status() {
+		if (!pending.isEmpty() || level == null || HopperBlockEntity.getContainerAt(level, worldPosition.above()) == null) {
+			return Status.BLOCKED;
+		}
+		if (finished) {
+			return Status.FINISHED;
+		}
+		if (!started) {
+			return Status.NOT_STARTED;
+		}
+		return steam < STEAM_PER_BLOCK ? Status.NO_STEAM : Status.RUNNING;
 	}
 
 	public boolean finished() {

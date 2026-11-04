@@ -66,6 +66,7 @@ public class BoilerBlock extends BaseEntityBlock {
 		if (stack.is(Items.WATER_BUCKET)) {
 			if (!level.isClientSide()) {
 				if (!boiler.pourBucket()) {
+					player.sendOverlayMessage(Component.translatable("block.sanupcraft.boiler.water_full"));
 					return InteractionResult.FAIL;
 				}
 				player.setItemInHand(hand, ItemUtils.createFilledResult(stack, player, new ItemStack(Items.BUCKET)));
@@ -84,6 +85,7 @@ public class BoilerBlock extends BaseEntityBlock {
 					stack.shrink(move);
 					boiler.setChanged();
 				} else {
+					player.sendOverlayMessage(Component.translatable("block.sanupcraft.boiler.other_fuel"));
 					return InteractionResult.FAIL;
 				}
 			}
@@ -96,9 +98,24 @@ public class BoilerBlock extends BaseEntityBlock {
 	protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
 		if (!level.isClientSide() && level.getBlockEntity(pos) instanceof BoilerBlockEntity boiler) {
 			player.sendOverlayMessage(Component.translatable("block.sanupcraft.boiler.status",
-					boiler.water(), BoilerBlockEntity.WATER_CAPACITY, boiler.steam(), BoilerBlockEntity.STEAM_CAPACITY, boiler.fuelCount()));
+					boiler.water(), BoilerBlockEntity.WATER_CAPACITY, boiler.steam(), BoilerBlockEntity.STEAM_CAPACITY, boiler.fuelCount())
+					.append(" · ").append(Component.translatable(hint(boiler))));
 		}
 		return InteractionResult.SUCCESS;
+	}
+
+	/** 상태 줄 끝에 붙일 힌트 키: 가장 먼저 해결할 것 하나만 알려 준다. */
+	private static String hint(BoilerBlockEntity boiler) {
+		if (boiler.water() <= 0) {
+			return "block.sanupcraft.boiler.hint.no_water";
+		}
+		if (!boiler.isLit() && boiler.fuelCount() <= 0) {
+			return "block.sanupcraft.boiler.hint.no_fuel";
+		}
+		if (boiler.steam() >= BoilerBlockEntity.STEAM_CAPACITY) {
+			return "block.sanupcraft.boiler.hint.steam_full";
+		}
+		return "block.sanupcraft.boiler.hint.ok";
 	}
 
 	@Override

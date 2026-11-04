@@ -15,6 +15,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
+import io.github.yhyeop.sanupcraft.factory.MachineBlockEntity;
+
 /**
  * 벨트 한 칸. 모터가 {@link #power}로 잠깐씩 켜 준다.
  * 깔때기에게는 칸 하나짜리 상자로 보이고, 들어온 아이템을 벨트 위에 올려놓는다.
@@ -63,6 +65,11 @@ public class BeltBlockEntity extends BlockEntity implements Container {
 		return new AABB(pos.getX(), pos.getY() + 0.1, pos.getZ(), pos.getX() + 1, pos.getY() + BeltBlock.HEIGHT + 0.4, pos.getZ() + 1);
 	}
 
+	/** 이 벨트 칸 위에 올라타 움직일 것(아이템 · 밀리는 몹 · 플레이어)이 있는가. 모터가 빈 줄을 돌리지 않으려고 쓴다. */
+	public static boolean hasRider(Level level, BlockPos pos) {
+		return !level.getEntitiesOfClass(Entity.class, surface(pos), BeltBlockEntity::rides).isEmpty();
+	}
+
 	private static boolean rides(Entity entity) {
 		return entity.isAlive() && !entity.isSpectator() && !entity.isShiftKeyDown()
 				&& (entity instanceof ItemEntity || entity.isPushable() || entity instanceof Player);
@@ -81,7 +88,10 @@ public class BeltBlockEntity extends BlockEntity implements Container {
 		entity.setDeltaMovement(x, motion.y, z);
 	}
 
-	/** 벨트 끝까지 온 아이템을 앞의 상자 · 기계에 넣는다. 다 안 들어가면 남은 만큼 벨트에 남는다. */
+	/**
+	 * 벨트 끝까지 온 아이템을 앞의 상자 · 기계에 넣는다. 다 안 들어가면 남은 만큼 벨트에 남는다.
+	 * 앞이 기계이면 연료는 옆면(연료 칸) 먼저, 남으면 위(재료 칸)로 넣고, 연료가 아닌 것은 위로만 넣는다.
+	 */
 	private static void deliver(Level level, BlockPos pos, Direction facing, BlockPos front, ItemEntity item) {
 		double along = (item.getX() - (pos.getX() + 0.5)) * facing.getStepX() + (item.getZ() - (pos.getZ() + 0.5)) * facing.getStepZ();
 		if (along < 0.3) {
@@ -91,7 +101,17 @@ public class BeltBlockEntity extends BlockEntity implements Container {
 		if (target == null) {
 			return;
 		}
-		ItemStack rest = HopperBlockEntity.addItem(null, target, item.getItem().copy(), facing.getOpposite());
+		ItemStack rest = item.getItem().copy();
+		if (target instanceof MachineBlockEntity) {
+			if (MachineBlockEntity.isFuel(rest)) {
+				rest = HopperBlockEntity.addItem(null, target, rest, facing.getOpposite());
+			}
+			if (!rest.isEmpty()) {
+				rest = HopperBlockEntity.addItem(null, target, rest, Direction.UP);
+			}
+		} else {
+			rest = HopperBlockEntity.addItem(null, target, rest, facing.getOpposite());
+		}
 		if (rest.isEmpty()) {
 			item.discard();
 		} else {
