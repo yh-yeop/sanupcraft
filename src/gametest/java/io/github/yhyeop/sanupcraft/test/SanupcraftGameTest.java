@@ -55,8 +55,8 @@ public class SanupcraftGameTest {
 	}
 
 	@GameTest(maxTicks = 300)
-	public void assemblerTurnsPlateIntoGearPart(GameTestHelper helper) {
-		runMachine(helper, ModMachines.ASSEMBLER, ModItems.IRON_PLATE, ModItems.GEAR_PART, 1);
+	public void assemblerTurnsSteelPlateIntoTwoParts(GameTestHelper helper) {
+		runMachine(helper, ModMachines.ASSEMBLER, ModItems.STEEL_PLATE, ModItems.GEAR_PART, 2);
 	}
 
 	@GameTest(maxTicks = 300)
@@ -85,7 +85,7 @@ public class SanupcraftGameTest {
 		String[] ids = {
 				"crusher", "press", "assembler",
 				"crushing/raw_iron", "crushing/iron_ore", "pressing/iron_plate", "assembling/gear_part",
-				"iron_ingot_from_smelting_iron_dust",
+				"iron_ingot_from_smelting",
 				"steel_helmet", "steel_chestplate", "steel_leggings", "steel_boots", "steel_sword",
 				"guardian_summoner", "guardian_altar", "reinforced_machine_frame",
 		};

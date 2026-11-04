@@ -8,11 +8,16 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 
+import io.github.yhyeop.sanupcraft.Sanupcraft;
 import io.github.yhyeop.sanupcraft.factory.MachineMenu;
 
-/** 기계 화면. 칸 배치가 화로와 같아서 바닐라 화로 GUI를 그대로 쓴다 (텍스처는 게임에 들어 있는 것). */
+/**
+ * 기계 화면: 재료(합금로는 둘) · 연료 · 결과 · 부산물. 배경은 tools/make_textures.py가 만든 전용 텍스처,
+ * 불꽃 · 진행 화살표는 바닐라 화로 그림을 쓴다.
+ */
 public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
-	private static final Identifier TEXTURE = Identifier.withDefaultNamespace("textures/gui/container/furnace.png");
+	private static final Identifier TEXTURE = Sanupcraft.id("textures/gui/machine.png");
+	private static final Identifier ALLOY_TEXTURE = Sanupcraft.id("textures/gui/alloy_smelter.png");
 	private static final Identifier LIT_PROGRESS_SPRITE = Identifier.withDefaultNamespace("container/furnace/lit_progress");
 	private static final Identifier BURN_PROGRESS_SPRITE = Identifier.withDefaultNamespace("container/furnace/burn_progress");
 
@@ -31,7 +36,7 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
 		super.extractBackground(graphics, mouseX, mouseY, a);
 		int xo = leftPos;
 		int yo = topPos;
-		graphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, xo, yo, 0.0F, 0.0F, imageWidth, imageHeight, 256, 256);
+		graphics.blit(RenderPipelines.GUI_TEXTURED, menu.twoInputs() ? ALLOY_TEXTURE : TEXTURE, xo, yo, 0.0F, 0.0F, imageWidth, imageHeight, 256, 256);
 		if (menu.isLit()) {
 			int litHeight = Mth.ceil(menu.litProgress() * 13.0F) + 1;
 			graphics.blitSprite(RenderPipelines.GUI_TEXTURED, LIT_PROGRESS_SPRITE, 14, 14, 0, 14 - litHeight, xo + 56, yo + 36 + 14 - litHeight, 14, litHeight);

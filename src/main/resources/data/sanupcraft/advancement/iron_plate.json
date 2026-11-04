@@ -5,7 +5,7 @@
       "conditions": {
         "items": [
           {
-            "items": "sanupcraft:iron_plate"
+            "items": "sanupcraft:steel_plate"
           }
         ]
       }
@@ -13,7 +13,7 @@
   },
   "display": {
     "icon": {
-      "id": "sanupcraft:iron_plate"
+      "id": "sanupcraft:steel_plate"
     },
     "title": {
       "translate": "advancements.sanupcraft.iron_plate.title"
@@ -28,5 +28,5 @@
       "has"
     ]
   ],
-  "parent": "sanupcraft:crusher"
+  "parent": "sanupcraft:alloy"
 }

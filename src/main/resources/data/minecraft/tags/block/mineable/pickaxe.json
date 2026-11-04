@@ -9,6 +9,8 @@
     "sanupcraft:steam_pipe",
     "sanupcraft:heart_forge",
     "sanupcraft:ender_sender",
-    "sanupcraft:ender_receiver"
+    "sanupcraft:ender_receiver",
+    "sanupcraft:alloy_smelter",
+    "sanupcraft:steam_quarry"
   ]
 }

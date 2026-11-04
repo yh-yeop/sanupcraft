@@ -1,0 +1,10 @@
+{
+  "type": "sanupcraft:alloying",
+  "ingredient": "sanupcraft:iron_dust",
+  "result": {
+    "id": "sanupcraft:steel_ingot"
+  },
+  "ingredient2": "sanupcraft:coal_dust",
+  "count2": 2,
+  "time": 200
+}

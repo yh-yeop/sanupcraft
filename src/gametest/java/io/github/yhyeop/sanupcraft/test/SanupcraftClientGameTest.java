@@ -73,6 +73,10 @@ public class SanupcraftClientGameTest implements FabricClientGameTest {
 			server.runCommand("item replace entity @a inventory.3 with sanupcraft:press");
 			server.runCommand("item replace entity @a inventory.4 with sanupcraft:assembler");
 			server.runCommand("item replace entity @a inventory.5 with sanupcraft:guardian_altar");
+			String[] factory = {"copper_dust", "gold_dust", "coal_dust", "steel_ingot", "steel_plate", "steel_hammer", "steel_excavator", "alloy_smelter", "steam_quarry"};
+			for (int i = 0; i < factory.length; i++) {
+				server.runCommand("item replace entity @a inventory." + (9 + i) + " with sanupcraft:" + factory[i]);
+			}
 			server.runCommand("gamemode survival @a");
 			context.waitTicks(5);
 			context.setScreen(() -> new InventoryScreen(context.computeOnClient(client -> client.player)));
@@ -83,11 +87,28 @@ public class SanupcraftClientGameTest implements FabricClientGameTest {
 			// 기계 화면: 분쇄기를 보고 우클릭
 			server.runCommand("item replace entity @a hotbar.0 with minecraft:air");
 			server.runCommand("item replace entity @a weapon.mainhand with minecraft:air");
+			server.runCommand("item replace block -2 -60 -4 container.0 with minecraft:raw_iron 8");
+			server.runCommand("item replace block -2 -60 -4 container.2 with sanupcraft:iron_dust 6");
+			server.runCommand("item replace block -2 -60 -4 container.3 with sanupcraft:gold_dust 1");
 			context.getInput().lookAt(new BlockPos(-2, -60, -4));
 			context.waitTicks(2);
 			context.getInput().pressKey(options -> options.keyUse);
 			context.waitForScreen(MachineScreen.class);
 			context.takeScreenshot("sanupcraft-machine-screen");
+			context.setScreen(() -> null);
+
+			// 합금로 화면: 재료 두 칸 (철가루 · 석탄 가루) → 강철
+			server.runCommand("setblock -3 -60 -4 sanupcraft:alloy_smelter[facing=south]");
+			server.runCommand("item replace block -3 -60 -4 container.0 with sanupcraft:iron_dust 16");
+			server.runCommand("item replace block -3 -60 -4 container.4 with sanupcraft:coal_dust 32");
+			server.runCommand("item replace block -3 -60 -4 container.1 with minecraft:coal 8");
+			server.runCommand("item replace block -3 -60 -4 container.2 with sanupcraft:steel_ingot 3");
+			context.waitTicks(40);
+			context.getInput().lookAt(new BlockPos(-3, -60, -4));
+			context.waitTicks(2);
+			context.getInput().pressKey(options -> options.keyUse);
+			context.waitForScreen(MachineScreen.class);
+			context.takeScreenshot("sanupcraft-alloy-screen");
 			context.setScreen(() -> null);
 
 			m2Scene(context, server, singleplayer);

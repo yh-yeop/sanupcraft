@@ -4,5 +4,11 @@
   "result": {
     "id": "minecraft:sand"
   },
+  "byproduct": {
+    "item": {
+      "id": "minecraft:flint"
+    },
+    "chance": 0.25
+  },
   "time": 100
 }

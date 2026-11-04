@@ -1,0 +1,32 @@
+{
+  "parent": "sanupcraft:belt_motor",
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:steam_quarry"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:steam_quarry"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.quarry.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.quarry.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ]
+}

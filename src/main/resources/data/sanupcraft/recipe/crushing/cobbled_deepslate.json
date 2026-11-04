@@ -1,0 +1,14 @@
+{
+  "type": "sanupcraft:crushing",
+  "ingredient": "minecraft:cobbled_deepslate",
+  "result": {
+    "id": "minecraft:gravel"
+  },
+  "byproduct": {
+    "item": {
+      "id": "minecraft:gold_nugget"
+    },
+    "chance": 0.1
+  },
+  "time": 100
+}

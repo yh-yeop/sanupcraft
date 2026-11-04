@@ -1,0 +1,8 @@
+{
+  "type": "sanupcraft:pressing",
+  "ingredient": "sanupcraft:steel_ingot",
+  "result": {
+    "id": "sanupcraft:steel_plate"
+  },
+  "time": 100
+}

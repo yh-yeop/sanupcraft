@@ -2,12 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "key": {
-    "G": "sanupcraft:gear_part"
+    "S": "sanupcraft:steel_ingot"
   },
   "pattern": [
-    "G G",
-    "GGG",
-    "GGG"
+    "S S",
+    "SSS",
+    "SSS"
   ],
   "result": {
     "id": "sanupcraft:steel_chestplate"

@@ -33,6 +33,7 @@ import io.github.yhyeop.sanupcraft.factory.ModMachines;
 import io.github.yhyeop.sanupcraft.gear.HeatproofGear;
 import io.github.yhyeop.sanupcraft.gear.SteelGear;
 import io.github.yhyeop.sanupcraft.logistics.ModLogistics;
+import io.github.yhyeop.sanupcraft.mining.ModMining;
 import io.github.yhyeop.sanupcraft.power.ModPower;
 
 /**
@@ -43,9 +44,9 @@ public final class PlaytestCommand {
 	/** 실테스트 단계. 순서가 곧 진행 순서. */
 	public enum Stage {
 		START("바닐라 초반 → 분쇄기 만들기", null, PlaytestCommand::kitStart),
-		FACTORY("공장 1단계 라인", null, PlaytestCommand::kitFactory),
+		FACTORY("공장 1단계: 분쇄 · 합금 · 강철", null, PlaytestCommand::kitFactory),
 		BOSS1("녹슨 수호자", null, PlaytestCommand::kitBoss1),
-		STEAM("보일러 · 파이프 · 벨트", null, PlaytestCommand::kitSteam),
+		STEAM("보일러 · 파이프 · 벨트 · 굴착기", null, PlaytestCommand::kitSteam),
 		NETHER("내열 한 벌로 네더 탐험", Level.NETHER, PlaytestCommand::kitNether),
 		BOSS2("네더 제단 · 용광로 파수꾼", Level.NETHER, PlaytestCommand::kitBoss2),
 		FORGE("심장 제련로 · 고대 잔해", Level.NETHER, PlaytestCommand::kitForge),
@@ -136,19 +137,25 @@ public final class PlaytestCommand {
 
 	private static void kitFactory(ServerPlayer p) {
 		give(p, ModMachines.CRUSHER.asItem(), 1);
+		give(p, ModMachines.ALLOY_SMELTER.asItem(), 1);
 		give(p, ModMachines.PRESS.asItem(), 1);
 		give(p, ModMachines.ASSEMBLER.asItem(), 1);
 		give(p, Items.FURNACE, 2);
-		give(p, Items.HOPPER, 8);
+		give(p, Items.HOPPER, 10);
 		give(p, Items.CHEST, 4);
 		give(p, Items.RAW_IRON, 64);
+		give(p, Items.RAW_COPPER, 32);
 		give(p, Items.COAL, 64);
+		give(p, Items.COAL, 64);
+		give(p, Items.COBBLESTONE, 64);
+		give(p, Items.GRAVEL, 32);
 		food(p);
 	}
 
 	private static void kitBoss1(ServerPlayer p) {
 		equip(p, SteelGear.STEEL_HELMET, SteelGear.STEEL_CHESTPLATE, SteelGear.STEEL_LEGGINGS, SteelGear.STEEL_BOOTS);
 		give(p, SteelGear.STEEL_SWORD, 1);
+		give(p, SteelGear.STEEL_HAMMER, 1);
 		give(p, Items.SHIELD, 1);
 		give(p, ModBoss.GUARDIAN_ALTAR.asItem(), 1);
 		give(p, ModBoss.GUARDIAN_SUMMONER, 4);
@@ -164,6 +171,7 @@ public final class PlaytestCommand {
 		give(p, ModLogistics.BELT.asItem(), 32);
 		give(p, ModMachines.CRUSHER.asItem(), 1);
 		give(p, ModMachines.ASSEMBLER.asItem(), 1);
+		give(p, ModMining.STEAM_QUARRY.asItem(), 1);
 		give(p, Items.HOPPER, 8);
 		give(p, Items.CHEST, 4);
 		give(p, Items.RAW_IRON, 64);

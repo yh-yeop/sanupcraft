@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "sanupcraft:iron_plate",
+    "F": "minecraft:furnace",
+    "B": "minecraft:blast_furnace"
+  },
+  "pattern": [
+    "PPP",
+    "FBF",
+    "PPP"
+  ],
+  "result": {
+    "id": "sanupcraft:alloy_smelter"
+  }
+}

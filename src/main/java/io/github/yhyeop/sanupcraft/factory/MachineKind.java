@@ -13,7 +13,9 @@ public enum MachineKind {
 	PRESS("pressing"),
 	ASSEMBLER("assembling"),
 	/** 심장 제련로 (3단계): 고대 잔해 → 네더라이트 파편 2, 블레이즈 막대 → 가루 4. */
-	FORGE("forging");
+	FORGE("forging"),
+	/** 합금로: 재료 두 가지 → 합금 (철가루 + 석탄 가루 → 강철). */
+	ALLOY("alloying");
 
 	private final String recipeName;
 	private RecipeType<MachineRecipe> recipeType;
@@ -21,6 +23,11 @@ public enum MachineKind {
 
 	MachineKind(String recipeName) {
 		this.recipeName = recipeName;
+	}
+
+	/** 재료 칸이 두 개인 기계인가. */
+	public boolean twoInputs() {
+		return this == ALLOY;
 	}
 
 	public RecipeType<MachineRecipe> recipeType() {

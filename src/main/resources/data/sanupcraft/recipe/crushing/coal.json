@@ -1,0 +1,9 @@
+{
+  "type": "sanupcraft:crushing",
+  "ingredient": "minecraft:coal",
+  "result": {
+    "id": "sanupcraft:coal_dust",
+    "count": 2
+  },
+  "time": 100
+}

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "powered=false": {
+      "model": "sanupcraft:block/steam_quarry"
+    },
+    "powered=true": {
+      "model": "sanupcraft:block/steam_quarry_on"
+    }
+  }
+}

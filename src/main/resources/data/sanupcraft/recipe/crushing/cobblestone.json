@@ -4,5 +4,11 @@
   "result": {
     "id": "minecraft:gravel"
   },
+  "byproduct": {
+    "item": {
+      "id": "minecraft:iron_nugget"
+    },
+    "chance": 0.1
+  },
   "time": 100
 }

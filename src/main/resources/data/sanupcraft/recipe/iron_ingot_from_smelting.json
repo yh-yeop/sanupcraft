@@ -3,7 +3,6 @@
   "category": "misc",
   "cookingtime": 200,
   "experience": 0.5,
-  "group": "iron_ingot",
   "ingredient": "sanupcraft:iron_dust",
   "result": {
     "id": "minecraft:iron_ingot"

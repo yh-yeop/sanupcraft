@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "sanupcraft:steel_plate",
+    "G": "sanupcraft:gear_part",
+    "F": "sanupcraft:reinforced_machine_frame",
+    "D": "sanupcraft:steel_hammer"
+  },
+  "pattern": [
+    "PGP",
+    "GFG",
+    "PDP"
+  ],
+  "result": {
+    "id": "sanupcraft:steam_quarry"
+  }
+}

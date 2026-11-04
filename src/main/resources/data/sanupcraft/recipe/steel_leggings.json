@@ -2,12 +2,12 @@
   "type": "minecraft:crafting_shaped",
   "category": "equipment",
   "key": {
-    "G": "sanupcraft:gear_part"
+    "S": "sanupcraft:steel_ingot"
   },
   "pattern": [
-    "GGG",
-    "G G",
-    "G G"
+    "SSS",
+    "S S",
+    "S S"
   ],
   "result": {
     "id": "sanupcraft:steel_leggings"

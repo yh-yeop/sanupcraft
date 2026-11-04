@@ -109,7 +109,7 @@ public class SanupcraftM3GameTest {
 
 	@GameTest
 	public void advancementGuideLoads(GameTestHelper helper) {
-		String[] ids = {"root", "raw_iron", "crusher", "iron_plate", "steel", "guardian_core", "boiler", "belt_motor", "heatproof",
+		String[] ids = {"root", "raw_iron", "crusher", "alloy", "hammer", "quarry", "iron_plate", "steel", "guardian_core", "boiler", "belt_motor", "heatproof",
 				"warden_summoner", "warden_heart", "heart_forge", "shulker_shell", "ender_link"};
 		var advancements = helper.getLevel().getServer().getAdvancements();
 		for (String id : ids) {

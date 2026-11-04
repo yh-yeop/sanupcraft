@@ -669,6 +669,190 @@ def main_m3(made):
     made.append(save(recolor(panel(seed=83), ENDER), "block/ender_link_bottom.png"))
 
 
+# ---------- 기계 화면 (176x166, 바닐라 GUI 색) ----------
+GUI_BG, GUI_LIGHT, GUI_DARK, GUI_SLOT, GUI_EDGE = "#C6C6C6", "#FFFFFF", "#555555", "#8B8B8B", "#373737"
+
+
+def gui_machine(two_inputs):
+    from PIL import ImageDraw
+    im = Image.new("RGBA", (256, 256))
+    d = ImageDraw.Draw(im)
+    w, h = 176, 166
+    d.rectangle([0, 0, w - 1, h - 1], fill=GUI_BG, outline="#000000")
+    d.line([(1, 1), (w - 3, 1)], fill=GUI_LIGHT, width=2)
+    d.line([(1, 1), (1, h - 3)], fill=GUI_LIGHT, width=2)
+    d.line([(2, h - 2), (w - 2, h - 2)], fill=GUI_DARK, width=2)
+    d.line([(w - 2, 2), (w - 2, h - 2)], fill=GUI_DARK, width=2)
+
+    def slot(x, y, size=18):
+        d.rectangle([x, y, x + size - 1, y + size - 1], fill=GUI_SLOT)
+        d.line([(x, y), (x + size - 2, y)], fill=GUI_EDGE)
+        d.line([(x, y), (x, y + size - 2)], fill=GUI_EDGE)
+        d.line([(x + 1, y + size - 1), (x + size - 1, y + size - 1)], fill=GUI_LIGHT)
+        d.line([(x + size - 1, y + 1), (x + size - 1, y + size - 1)], fill=GUI_LIGHT)
+
+    slot(55, 16)                     # 재료
+    if two_inputs:
+        slot(33, 16)                 # 둘째 재료
+    slot(55, 52)                     # 연료
+    slot(111, 30, 26)                # 결과 (큰 칸)
+    slot(143, 34)                    # 부산물
+    # 불꽃 · 화살표 자리 (진행 그림이 위에 덮인다)
+    d.polygon([(57, 49), (69, 49), (69, 42), (63, 37), (57, 42)], fill=GUI_SLOT)
+    d.rectangle([80, 39, 95, 44], fill=GUI_SLOT)
+    d.polygon([(95, 34), (103, 41), (95, 49)], fill=GUI_SLOT)
+    # 부산물 표시: 결과와 부산물 사이 작은 +
+    d.line([(139, 43), (141, 43)], fill=GUI_DARK)
+    d.line([(140, 42), (140, 44)], fill=GUI_DARK)
+    for row in range(3):
+        for col in range(9):
+            slot(7 + col * 18, 83 + row * 18)
+    for col in range(9):
+        slot(7 + col * 18, 141)
+    return im
+
+
+def main_gui(made):
+    made.append(save(gui_machine(False), "gui/machine.png"))
+    made.append(save(gui_machine(True), "gui/alloy_smelter.png"))
+
+
+# ---------- 공장 개편: 가루 · 강철 · 해머 · 합금로 · 굴착기 ----------
+COPPER_DUST = {"a": "#5a2a14", "b": "#9c4e2a", "c": "#c8693b", "d": "#e8935f", "e": "#f6c09a"}
+GOLD_DUST = {"a": "#6b4a07", "b": "#b88a10", "c": "#e0b52a", "d": "#f6d85a", "e": "#fff4b0"}
+COAL_DUST = {"a": "#0c0c0c", "b": "#1f1f1f", "c": "#333333", "d": "#4a4a4a", "e": "#6a6a6a"}
+STEEL = {"a": "#1e2633", "b": "#3c4a5e", "c": "#5f708a", "d": "#8a9bb5", "e": "#c5d2e6"}
+
+INGOT = [
+    "................",
+    "................",
+    "................",
+    "................",
+    "................",
+    ".....aaaaaaaa...",
+    "....adeeeeeeda..",
+    "...adddddddddca.",
+    "..adddddddddcba.",
+    "..acccccccccbba.",
+    "..abbbbbbbbbba..",
+    "...aaaaaaaaaa...",
+    "................",
+    "................",
+    "................",
+    "................",
+]
+
+HAMMER = [
+    "................",
+    "...aaaaaaaa.....",
+    "..adeeeeedda....",
+    "..adddddddca....",
+    "..accccccbba....",
+    "...aaaawaaa.....",
+    ".......wx.......",
+    "......wx........",
+    ".....wx.........",
+    "....wx..........",
+    "...wx...........",
+    "..wx............",
+    ".wx.............",
+    "wx..............",
+    "................",
+    "................",
+]
+
+EXCAVATOR = [
+    "................",
+    "..........aaa...",
+    ".........adeea..",
+    "........addddea.",
+    "........acddda..",
+    ".......awaccba..",
+    "......wx.aaa....",
+    ".....wx.........",
+    "....wx..........",
+    "...wx...........",
+    "..wx............",
+    ".wx.............",
+    "wx..............",
+    "................",
+    "................",
+    "................",
+]
+
+
+def alloy_front(lit):
+    im = panel(seed=91)
+    for y in range(4, 13):
+        for x in range(3, 13):
+            im.putpixel((x, y), px("a"))
+    # 도가니 두 개
+    for cx in (5, 9):
+        for y in range(6, 10):
+            for x in range(cx, cx + 3):
+                im.putpixel((x, y), px("n" if y < 9 else "m"))
+    for x in range(4, 12):
+        im.putpixel((x, 11), px("u" if lit else "m"))
+        im.putpixel((x, 12), px("t" if lit else "m"))
+    return im
+
+
+def alloy_top():
+    im = panel(seed=92)
+    for x, y in ((5, 7), (6, 7), (9, 7), (10, 7), (5, 8), (6, 8), (9, 8), (10, 8)):
+        im.putpixel((x, y), px("a"))
+    return im
+
+
+def quarry_side(on):
+    im = recolor(panel(seed=93), STEEL)
+    for y in range(3, 13):
+        im.putpixel((7, y), px("b"))
+        im.putpixel((8, y), px("b"))
+    for x, y in ((6, 10), (9, 10), (7, 12), (8, 12), (6, 11), (9, 11)):
+        im.putpixel((x, y), px("d"))
+    if on:
+        for x, y in ((4, 4), (11, 4)):
+            im.putpixel((x, y), px("u"))
+    return im
+
+
+def quarry_top():
+    im = recolor(panel(seed=94), STEEL)
+    for y in range(5, 11):
+        for x in range(5, 11):
+            im.putpixel((x, y), px("a" if x in (5, 10) or y in (5, 10) else "m"))
+    return im
+
+
+def quarry_bottom():
+    im = recolor(panel(seed=95), STEEL)
+    for y in range(4, 12):
+        for x in range(4, 12):
+            d = abs(x - 7.5) + abs(y - 7.5)
+            if d < 4:
+                im.putpixel((x, y), px("e" if d < 1.5 else "c"))
+    return im
+
+
+def main_redesign(made):
+    dust = from_art(ITEMS["iron_dust"])
+    made.append(save(recolor(dust, COPPER_DUST), "item/copper_dust.png"))
+    made.append(save(recolor(dust, GOLD_DUST), "item/gold_dust.png"))
+    made.append(save(recolor(dust, COAL_DUST), "item/coal_dust.png"))
+    made.append(save(recolor(from_art(INGOT), STEEL), "item/steel_ingot.png"))
+    made.append(save(recolor(from_art(ITEMS["iron_plate"]), STEEL), "item/steel_plate.png"))
+    made.append(save(recolor(from_art(HAMMER), STEEL), "item/steel_hammer.png"))
+    made.append(save(recolor(from_art(EXCAVATOR), STEEL), "item/steel_excavator.png"))
+    made.append(save(alloy_front(False), "block/alloy_smelter_front.png"))
+    made.append(save(alloy_front(True), "block/alloy_smelter_front_on.png"))
+    made.append(save(alloy_top(), "block/alloy_smelter_top.png"))
+    made.append(save(quarry_side(False), "block/steam_quarry_side.png"))
+    made.append(save(quarry_side(True), "block/steam_quarry_side_on.png"))
+    made.append(save(quarry_top(), "block/steam_quarry_top.png"))
+    made.append(save(quarry_bottom(), "block/steam_quarry_bottom.png"))
+
+
 def save(im, rel, scale=1):
     path = os.path.join(OUT, *rel.split("/"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -696,6 +880,8 @@ def main():
     made.append(save(armor_layer(True), "entity/equipment/humanoid_leggings/steel.png"))
     main_m2(made)
     main_m3(made)
+    main_gui(made)
+    main_redesign(made)
 
     if "--sheet" in sys.argv:
         tiles = [Image.open(p) for p in made]

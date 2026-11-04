@@ -1,8 +1,9 @@
 {
   "type": "sanupcraft:assembling",
-  "ingredient": "sanupcraft:iron_plate",
+  "ingredient": "sanupcraft:steel_plate",
   "result": {
-    "id": "sanupcraft:gear_part"
+    "id": "sanupcraft:gear_part",
+    "count": 2
   },
   "time": 160
 }
