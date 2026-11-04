@@ -28,7 +28,8 @@ import io.github.yhyeop.sanupcraft.core.ModRegistry;
 /**
  * 2단계 장비. 장비 부품을 많이 쓰고 핵 조각이 들어간다. 방어력은 다이아와 같고(단단함 2), 쓸모는 세트 효과다:
  * 한 벌을 다 입으면 화염 저항이 계속 걸려 네더 탐험 · 고대 잔해 캐기 도구가 되고, 용광로 파수꾼의 과열(불 + 피해 1.5배)을 막는다.
- * 내열 검은 파수꾼에게 1.5배. 네더라이트가 여전히 최종 장비가 되도록 다이아 수준에 맞췄다.
+ * 내열 검은 수호자 · 파수꾼에게 1.5배. 네더라이트가 여전히 최종 장비가 되도록 다이아 수준에 맞췄다(검 공격력 7 = 다이아).
+ * 갑옷은 같은 부위 강철 갑옷을 재료로 올려 만든다 (강철은 내열의 아랫단계, 내열 한 벌도 녹 공격을 막는다).
  */
 public final class HeatproofGear {
 	/** 내열 장비 수리 재료 (핵 조각). */
@@ -38,7 +39,7 @@ public final class HeatproofGear {
 	public static final ArmorMaterial HEATPROOF_ARMOR = new ArmorMaterial(
 			30, defense(3, 6, 8, 3), 12, SoundEvents.ARMOR_EQUIP_NETHERITE, 2.0F, 0.0F, REPAIRS_HEATPROOF, HEATPROOF_ASSET);
 	public static final ToolMaterial HEATPROOF_TOOL = new ToolMaterial(
-			BlockTags.INCORRECT_FOR_DIAMOND_TOOL, 900, 7.5F, 3.5F, 14, REPAIRS_HEATPROOF);
+			BlockTags.INCORRECT_FOR_DIAMOND_TOOL, 900, 7.5F, 3.0F, 14, REPAIRS_HEATPROOF);
 
 	public static final Item HEATPROOF_HELMET = armor("heatproof_helmet", ArmorType.HELMET);
 	public static final Item HEATPROOF_CHESTPLATE = armor("heatproof_chestplate", ArmorType.CHESTPLATE);

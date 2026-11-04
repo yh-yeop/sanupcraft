@@ -1,9 +1,16 @@
 package io.github.yhyeop.sanupcraft.client;
 
+import java.util.List;
+
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.locale.Language;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
 
 import io.github.yhyeop.sanupcraft.boss.ModBoss;
 import io.github.yhyeop.sanupcraft.factory.ModMachines;
@@ -14,5 +21,22 @@ public class SanupcraftClient implements ClientModInitializer {
 		MenuScreens.register(ModMachines.MACHINE_MENU, MachineScreen::new);
 		EntityRendererRegistry.register(ModBoss.RUSTY_GUARDIAN, RustyGuardianRenderer::new);
 		EntityRendererRegistry.register(ModBoss.FURNACE_WARDEN, FurnaceWardenRenderer::new);
+		ItemTooltipCallback.EVENT.register((stack, context, flag, lines) -> addGuideTooltip(stack, lines));
+	}
+
+	/**
+	 * 기계 · 장비 안내 문구. 아이템 이름 키 뒤에 .tooltip, .tooltip2 가 언어 파일에 있으면 이름 바로 아래에 회색 줄로 붙인다.
+	 * 문구는 전부 언어 파일에만 있어서, 키가 없는 아이템에는 아무것도 붙지 않는다.
+	 */
+	static void addGuideTooltip(ItemStack stack, List<Component> lines) {
+		String base = stack.getItem().getDescriptionId();
+		Language language = Language.getInstance();
+		int at = Math.min(1, lines.size());
+		for (String suffix : new String[] {".tooltip", ".tooltip2"}) {
+			String key = base + suffix;
+			if (language.has(key)) {
+				lines.add(at++, Component.translatable(key).withStyle(ChatFormatting.GRAY));
+			}
+		}
 	}
 }

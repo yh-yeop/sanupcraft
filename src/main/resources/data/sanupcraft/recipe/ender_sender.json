@@ -4,12 +4,13 @@
   "key": {
     "P": "sanupcraft:iron_plate",
     "E": "minecraft:ender_pearl",
+    "W": "sanupcraft:warden_heart",
     "S": "minecraft:shulker_shell",
     "F": "sanupcraft:reinforced_machine_frame",
     "H": "minecraft:hopper"
   },
   "pattern": [
-    "PEP",
+    "EWE",
     "SFS",
     "PHP"
   ],

@@ -3,11 +3,12 @@
   "category": "equipment",
   "key": {
     "G": "sanupcraft:gear_part",
-    "S": "sanupcraft:core_shard"
+    "S": "sanupcraft:core_shard",
+    "H": "sanupcraft:steel_helmet"
   },
   "pattern": [
     "GSG",
-    "G G"
+    "GHG"
   ],
   "result": {
     "id": "sanupcraft:heatproof_helmet"

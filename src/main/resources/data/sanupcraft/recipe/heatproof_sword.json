@@ -4,12 +4,12 @@
   "key": {
     "S": "sanupcraft:core_shard",
     "G": "sanupcraft:gear_part",
-    "T": "minecraft:stick"
+    "W": "sanupcraft:steel_sword"
   },
   "pattern": [
     "S",
     "G",
-    "T"
+    "W"
   ],
   "result": {
     "id": "sanupcraft:heatproof_sword"
