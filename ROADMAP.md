@@ -55,7 +55,14 @@
 - **서버** (Lithium · FerriteCore · Simple Voice Chat · Corpse Graves): GameTest 16개 통과. Lithium이 깔때기 동작을 바꾸므로 깔때기로 분쇄기를 돌리는 테스트를 새로 넣었고 통과.
 - **클라이언트** (11개 전부, Sodium 켜짐): 기계 · 보스(색 · 금 · 체력바) · 강철 갑옷 · 아이템 아이콘 · 기계 화면이 정상으로 그려짐. JEI 목록, Xaero 미니맵(죽은 자리 웨이포인트 포함), 음성 채팅 안내가 함께 뜸.
 - **시체**: 강철 갑옷을 입고 죽으면 아이템 18칸이 전부 시체에 들어가고, 시체 · 홀로그램(남은 시간 · 보호 시간)이 생김.
-  Corpse Graves 기본 설정이 `displayArmor: false`라서 시체가 갑옷을 입은 모습으로는 안 보인다 (버그 아님).
+  Corpse Graves 기본 설정이 `displayArmor: false`라서 시체가 갑옷 없이 보였다.
+
+### 2026-11-04 · 시체에 갑옷 보이게
+- Corpse Graves 1.1.0은 설정을 읽을 때마다(시작 · `/corpsegraves reload`) 옛 설정 옮기기 코드가 돌아 `displayArmor`를 false로 되돌린다.
+  옛 키 `onlyOwnerCanLoot`가 없으면 실행되는데 그 키를 스스로 쓰지 않아서 매번 돈다. 그래서 설정 파일을 같이 배포해도 유지되지 않는다.
+- 우리 모드에 `compat/CorpseGravesCompat`를 넣어 Corpse Graves가 있으면 서버에서 1초마다 `displayArmor`를 다시 켠다. 서버 관리자가 따로 할 일 없음.
+- 확인: 편의 모드 11개를 넣은 클라이언트 테스트에서 강철 갑옷 네 부위가 시체에 입혀진 채 보임 ([스크린샷](docs/corpse-armor.png)). 테스트가 이제 이걸 검사한다.
+- Corpse Graves가 이 문제를 고치면 이 우회는 지워도 된다.
 - **로그**: Mixin 적용 실패 없음, 우리 모드 오류 · 경고 없음. 남은 경고는 개발 환경용 refmap 안내, 오프라인 계정, Sodium의 그래픽 드라이버 우회뿐.
 - **못 본 것**: 런처로 실제 설치(파일 받기 · 해시), 두 명 이상 멀티, 음성 채팅 실제 연결.
 - **JEI**: 제작대 레시피만 보이고 분쇄기 · 압착기 · 조립대 레시피는 안 보인다 (JEI 연동을 따로 만들어야 함).

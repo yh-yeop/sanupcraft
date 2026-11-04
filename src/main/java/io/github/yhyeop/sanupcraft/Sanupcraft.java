@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.github.yhyeop.sanupcraft.boss.ModBoss;
+import io.github.yhyeop.sanupcraft.compat.CorpseGravesCompat;
 import io.github.yhyeop.sanupcraft.core.ModItems;
 import io.github.yhyeop.sanupcraft.core.ModTab;
 import io.github.yhyeop.sanupcraft.factory.ModMachines;
@@ -25,6 +26,7 @@ public class Sanupcraft implements ModInitializer {
 		SteelGear.init();
 		ModBoss.init();
 		ModTab.init();
+		CorpseGravesCompat.init();
 		LOGGER.info("sanupcraft 로드");
 	}
 

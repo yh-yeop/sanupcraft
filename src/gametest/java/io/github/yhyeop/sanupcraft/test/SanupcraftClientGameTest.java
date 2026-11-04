@@ -19,6 +19,7 @@ import net.minecraft.world.phys.AABB;
 
 import io.github.yhyeop.sanupcraft.Sanupcraft;
 import io.github.yhyeop.sanupcraft.client.MachineScreen;
+import io.github.yhyeop.sanupcraft.gear.SteelGear;
 
 /**
  * 진짜 클라이언트를 띄워 텍스처 · 기계 화면 · 갑옷 · 보스가 그려지는지 스크린샷으로 남긴다.
@@ -87,7 +88,7 @@ public class SanupcraftClientGameTest implements FabricClientGameTest {
 		}
 	}
 
-	/** 모드팩의 시체 모드: 강철 갑옷을 입고 죽으면 시체(마네킹)가 갑옷을 입은 채 남는다. */
+	/** 모드팩의 시체 모드: 강철 갑옷을 입고 죽으면 시체(마네킹)가 갑옷을 입은 채 남는다 (CorpseGravesCompat). */
 	private static void checkCorpse(ClientGameTestContext context, TestServerContext server) {
 		server.runCommand("item replace entity @a armor.head with sanupcraft:steel_helmet");
 		server.runCommand("item replace entity @a armor.chest with sanupcraft:steel_chestplate");
@@ -102,6 +103,8 @@ public class SanupcraftClientGameTest implements FabricClientGameTest {
 		context.waitForScreen(null);
 		server.runCommand("tp @a 4.5 -60 1.5 180 20");
 		server.waitFor(s -> !corpses(s).isEmpty(), 200);
+		// CorpseGravesCompat가 displayArmor를 켜므로 시체가 강철 갑옷을 입고 있어야 한다
+		server.waitFor(s -> corpses(s).stream().anyMatch(m -> m.getItemBySlot(EquipmentSlot.CHEST).is(SteelGear.STEEL_CHESTPLATE)), 100);
 		context.waitTicks(20);
 		server.runOnServer(s -> corpses(s).forEach(m -> Sanupcraft.LOGGER.info("시체 장비: {} / {} / {} / {}",
 				m.getItemBySlot(EquipmentSlot.HEAD), m.getItemBySlot(EquipmentSlot.CHEST),

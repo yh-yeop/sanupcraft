@@ -2,7 +2,7 @@
 
 Modrinth App · Prism Launcher 등에서 파일 하나로 가져오면 Fabric + 우리 모드 + 편의 모드가 한 번에 깔린다.
 편의 모드는 Modrinth에서 Minecraft 버전 · Fabric에 맞는 최신 파일을 찾아 그 주소와 해시를 적는다 (파일 자체는 넣지 않음).
-우리 모드 jar는 overrides/mods/ 안에 들어간다.
+우리 모드 jar는 overrides/mods/ 안에, pack/ 아래 파일(편의 모드 설정)은 overrides/ 안에 들어간다.
 
     python tools/make_mrpack.py build/libs/sanupcraft-0.1.0.jar 0.1.0
     → build/sanupcraft-0.1.0.mrpack
@@ -92,6 +92,12 @@ def main():
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
         z.writestr("modrinth.index.json", json.dumps(index, ensure_ascii=False, indent=2))
         z.write(jar, f"overrides/mods/{os.path.basename(jar)}")
+        # pack/ 아래 파일(편의 모드 설정 등)은 인스턴스 폴더에 그대로 깔린다
+        pack = os.path.join(ROOT, "pack")
+        for base, _, names in os.walk(pack):
+            for name in names:
+                path = os.path.join(base, name)
+                z.write(path, "overrides/" + os.path.relpath(path, pack).replace(os.sep, "/"))
 
     # 릴리스 본문에 붙일 모드 표
     table = os.path.join(ROOT, "build", "mrpack-mods.md")
