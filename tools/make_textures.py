@@ -418,6 +418,202 @@ def armor_layer(leggings):
     return im
 
 
+# ---------- M2 ----------
+HEAT = {"a": "#2a1410", "b": "#6e2c18", "c": "#a8481f", "d": "#e0782e", "e": "#ffc27a"}
+COPPER = {"a": "#3a1f12", "b": "#7a4423", "c": "#b06a35", "d": "#d99a5c", "e": "#f2c58f"}
+
+
+def hex_px(color):
+    return tuple(int(color[i:i + 2], 16) for i in (1, 3, 5)) + (255,)
+
+
+def recolor(im, mapping):
+    """강철 팔레트(a~e 등)를 다른 색으로 바꾼다."""
+    table = {px(k)[:3]: hex_px(v)[:3] for k, v in mapping.items()}
+    out = im.copy()
+    for y in range(im.height):
+        for x in range(im.width):
+            r, g, b, a = im.getpixel((x, y))
+            if a and (r, g, b) in table:
+                out.putpixel((x, y), table[(r, g, b)] + (a,))
+    return out
+
+
+SHARD = [
+    "................",
+    "................",
+    "................",
+    "........ka......",
+    ".......kgk......",
+    "......kghgk.....",
+    ".....kgghgk.....",
+    ".....kghggk.....",
+    "....kgghggk.....",
+    "....kghgggk.....",
+    "....kgggggk.....",
+    ".....kggggk.....",
+    "......kkkk......",
+    "................",
+    "................",
+    "................",
+]
+
+HEART = [
+    "................",
+    "................",
+    "...rrr....rrr...",
+    "..rsttr..rttsr..",
+    ".rsttutrrtuttsr.",
+    ".rsttuutttuttsr.",
+    ".rstttuuuuttssr.",
+    ".rssttttttttssr.",
+    "..rssttttttssr..",
+    "...rsstttttsr...",
+    "....rssttssr....",
+    ".....rssssr.....",
+    "......rssr......",
+    ".......rr.......",
+    "................",
+    "................",
+]
+
+
+def boiler_front(lit):
+    im = recolor(panel(seed=31), COPPER)
+    for y in range(6, 13):
+        for x in range(4, 12):
+            im.putpixel((x, y), px("a"))
+    for x in range(5, 11):
+        im.putpixel((x, 7), px("b"))
+    for y in range(9, 12):
+        for x in range(5, 11):
+            im.putpixel((x, y), px("u" if lit and (x + y) % 2 else ("t" if lit else "m")))
+    for x in range(3, 13):
+        im.putpixel((x, 3), px("b"))
+    return im
+
+
+def boiler_top():
+    im = recolor(panel(seed=32), COPPER)
+    for y in range(4, 12):
+        for x in range(4, 12):
+            d = math.hypot(x - 7.5, y - 7.5)
+            if d < 2.2:
+                im.putpixel((x, y), px("a"))
+            elif d < 3.6:
+                im.putpixel((x, y), px("b"))
+    return im
+
+
+def boiler_side():
+    im = recolor(panel(seed=33), COPPER)
+    for y in (4, 11):
+        for x in range(16):
+            im.putpixel((x, y), px("b"))
+            if x % 3 == 1:
+                im.putpixel((x, y), px("e"))
+    return im
+
+
+def belt_motor_front(on):
+    im = panel(seed=41)
+    gear = cog(teeth_color="b", body="n", light="o")
+    small = gear.resize((12, 12), Image.NEAREST)
+    im.alpha_composite(small, (2, 2))
+    if on:
+        for x, y in ((7, 7), (8, 7), (7, 8), (8, 8)):
+            im.putpixel((x, y), px("u"))
+    return im
+
+
+def belt_motor_top():
+    im = panel(seed=42)
+    for y in range(5, 11):
+        for x in range(5, 11):
+            im.putpixel((x, y), px("a" if x in (5, 10) or y in (5, 10) else "s"))
+    return im
+
+
+def pipe_texture():
+    im = Image.new("RGBA", (16, 16))
+    noise_fill(im, "ccd", 51)
+    im = recolor(im, COPPER)
+    for i in range(16):
+        im.putpixel((i, 0), hex_px(COPPER["a"]))
+        im.putpixel((i, 15), hex_px(COPPER["a"]))
+    for x in (4, 11):
+        for y in range(16):
+            im.putpixel((x, y), hex_px(COPPER["e"]))
+    return im
+
+
+BELT_PERIOD = 8
+
+
+def belt_frame(shift):
+    """벨트 윗면: 고무 + 북쪽(위)을 가리키는 화살 무늬, 양옆 쇠 난간. shift만큼 위로 밀린 그림."""
+    im = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        for x in range(16):
+            if x in (0, 15):
+                ch = "b"
+            elif x in (1, 14):
+                ch = "c"
+            else:
+                yy = (y + shift) % BELT_PERIOD
+                # 화살 ^ : 가운데로 갈수록 위
+                arrow = abs(x - 7.5) // 1.5
+                ch = "o" if (yy - arrow) % BELT_PERIOD in (0, 1) and 3 <= x <= 12 else ("m" if (x + y) % 5 else "n")
+            im.putpixel((x, y), px(ch))
+    return im
+
+
+def belt_moving():
+    frames = BELT_PERIOD // 2
+    im = Image.new("RGBA", (16, 16 * frames))
+    for i in range(frames):
+        im.paste(belt_frame(i * 2), (0, 16 * i))
+    return im
+
+
+def belt_side():
+    im = Image.new("RGBA", (16, 16))
+    noise_fill(im, "bc", 61)
+    for x in range(16):
+        im.putpixel((x, 12), px("d"))
+        im.putpixel((x, 15), px("a"))
+        if x % 4 == 1:
+            im.putpixel((x, 13), px("e"))
+    return im
+
+
+def main_m2(made):
+    made.append(save(from_art(SHARD), "item/core_shard.png"))
+    made.append(save(from_art(HEART), "item/warden_heart.png"))
+    summoner = from_art(ITEMS["guardian_summoner"])
+    made.append(save(recolor(summoner, {**HEAT, "R": "#c2410c", "Q": "#fb923c", "u": "#fff1c1"}), "item/warden_summoner.png"))
+    for part in ("helmet", "chestplate", "leggings", "boots", "sword"):
+        made.append(save(recolor(from_art(ITEMS[f"steel_{part}"]), HEAT), f"item/heatproof_{part}.png"))
+
+    made.append(save(boiler_front(False), "block/boiler_front.png"))
+    made.append(save(boiler_front(True), "block/boiler_front_on.png"))
+    made.append(save(boiler_top(), "block/boiler_top.png"))
+    made.append(save(boiler_side(), "block/boiler_side.png"))
+    made.append(save(belt_motor_front(False), "block/belt_motor_front.png"))
+    made.append(save(belt_motor_front(True), "block/belt_motor_front_on.png"))
+    made.append(save(belt_motor_top(), "block/belt_motor_top.png"))
+    made.append(save(pipe_texture(), "block/steam_pipe.png"))
+    made.append(save(belt_frame(0), "block/conveyor_belt_top.png"))
+    moving = save(belt_moving(), "block/conveyor_belt_top_moving.png")
+    with open(moving + ".mcmeta", "w", encoding="utf-8") as f:
+        f.write('{"animation": {"frametime": 1}}')
+    made.append(moving)
+    made.append(save(belt_side(), "block/conveyor_belt_side.png"))
+
+    made.append(save(recolor(armor_layer(False), HEAT), "entity/equipment/humanoid/heatproof.png"))
+    made.append(save(recolor(armor_layer(True), HEAT), "entity/equipment/humanoid_leggings/heatproof.png"))
+
+
 def save(im, rel, scale=1):
     path = os.path.join(OUT, *rel.split("/"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -443,6 +639,7 @@ def main():
 
     made.append(save(armor_layer(False), "entity/equipment/humanoid/steel.png"))
     made.append(save(armor_layer(True), "entity/equipment/humanoid_leggings/steel.png"))
+    main_m2(made)
 
     if "--sheet" in sys.argv:
         tiles = [Image.open(p) for p in made]

@@ -11,6 +11,8 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -20,9 +22,12 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 
-/** 수호자 제단. 수호자 소환석을 들고 우클릭하면 제단 위에 녹슨 수호자가 나온다. */
+/**
+ * 수호자 제단. 소환석을 들고 우클릭하면 제단 위에 보스가 나온다.
+ * 수호자 소환석 → 녹슨 수호자, 파수꾼 소환석 → 용광로 파수꾼. 근처에 보스가 있으면 부르지 않는다.
+ */
 public class GuardianAltarBlock extends Block {
-	/** 이 거리 안에 수호자가 이미 있으면 소환하지 않는다. */
+	/** 이 거리 안에 보스가 이미 있으면 소환하지 않는다. */
 	public static final double ONE_PER_RADIUS = 48.0;
 
 	public GuardianAltarBlock(BlockBehaviour.Properties properties) {
@@ -31,13 +36,14 @@ public class GuardianAltarBlock extends Block {
 
 	@Override
 	protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
-		if (!stack.is(ModBoss.GUARDIAN_SUMMONER)) {
+		EntityType<? extends Monster> boss = bossFor(stack);
+		if (boss == null) {
 			return InteractionResult.TRY_WITH_EMPTY_HAND;
 		}
 		if (!(level instanceof ServerLevel serverLevel)) {
 			return InteractionResult.SUCCESS;
 		}
-		if (summon(serverLevel, pos) == null) {
+		if (summon(serverLevel, pos, boss) == null) {
 			player.sendOverlayMessage(Component.translatable("block.sanupcraft.guardian_altar.busy"));
 			return InteractionResult.FAIL;
 		}
@@ -45,20 +51,39 @@ public class GuardianAltarBlock extends Block {
 		return InteractionResult.SUCCESS_SERVER;
 	}
 
-	/** 제단 위에 수호자를 부른다. 근처에 이미 있으면 null. */
+	private static @Nullable EntityType<? extends Monster> bossFor(ItemStack stack) {
+		if (stack.is(ModBoss.GUARDIAN_SUMMONER)) {
+			return ModBoss.RUSTY_GUARDIAN;
+		}
+		if (stack.is(ModBoss.WARDEN_SUMMONER)) {
+			return ModBoss.FURNACE_WARDEN;
+		}
+		return null;
+	}
+
+	/** 제단 위에 녹슨 수호자를 부른다. 근처에 보스가 있으면 null. */
 	public static @Nullable RustyGuardian summon(ServerLevel level, BlockPos altarPos) {
+		return summon(level, altarPos, ModBoss.RUSTY_GUARDIAN);
+	}
+
+	/** 제단 위에 보스를 부른다. 근처에 보스가 있으면 null. */
+	public static <T extends Monster> @Nullable T summon(ServerLevel level, BlockPos altarPos, EntityType<T> type) {
 		AABB area = new AABB(altarPos).inflate(ONE_PER_RADIUS);
-		if (!level.getEntitiesOfClass(RustyGuardian.class, area).isEmpty()) {
+		if (!level.getEntitiesOfClass(Monster.class, area, GuardianAltarBlock::isBoss).isEmpty()) {
 			return null;
 		}
-		RustyGuardian guardian = ModBoss.RUSTY_GUARDIAN.create(level, EntitySpawnReason.TRIGGERED);
-		if (guardian == null) {
+		T boss = type.create(level, EntitySpawnReason.TRIGGERED);
+		if (boss == null) {
 			return null;
 		}
-		guardian.snapTo(altarPos.getX() + 0.5, altarPos.getY() + 1.0, altarPos.getZ() + 0.5, level.getRandom().nextFloat() * 360.0F, 0.0F);
-		level.addFreshEntity(guardian);
+		boss.snapTo(altarPos.getX() + 0.5, altarPos.getY() + 1.0, altarPos.getZ() + 0.5, level.getRandom().nextFloat() * 360.0F, 0.0F);
+		level.addFreshEntity(boss);
 		level.playSound(null, altarPos, SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 1.0F, 1.2F);
-		level.sendParticles(ParticleTypes.LARGE_SMOKE, guardian.getX(), guardian.getY() + 1.0, guardian.getZ(), 40, 0.8, 1.2, 0.8, 0.02);
-		return guardian;
+		level.sendParticles(ParticleTypes.LARGE_SMOKE, boss.getX(), boss.getY() + 1.0, boss.getZ(), 40, 0.8, 1.2, 0.8, 0.02);
+		return boss;
+	}
+
+	private static boolean isBoss(Monster monster) {
+		return monster instanceof RustyGuardian || monster instanceof FurnaceWarden;
 	}
 }

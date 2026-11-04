@@ -17,5 +17,21 @@
   "block.sanupcraft.guardian_altar.busy": "A guardian is already nearby.",
   "entity.sanupcraft.rusty_guardian": "Rusty Guardian",
   "itemGroup.sanupcraft": "Sanupcraft",
-  "tag.item.sanupcraft.repairs_steel": "Steel Repair Materials"
+  "tag.item.sanupcraft.repairs_steel": "Steel Repair Materials",
+  "item.sanupcraft.core_shard": "Core Shard",
+  "item.sanupcraft.warden_heart": "Warden's Heart",
+  "item.sanupcraft.warden_summoner": "Warden Summoning Stone",
+  "item.sanupcraft.heatproof_helmet": "Heatproof Helmet",
+  "item.sanupcraft.heatproof_chestplate": "Heatproof Chestplate",
+  "item.sanupcraft.heatproof_leggings": "Heatproof Leggings",
+  "item.sanupcraft.heatproof_boots": "Heatproof Boots",
+  "item.sanupcraft.heatproof_sword": "Heatproof Sword",
+  "block.sanupcraft.boiler": "Boiler",
+  "block.sanupcraft.boiler.status": "Water %s/%s · Steam %s/%s · Fuel %s",
+  "block.sanupcraft.steam_pipe": "Steam Pipe",
+  "block.sanupcraft.conveyor_belt": "Conveyor Belt",
+  "block.sanupcraft.belt_motor": "Belt Motor",
+  "block.sanupcraft.belt_motor.status": "Steam %s/%s · Running belts %s/%s",
+  "entity.sanupcraft.furnace_warden": "Furnace Warden",
+  "tag.item.sanupcraft.repairs_heatproof": "Heatproof Repair Materials"
 }

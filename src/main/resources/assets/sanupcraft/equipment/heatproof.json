@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "sanupcraft:heatproof"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "sanupcraft:heatproof"
+      }
+    ]
+  }
+}

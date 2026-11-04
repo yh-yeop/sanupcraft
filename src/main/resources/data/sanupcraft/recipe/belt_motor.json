@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "sanupcraft:iron_plate",
+    "G": "sanupcraft:gear_part",
+    "F": "sanupcraft:reinforced_machine_frame",
+    "S": "sanupcraft:steam_pipe"
+  },
+  "pattern": [
+    "PGP",
+    "GFG",
+    "PSP"
+  ],
+  "result": {
+    "id": "sanupcraft:belt_motor"
+  }
+}

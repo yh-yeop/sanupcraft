@@ -82,10 +82,45 @@ public class SanupcraftClientGameTest implements FabricClientGameTest {
 			context.takeScreenshot("sanupcraft-machine-screen");
 			context.setScreen(() -> null);
 
+			m2Scene(context, server, singleplayer);
+
 			if (FabricLoader.getInstance().isModLoaded("corpsegraves")) {
 				checkCorpse(context, server);
 			}
 		}
+	}
+
+	/** M2: 보일러 → 파이프 → 벨트 모터 → 돌아가는 벨트 → 상자, 내열 갑옷 거치대, 용광로 파수꾼. */
+	private static void m2Scene(ClientGameTestContext context, TestServerContext server, TestSingleplayerContext singleplayer) {
+		server.runCommand("gamemode creative @a");
+		server.runCommand("setblock 17 -60 -4 sanupcraft:boiler[facing=south]");
+		server.runCommand("data merge block 17 -60 -4 {water:8000}");
+		server.runCommand("item replace block 17 -60 -4 container.0 with minecraft:coal 16");
+		server.runCommand("setblock 18 -60 -4 sanupcraft:steam_pipe");
+		server.runCommand("setblock 19 -60 -4 sanupcraft:steam_pipe");
+		server.runCommand("setblock 20 -60 -4 sanupcraft:belt_motor[facing=south]");
+		for (int x = 21; x <= 23; x++) {
+			server.runCommand("setblock " + x + " -60 -4 sanupcraft:conveyor_belt[facing=east]");
+		}
+		server.runCommand("setblock 24 -60 -4 minecraft:chest[facing=west]");
+		server.runCommand("summon armor_stand 26.5 -60 -3.5 {Rotation:[180f,0f],Tags:[\"heat\"]}");
+		server.runCommand("item replace entity @e[tag=heat] armor.head with sanupcraft:heatproof_helmet");
+		server.runCommand("item replace entity @e[tag=heat] armor.chest with sanupcraft:heatproof_chestplate");
+		server.runCommand("item replace entity @e[tag=heat] armor.legs with sanupcraft:heatproof_leggings");
+		server.runCommand("item replace entity @e[tag=heat] armor.feet with sanupcraft:heatproof_boots");
+		server.runCommand("item replace entity @e[tag=heat] weapon.mainhand with sanupcraft:heatproof_sword");
+		server.runCommand("summon sanupcraft:furnace_warden 15.5 -60 -9.5 {NoAI:1b,Rotation:[20f,0f]}");
+		server.runCommand("tp @a 21.5 -60 0.5 180 25");
+		for (int i = 0; i < 3; i++) {
+			server.runCommand("summon item 21.5 -59.7 -3.5 {Item:{id:\"minecraft:raw_iron\",count:1},PickupDelay:32767}");
+			context.waitTicks(4);
+		}
+		singleplayer.getConnection().waitForChunksRender();
+		context.takeScreenshot("sanupcraft-m2-scene");
+		server.runCommand("tp @a 15.5 -59 -3.5 180 10");
+		context.waitTicks(10);
+		context.takeScreenshot("sanupcraft-warden");
+		server.runCommand("gamemode survival @a");
 	}
 
 	/** 모드팩의 시체 모드: 강철 갑옷을 입고 죽으면 시체(마네킹)가 갑옷을 입은 채 남는다 (CorpseGravesCompat). */

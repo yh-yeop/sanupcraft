@@ -25,11 +25,14 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.util.Mth;
 import net.minecraft.world.level.storage.loot.providers.number.ints.ResolvableInt;
 
+import io.github.yhyeop.sanupcraft.power.SteamConsumer;
+
 /**
  * 기계의 칸과 진행 상태. 화로와 같은 규칙: 연료를 태우는 동안 재료를 하나씩 처리한다.
  * 깔때기: 위 → 재료, 옆 → 연료, 아래 ← 결과.
+ * 증기 파이프가 이어져 있으면 연료 대신 증기로 돈다 (증기가 있으면 연료를 태우지 않음).
  */
-public class MachineBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer {
+public class MachineBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, SteamConsumer {
 	public static final int SLOT_INPUT = 0;
 	public static final int SLOT_FUEL = 1;
 	public static final int SLOT_RESULT = 2;
@@ -38,6 +41,9 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 	public static final int DATA_PROGRESS = 2;
 	public static final int DATA_TOTAL_TIME = 3;
 	public static final int DATA_COUNT = 4;
+	public static final int STEAM_CAPACITY = 200;
+	/** 증기로 돌 때 틱마다 쓰는 증기. */
+	public static final int STEAM_PER_TICK = 1;
 
 	private static final int[] SLOTS_FOR_UP = {SLOT_INPUT};
 	private static final int[] SLOTS_FOR_DOWN = {SLOT_RESULT};
@@ -50,13 +56,15 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 	private int litDuration;
 	private int progress;
 	private int totalTime;
+	private int steam;
+	private boolean steamWorking;
 
 	private final ContainerData dataAccess = new ContainerData() {
 		@Override
 		public int get(int dataId) {
 			return switch (dataId) {
-				case DATA_LIT_TIME -> litTime;
-				case DATA_LIT_DURATION -> litDuration;
+				case DATA_LIT_TIME -> steamWorking ? 1 : litTime;
+				case DATA_LIT_DURATION -> steamWorking ? 1 : litDuration;
 				case DATA_PROGRESS -> progress;
 				case DATA_TOTAL_TIME -> totalTime;
 				default -> 0;
@@ -92,8 +100,9 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 	}
 
 	public static void serverTick(ServerLevel level, BlockPos pos, BlockState state, MachineBlockEntity machine) {
-		boolean wasLit = machine.litTime > 0;
+		boolean wasLit = machine.litTime > 0 || machine.steamWorking;
 		boolean changed = false;
+		machine.steamWorking = false;
 		if (wasLit) {
 			machine.litTime--;
 		}
@@ -107,7 +116,10 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 
 		if (canWork) {
 			machine.totalTime = recipe.value().time();
-			if (machine.litTime <= 0 && !fuel.isEmpty()) {
+			if (machine.litTime <= 0 && machine.steam >= STEAM_PER_TICK) {
+				machine.steam -= STEAM_PER_TICK;
+				machine.steamWorking = true;
+			} else if (machine.litTime <= 0 && !fuel.isEmpty()) {
 				int burn = machine.burnDuration(level, fuel);
 				if (burn > 0) {
 					machine.litTime = burn;
@@ -116,7 +128,7 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 					changed = true;
 				}
 			}
-			if (machine.litTime > 0) {
+			if (machine.litTime > 0 || machine.steamWorking) {
 				machine.progress++;
 				if (machine.progress >= machine.totalTime) {
 					machine.progress = 0;
@@ -130,7 +142,7 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 			machine.progress = Mth.clamp(machine.progress - 2, 0, machine.totalTime);
 		}
 
-		boolean isLit = machine.litTime > 0;
+		boolean isLit = machine.litTime > 0 || machine.steamWorking;
 		if (wasLit != isLit) {
 			state = state.setValue(MachineBlock.LIT, isLit);
 			level.setBlockAndUpdate(pos, state);
@@ -167,6 +179,17 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 		return ResolvableInt.getFromItem(fuel, DataComponents.COOKING_FUEL, CookingFuel::burnTime, getLootContext(level), 0);
 	}
 
+	@Override
+	public int acceptSteam(int amount) {
+		int accepted = Math.min(amount, STEAM_CAPACITY - steam);
+		steam += accepted;
+		return accepted;
+	}
+
+	public int steam() {
+		return steam;
+	}
+
 	public static boolean isFuel(ItemStack stack) {
 		return stack.has(DataComponents.COOKING_FUEL);
 	}
@@ -180,6 +203,7 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 		litDuration = input.getIntOr("lit_duration", 0);
 		progress = input.getIntOr("progress", 0);
 		totalTime = input.getIntOr("total_time", 0);
+		steam = input.getIntOr("steam", 0);
 	}
 
 	@Override
@@ -189,6 +213,7 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 		output.putInt("lit_duration", litDuration);
 		output.putInt("progress", progress);
 		output.putInt("total_time", totalTime);
+		output.putInt("steam", steam);
 		ContainerHelper.saveAllItems(output, items);
 	}
 

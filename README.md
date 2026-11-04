@@ -29,7 +29,17 @@
    강철 한 벌이 없으면 녹 공격이 1.5배 아프고 느려진다. 강철 검은 1.5배.
 4. **다음 단계**: 수호자의 핵으로 강화 기계 틀 (M2 기계 재료).
 
-자세한 수치는 [ROADMAP.md](ROADMAP.md)의 M1 표.
+## 게임 안 흐름 (M2)
+
+1. **증기 동력**: 보일러(철판 + 화로 + 양동이)에 물과 연료를 넣으면 증기. 증기 파이프로 분쇄기 · 압착기 · 조립대에 이으면 연료 없이 돈다. 옆에 물 원천을 두면 물이 계속 찬다.
+2. **자동화**: 강화 기계 틀로 만든 벨트 모터가 증기를 받아 컨베이어 벨트(32칸)를 돌린다. 깔때기로 벨트에 올리고, 벨트 끝의 상자 · 기계에 들어간다.
+3. **내열 장비**: 수호자의 핵을 분쇄기에 넣으면 핵 조각 4개. 장비 부품 + 핵 조각으로 내열 갑옷 · 검.
+4. **보스 2**: 같은 제단에 파수꾼 소환석(핵 조각 + 마그마 블록)을 쓰면 용광로 파수꾼. 내열 한 벌이 없으면 과열(1.5배 + 불). 내열 검은 1.5배.
+5. **다음 단계**: 파수꾼의 심장 (M3 재료).
+
+자세한 수치는 [ROADMAP.md](ROADMAP.md)의 M1 · M2 표.
+
+![증기 공장과 용광로 파수꾼](docs/m2-warden.png)
 
 ![분쇄기 · 압착기 · 조립대 · 수호자 제단, 강철 갑옷, 녹슨 수호자](docs/m1-scene.png)
 
@@ -40,10 +50,12 @@
 | 패키지 (`io.github.yhyeop.sanupcraft.*`) | 하는 일 |
 |---|---|
 | `core` | 공용 아이템 · 재료 등록, 보스 전리품 ↔ 기계 레시피 연결 |
-| `factory` | 기계 · 운반 · 동력. 단계별로 열림 |
+| `factory` | 1단계 기계 (분쇄기 · 압착기 · 조립대) |
 | `boss` | 보스 AI · 패턴, 던전 구조물, 전리품 |
-| `gear` | 모험대 장비 · 역할 |
-| `progress` | 단계 해금 |
+| `power` | 보일러 · 증기 파이프 (2단계 동력) |
+| `logistics` | 컨베이어 벨트 · 벨트 모터 |
+| `gear` | 모험대 장비 (강철 · 내열) |
+| `compat` | 모드팩 편의 모드 맞춤 (시체 모드) |
 
 `src/main` 공통 · 서버, `src/client` 클라이언트 전용(렌더링), `src/gametest` 자동 검사.
 
@@ -68,7 +80,7 @@ python tools/make_textures.py --sheet  # 임시 도트 텍스처 다시 만들�
 
 ```bash
 python tools/make_mrpack.py build/libs/sanupcraft-0.1.0.jar 0.1.0 --download build/packmods
-./gradlew runGameTest --no-configuration-cache -PpackMods=build/packmods/server      # 서버 모드와 GameTest 16개
+./gradlew runGameTest --no-configuration-cache -PpackMods=build/packmods/server      # 서버 모드와 GameTest 전부
 ./gradlew runClientGameTest --no-configuration-cache -PpackMods=build/packmods/all   # 전부 넣고 스크린샷 + 시체 확인
 ```
 

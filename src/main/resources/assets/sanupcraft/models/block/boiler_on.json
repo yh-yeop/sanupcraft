@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "sanupcraft:block/boiler_front_on",
+    "side": "sanupcraft:block/boiler_side",
+    "top": "sanupcraft:block/boiler_top"
+  }
+}

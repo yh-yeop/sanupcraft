@@ -1,0 +1,9 @@
+{
+  "type": "sanupcraft:crushing",
+  "ingredient": "sanupcraft:guardian_core",
+  "result": {
+    "id": "sanupcraft:core_shard",
+    "count": 4
+  },
+  "time": 200
+}

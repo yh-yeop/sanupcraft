@@ -13,5 +13,6 @@ public class SanupcraftClient implements ClientModInitializer {
 	public void onInitializeClient() {
 		MenuScreens.register(ModMachines.MACHINE_MENU, MachineScreen::new);
 		EntityRendererRegistry.register(ModBoss.RUSTY_GUARDIAN, RustyGuardianRenderer::new);
+		EntityRendererRegistry.register(ModBoss.FURNACE_WARDEN, FurnaceWardenRenderer::new);
 	}
 }

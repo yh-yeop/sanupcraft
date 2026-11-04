@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=north,powered=false": {
+      "model": "sanupcraft:block/belt_motor"
+    },
+    "facing=north,powered=true": {
+      "model": "sanupcraft:block/belt_motor_on"
+    },
+    "facing=east,powered=false": {
+      "model": "sanupcraft:block/belt_motor",
+      "y": 90
+    },
+    "facing=east,powered=true": {
+      "model": "sanupcraft:block/belt_motor_on",
+      "y": 90
+    },
+    "facing=south,powered=false": {
+      "model": "sanupcraft:block/belt_motor",
+      "y": 180
+    },
+    "facing=south,powered=true": {
+      "model": "sanupcraft:block/belt_motor_on",
+      "y": 180
+    },
+    "facing=west,powered=false": {
+      "model": "sanupcraft:block/belt_motor",
+      "y": 270
+    },
+    "facing=west,powered=true": {
+      "model": "sanupcraft:block/belt_motor_on",
+      "y": 270
+    }
+  }
+}

@@ -12,7 +12,10 @@ import io.github.yhyeop.sanupcraft.compat.CorpseGravesCompat;
 import io.github.yhyeop.sanupcraft.core.ModItems;
 import io.github.yhyeop.sanupcraft.core.ModTab;
 import io.github.yhyeop.sanupcraft.factory.ModMachines;
+import io.github.yhyeop.sanupcraft.gear.HeatproofGear;
 import io.github.yhyeop.sanupcraft.gear.SteelGear;
+import io.github.yhyeop.sanupcraft.logistics.ModLogistics;
+import io.github.yhyeop.sanupcraft.power.ModPower;
 
 public class Sanupcraft implements ModInitializer {
 	public static final String MOD_ID = "sanupcraft";
@@ -23,7 +26,10 @@ public class Sanupcraft implements ModInitializer {
 		// 등록 순서 = 크리에이티브 탭 순서
 		ModItems.init();
 		ModMachines.init();
+		ModPower.init();
+		ModLogistics.init();
 		SteelGear.init();
+		HeatproofGear.init();
 		ModBoss.init();
 		ModTab.init();
 		CorpseGravesCompat.init();

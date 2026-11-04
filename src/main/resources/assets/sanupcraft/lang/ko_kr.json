@@ -17,5 +17,21 @@
   "block.sanupcraft.guardian_altar.busy": "근처에 이미 수호자가 있다.",
   "entity.sanupcraft.rusty_guardian": "녹슨 수호자",
   "itemGroup.sanupcraft": "산업크래프트",
-  "tag.item.sanupcraft.repairs_steel": "강철 수리 재료"
+  "tag.item.sanupcraft.repairs_steel": "강철 수리 재료",
+  "item.sanupcraft.core_shard": "핵 조각",
+  "item.sanupcraft.warden_heart": "파수꾼의 심장",
+  "item.sanupcraft.warden_summoner": "파수꾼 소환석",
+  "item.sanupcraft.heatproof_helmet": "내열 투구",
+  "item.sanupcraft.heatproof_chestplate": "내열 흉갑",
+  "item.sanupcraft.heatproof_leggings": "내열 각반",
+  "item.sanupcraft.heatproof_boots": "내열 부츠",
+  "item.sanupcraft.heatproof_sword": "내열 검",
+  "block.sanupcraft.boiler": "보일러",
+  "block.sanupcraft.boiler.status": "물 %s/%s · 증기 %s/%s · 연료 %s",
+  "block.sanupcraft.steam_pipe": "증기 파이프",
+  "block.sanupcraft.conveyor_belt": "컨베이어 벨트",
+  "block.sanupcraft.belt_motor": "벨트 모터",
+  "block.sanupcraft.belt_motor.status": "증기 %s/%s · 돌리는 벨트 %s/%s",
+  "entity.sanupcraft.furnace_warden": "용광로 파수꾼",
+  "tag.item.sanupcraft.repairs_heatproof": "내열 수리 재료"
 }

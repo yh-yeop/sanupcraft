@@ -6,7 +6,8 @@
 	"environment": "*",
 	"entrypoints": {
 		"fabric-gametest": [
-			"io.github.yhyeop.sanupcraft.test.SanupcraftGameTest"
+			"io.github.yhyeop.sanupcraft.test.SanupcraftGameTest",
+			"io.github.yhyeop.sanupcraft.test.SanupcraftM2GameTest"
 		],
 		"fabric-client-gametest": [
 			"io.github.yhyeop.sanupcraft.test.SanupcraftClientGameTest"

@@ -3,6 +3,9 @@
     "sanupcraft:crusher",
     "sanupcraft:press",
     "sanupcraft:assembler",
-    "sanupcraft:guardian_altar"
+    "sanupcraft:guardian_altar",
+    "sanupcraft:boiler",
+    "sanupcraft:belt_motor",
+    "sanupcraft:steam_pipe"
   ]
 }

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "K": "minecraft:dried_kelp",
+    "P": "sanupcraft:iron_plate"
+  },
+  "pattern": [
+    "KKK",
+    "PPP"
+  ],
+  "result": {
+    "id": "sanupcraft:conveyor_belt",
+    "count": 8
+  }
+}

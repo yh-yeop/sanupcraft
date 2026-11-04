@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "S": "sanupcraft:core_shard",
+    "G": "sanupcraft:gear_part",
+    "T": "minecraft:stick"
+  },
+  "pattern": [
+    "S",
+    "G",
+    "T"
+  ],
+  "result": {
+    "id": "sanupcraft:heatproof_sword"
+  }
+}

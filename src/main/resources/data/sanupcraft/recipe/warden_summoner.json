@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "sanupcraft:iron_plate",
+    "S": "sanupcraft:core_shard",
+    "M": "minecraft:magma_block"
+  },
+  "pattern": [
+    "PSP",
+    "SMS",
+    "PSP"
+  ],
+  "result": {
+    "id": "sanupcraft:warden_summoner"
+  }
+}

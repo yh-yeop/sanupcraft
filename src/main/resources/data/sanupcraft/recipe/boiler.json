@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "sanupcraft:iron_plate",
+    "F": "minecraft:furnace",
+    "B": "minecraft:bucket"
+  },
+  "pattern": [
+    "PPP",
+    "PFP",
+    "PBP"
+  ],
+  "result": {
+    "id": "sanupcraft:boiler"
+  }
+}
