@@ -26,6 +26,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.levelgen.Heightmap;
 
 import io.github.yhyeop.sanupcraft.boss.ModBoss;
 import io.github.yhyeop.sanupcraft.core.ModItems;
@@ -50,6 +51,7 @@ public final class PlaytestCommand {
 		NETHER("내열 한 벌로 네더 탐험", Level.NETHER, PlaytestCommand::kitNether),
 		BOSS2("네더 제단 · 용광로 파수꾼", Level.NETHER, PlaytestCommand::kitBoss2),
 		FORGE("심장 제련로 · 고대 잔해", Level.NETHER, PlaytestCommand::kitForge),
+		HOME("오버월드로 돌아오기", Level.OVERWORLD, PlaytestCommand::kitHome),
 		END("엔드 · 엔더 운반기", Level.END, PlaytestCommand::kitEnd);
 
 		final String description;
@@ -94,17 +96,31 @@ public final class PlaytestCommand {
 				.then(playtest));
 	}
 
-	/** 단계 적용: 필요하면 차원 이동 → 장비 · 재료 지급. */
+	/** 단계 적용: 필요하면 차원 이동 → 장비 · 재료 지급. HOME은 이미 오버월드여도 월드 스폰으로 보낸다. */
 	public static void apply(ServerPlayer player, Stage stage) {
-		if (stage.dimension != null && player.level().dimension() != stage.dimension) {
+		if (stage.dimension != null && (player.level().dimension() != stage.dimension || stage == Stage.HOME)) {
 			ServerLevel target = player.level().getServer().getLevel(stage.dimension);
 			if (target != null) {
-				BlockPos spot = safePlatform(target, stage.dimension == Level.END ? new BlockPos(100, 64, 0)
-						: new BlockPos(player.getBlockX() / 8, 64, player.getBlockZ() / 8));
+				BlockPos spot = destination(target, player, stage);
 				player.teleportTo(target, spot.getX() + 0.5, spot.getY(), spot.getZ() + 0.5, Set.<Relative>of(), player.getYRot(), 0.0F, true);
 			}
 		}
 		stage.kit.accept(player);
+	}
+
+	/** 그 단계에서 플레이어가 설 자리. 네더 · 엔드는 흑요석 발판을 깔고, 오버월드는 월드 스폰의 지표면이다. */
+	private static BlockPos destination(ServerLevel target, ServerPlayer player, Stage stage) {
+		if (stage.dimension == Level.END) {
+			return safePlatform(target, new BlockPos(100, 64, 0));
+		}
+		if (stage.dimension == Level.OVERWORLD) {
+			BlockPos spawn = target.getRespawnData().pos();
+			target.getChunk(spawn.getX() >> 4, spawn.getZ() >> 4);
+			BlockPos surface = target.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, spawn);
+			// 물 · 용암 위면 그 자리에 발판을 깐다
+			return target.getBlockState(surface.below()).getFluidState().isEmpty() ? surface : safePlatform(target, surface);
+		}
+		return safePlatform(target, new BlockPos(player.getBlockX() / 8, 64, player.getBlockZ() / 8));
 	}
 
 	/** 그 자리에 흑요석 5x5 발판을 깔고 위 4칸을 비운다. 플레이어가 설 자리를 돌려준다. */
@@ -132,6 +148,8 @@ public final class PlaytestCommand {
 		give(p, Items.COAL, 32);
 		give(p, Items.CRAFTING_TABLE, 1);
 		give(p, Items.FURNACE, 2);
+		give(p, Items.REDSTONE, 4);
+		give(p, Items.OAK_PLANKS, 16);
 		food(p);
 	}
 
@@ -163,7 +181,7 @@ public final class PlaytestCommand {
 	}
 
 	private static void kitSteam(ServerPlayer p) {
-		give(p, ModPower.BOILER.asItem(), 1);
+		give(p, ModPower.BOILER.asItem(), 2);
 		give(p, ModPower.STEAM_PIPE.asItem(), 16);
 		give(p, Items.WATER_BUCKET, 2);
 		give(p, Items.COAL, 32);
@@ -202,6 +220,13 @@ public final class PlaytestCommand {
 		give(p, Items.HOPPER, 2);
 		give(p, Items.CHEST, 1);
 		give(p, ModItems.WARDEN_HEART, 1);
+		food(p);
+	}
+
+	/** 네더에서 돌아온 뒤: 오버월드에서 파수꾼 소환석이 안 먹는 것(네더에서만 깨어난다)을 확인할 수 있게 제단과 소환석을 준다. */
+	private static void kitHome(ServerPlayer p) {
+		give(p, ModBoss.GUARDIAN_ALTAR.asItem(), 1);
+		give(p, ModBoss.WARDEN_SUMMONER, 1);
 		food(p);
 	}
 

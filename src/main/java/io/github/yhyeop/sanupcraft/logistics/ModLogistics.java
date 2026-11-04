@@ -2,6 +2,8 @@ package io.github.yhyeop.sanupcraft.logistics;
 
 import java.util.Set;
 
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
+
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.SoundType;
@@ -43,6 +45,9 @@ public final class ModLogistics {
 	}
 
 	public static void init() {
+		// 정적 수신기 목록이 옛 서버의 월드를 붙들고 있지 않도록 서버가 시작 · 종료될 때 비운다
+		ServerLifecycleEvents.SERVER_STARTING.register(server -> EnderLinkBlockEntity.clearReceivers());
+		ServerLifecycleEvents.SERVER_STOPPED.register(server -> EnderLinkBlockEntity.clearReceivers());
 	}
 
 	private static BlockBehaviour.Properties enderLinkProperties() {

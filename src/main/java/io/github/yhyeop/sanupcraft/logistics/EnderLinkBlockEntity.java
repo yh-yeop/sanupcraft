@@ -1,10 +1,11 @@
 package io.github.yhyeop.sanupcraft.logistics;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.NonNullList;
@@ -72,6 +73,11 @@ public class EnderLinkBlockEntity extends BaseContainerBlockEntity {
 		}
 	}
 
+	/** 로드된 수신기 목록을 비운다 (서버가 시작 · 종료될 때. 옛 서버의 월드를 붙들고 있지 않도록). */
+	public static void clearReceivers() {
+		RECEIVERS.clear();
+	}
+
 	private void register() {
 		if (!sender && level instanceof ServerLevel && !isRemoved()) {
 			RECEIVERS.computeIfAbsent(channel, c -> ConcurrentHashMap.newKeySet()).add(this);
@@ -93,40 +99,65 @@ public class EnderLinkBlockEntity extends BaseContainerBlockEntity {
 		super.setRemoved();
 	}
 
-	/** 이 송신기가 보낼 수 있는 수신기 (같은 서버 · 같은 채널 · 자리 있음). 없으면 null. */
-	private @Nullable EnderLinkBlockEntity target(ItemStack stack) {
+	/**
+	 * 이 송신기가 보낼 수 있는 수신기들 (같은 서버 · 같은 채널). 같은 차원 먼저, 그다음 가까운 순.
+	 * 순서가 정해져 있어서 어느 수신기부터 채워지는지 늘 같다.
+	 */
+	private List<EnderLinkBlockEntity> receivers() {
+		List<EnderLinkBlockEntity> result = new ArrayList<>();
 		if (!(level instanceof ServerLevel serverLevel)) {
-			return null;
+			return result;
 		}
 		Set<EnderLinkBlockEntity> set = RECEIVERS.get(channel);
 		if (set == null) {
-			return null;
+			return result;
 		}
 		for (EnderLinkBlockEntity receiver : set) {
-			if (receiver.isRemoved() || !(receiver.level instanceof ServerLevel other) || other.getServer() != serverLevel.getServer()) {
-				continue;
-			}
-			if (receiver.hasRoomFor(stack)) {
-				return receiver;
+			if (!receiver.isRemoved() && receiver.level instanceof ServerLevel other && other.getServer() == serverLevel.getServer()) {
+				result.add(receiver);
 			}
 		}
-		return null;
+		result.sort(Comparator.<EnderLinkBlockEntity, Boolean>comparing(r -> r.level != level)
+				.thenComparingDouble(r -> r.worldPosition.distSqr(worldPosition))
+				.thenComparingLong(r -> r.worldPosition.asLong()));
+		return result;
 	}
 
-	private boolean hasRoomFor(ItemStack stack) {
+	/** 이 송신기에 이어진 수신기 수 (같은 서버 · 같은 채널에 등록된 것). */
+	public int linkedReceivers() {
+		return receivers().size();
+	}
+
+	/** 이 수신기에 {@code stack}을 몇 개까지 더 넣을 수 있는가. */
+	private int roomFor(ItemStack stack) {
+		int room = 0;
+		int max = getMaxStackSize(stack);
 		for (ItemStack slot : items) {
-			if (slot.isEmpty() || (ItemStack.isSameItemSameComponents(slot, stack) && slot.getCount() < slot.getMaxStackSize())) {
-				return true;
+			if (slot.isEmpty()) {
+				room += max;
+			} else if (ItemStack.isSameItemSameComponents(slot, stack)) {
+				room += Math.max(0, max - slot.getCount());
 			}
 		}
-		return false;
+		return room;
 	}
 
 	// ---- 송신기: 들어온 아이템을 바로 보낸다 ----
 
 	@Override
 	public boolean canPlaceItem(int slot, ItemStack stack) {
-		return !sender || target(stack) != null;
+		if (!sender) {
+			return true;
+		}
+		// 수신기들의 남은 자리를 다 합쳐도 모자라면 받지 않는다 (벨트가 스택째 넣으므로)
+		int room = 0;
+		for (EnderLinkBlockEntity receiver : receivers()) {
+			room += receiver.roomFor(stack);
+			if (room >= stack.getCount()) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
@@ -138,8 +169,14 @@ public class EnderLinkBlockEntity extends BaseContainerBlockEntity {
 		if (stack.isEmpty() || level == null) {
 			return;
 		}
-		EnderLinkBlockEntity receiver = target(stack);
-		ItemStack rest = receiver == null ? stack : HopperBlockEntity.addItem(null, receiver, stack.copy(), null);
+		ItemStack rest = stack.copy();
+		for (EnderLinkBlockEntity receiver : receivers()) {
+			rest = HopperBlockEntity.addItem(null, receiver, rest, null);
+			if (rest.isEmpty()) {
+				return;
+			}
+		}
+		// 받을 곳이 없거나 모자라면 그때만 송신기 위에 떨군다
 		if (!rest.isEmpty()) {
 			Containers.dropItemStack(level, worldPosition.getX() + 0.5, worldPosition.getY() + 1.0, worldPosition.getZ() + 0.5, rest);
 		}
@@ -172,7 +209,12 @@ public class EnderLinkBlockEntity extends BaseContainerBlockEntity {
 
 	@Override
 	protected Component getDefaultName() {
-		return getBlockState().getBlock().getName();
+		Component name = getBlockState().getBlock().getName();
+		if (sender || channel == DyeColor.WHITE) {
+			return name;
+		}
+		// 상자 화면 제목에 채널 색을 붙인다 (기본 흰색은 엔더 상자처럼 그대로)
+		return Component.translatable("block.sanupcraft.ender_receiver.titled", name, Component.translatable("color.minecraft." + channel.getName()));
 	}
 
 	@Override
