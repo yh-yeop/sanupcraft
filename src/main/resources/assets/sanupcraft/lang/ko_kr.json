@@ -44,7 +44,7 @@
   "advancements.sanupcraft.root.title": "산업크래프트",
   "advancements.sanupcraft.root.description": "공장이 보스를 열고, 보스가 공장을 연다. 철부터 캐자.",
   "advancements.sanupcraft.crusher.title": "두 배, 그리고 덤",
-  "advancements.sanupcraft.crusher.description": "원석을 갈면 가루 2개, 가끔 다른 금속 가루까지. 석탄도 갈아 두자: 합금로에서 철가루 + 석탄 가루 → 강철.",
+  "advancements.sanupcraft.crusher.description": "원석을 갈면 가루 2개, 가끔 다른 금속 가루까지. 석탄도 갈아 두자: 합금로에서 철가루 2 + 석탄 가루 2 → 강철.",
   "advancements.sanupcraft.iron_plate.title": "부품 상자",
   "advancements.sanupcraft.iron_plate.description": "조립대가 강철판을 기계 부품으로. 깔때기는 위 재료, 옆 연료, 아래 결과.",
   "advancements.sanupcraft.steel.title": "녹 방지",

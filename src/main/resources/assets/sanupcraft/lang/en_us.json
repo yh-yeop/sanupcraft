@@ -44,7 +44,7 @@
   "advancements.sanupcraft.root.title": "Sanupcraft",
   "advancements.sanupcraft.root.description": "Factories open boss fights, bosses open factories. Start by mining iron.",
   "advancements.sanupcraft.crusher.title": "Double and More",
-  "advancements.sanupcraft.crusher.description": "Raw ore crushes into 2 dust, sometimes with another metal. Crush coal into coal dust: an Alloy Smelter turns iron dust + coal dust into steel.",
+  "advancements.sanupcraft.crusher.description": "Raw ore crushes into 2 dust, sometimes with another metal. Crush coal into coal dust: an Alloy Smelter turns 2 iron dust + 2 coal dust into steel.",
   "advancements.sanupcraft.iron_plate.title": "Parts Bin",
   "advancements.sanupcraft.iron_plate.description": "An Assembler turns steel plates into machine parts. Hoppers: top for input, side for fuel, bottom for output.",
   "advancements.sanupcraft.steel.title": "Rustproof",

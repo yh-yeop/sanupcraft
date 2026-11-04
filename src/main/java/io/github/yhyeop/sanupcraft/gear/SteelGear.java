@@ -23,7 +23,8 @@ import io.github.yhyeop.sanupcraft.core.ModRegistry;
 /**
  * 강철 주괴(합금로)로 만드는 장비. 철과 다이아 사이 (방어 17 · 단단함 1, 내구도 철의 1.5배).
  * 갑옷 한 벌을 다 입으면 녹슨 수호자의 녹 공격을 막고, 강철 검은 수호자에게 피해가 더 들어간다.
- * 강철 해머 · 굴삭 삽은 3x3으로 캔다 (AreaMining).
+ * 강철 해머 · 굴삭 삽은 3x3으로 캔다 (AreaMining). 대신 캐는 속도가 강철 곡괭이 · 삽의 60%.
+ * 강철 주괴 1 = 철가루 2(원석 철 1) + 석탄 가루 2: 철과 같은 원석으로 더 좋은 장비, 대가는 석탄과 기계.
  */
 public final class SteelGear {
 	/** 강철 장비 수리 재료 (강철 주괴). */
@@ -31,9 +32,13 @@ public final class SteelGear {
 	public static final ResourceKey<EquipmentAsset> STEEL_ASSET = ResourceKey.create(EquipmentAssets.ROOT_ID, Sanupcraft.id("steel"));
 
 	public static final ArmorMaterial STEEL_ARMOR = new ArmorMaterial(
-			22, defense(2, 6, 7, 2), 12, SoundEvents.ARMOR_EQUIP_IRON, 1.0F, 0.0F, REPAIRS_STEEL, STEEL_ASSET);
+			22, defense(2, 6, 7, 2), 10, SoundEvents.ARMOR_EQUIP_IRON, 1.0F, 0.0F, REPAIRS_STEEL, STEEL_ASSET);
 	public static final ToolMaterial STEEL_TOOL = new ToolMaterial(
-			BlockTags.INCORRECT_FOR_IRON_TOOL, 500, 6.5F, 2.5F, 14, REPAIRS_STEEL);
+			BlockTags.INCORRECT_FOR_IRON_TOOL, 500, 6.5F, 2.5F, 10, REPAIRS_STEEL);
+	/** 해머 · 굴삭 삽: 강철과 같지만 캐는 속도 60% (9칸을 한 번에 캐는 대가). */
+	public static final float AREA_SPEED_FACTOR = 0.6F;
+	public static final ToolMaterial STEEL_AREA_TOOL = new ToolMaterial(
+			BlockTags.INCORRECT_FOR_IRON_TOOL, 500, 6.5F * AREA_SPEED_FACTOR, 2.5F, 10, REPAIRS_STEEL);
 
 	public static final Item STEEL_HELMET = armor("steel_helmet", ArmorType.HELMET);
 	public static final Item STEEL_CHESTPLATE = armor("steel_chestplate", ArmorType.CHESTPLATE);
@@ -41,9 +46,9 @@ public final class SteelGear {
 	public static final Item STEEL_BOOTS = armor("steel_boots", ArmorType.BOOTS);
 	public static final Item STEEL_SWORD = ModRegistry.item("steel_sword", new Item.Properties().sword(STEEL_TOOL, 3.0F, -2.4F));
 	/** 3x3 곡괭이. 블록마다 내구도를 쓰고, 웅크리면 한 칸만. */
-	public static final Item STEEL_HAMMER = ModRegistry.item("steel_hammer", new Item.Properties().pickaxe(STEEL_TOOL, 3.0F, -3.0F));
+	public static final Item STEEL_HAMMER = ModRegistry.item("steel_hammer", new Item.Properties().pickaxe(STEEL_AREA_TOOL, 3.0F, -3.0F));
 	/** 3x3 삽. */
-	public static final Item STEEL_EXCAVATOR = ModRegistry.item("steel_excavator", new Item.Properties().shovel(STEEL_TOOL, 2.5F, -3.1F));
+	public static final Item STEEL_EXCAVATOR = ModRegistry.item("steel_excavator", new Item.Properties().shovel(STEEL_AREA_TOOL, 2.5F, -3.1F));
 
 	private SteelGear() {
 	}

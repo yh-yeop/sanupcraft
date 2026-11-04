@@ -11,7 +11,7 @@ public final class ModItems {
 	public static final Item GOLD_DUST = ModRegistry.item("gold_dust");
 	/** 분쇄기: 석탄 → 석탄 가루 2. 강철의 탄소. */
 	public static final Item COAL_DUST = ModRegistry.item("coal_dust");
-	/** 합금로: 철가루 + 석탄 가루 2 → 강철 주괴. 바닐라로는 못 만든다. 강철 장비 · 해머 · 기계의 재료. */
+	/** 합금로: 철가루 2 + 석탄 가루 2 → 강철 주괴. 바닐라로는 못 만든다. 강철 장비 · 해머 · 기계의 재료. */
 	public static final Item STEEL_INGOT = ModRegistry.item("steel_ingot");
 	/** 압착기: 철 주괴 → 철판 (기계 외장). */
 	public static final Item IRON_PLATE = ModRegistry.item("iron_plate");

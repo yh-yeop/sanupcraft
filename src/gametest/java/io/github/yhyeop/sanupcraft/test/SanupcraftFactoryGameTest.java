@@ -34,28 +34,28 @@ import io.github.yhyeop.sanupcraft.mining.QuarryBlockEntity;
 public class SanupcraftFactoryGameTest {
 	private static final BlockPos MACHINE = new BlockPos(1, 1, 1);
 
-	/** 합금로: 철가루 + 석탄 가루 2 → 강철. 재료 칸 순서는 상관없다. */
+	/** 합금로: 철가루 2 + 석탄 가루 2 → 강철 (원석 철 1개분). 재료 칸 순서는 상관없다. */
 	@GameTest(maxTicks = 300)
 	public void alloySmelterMakesSteel(GameTestHelper helper) {
 		MachineBlockEntity smelter = machine(helper, MACHINE, ModMachines.ALLOY_SMELTER);
 		smelter.setItem(MachineBlockEntity.SLOT_INPUT, new ItemStack(ModItems.COAL_DUST, 2));
-		smelter.setItem(MachineBlockEntity.SLOT_INPUT2, new ItemStack(ModItems.IRON_DUST, 1));
+		smelter.setItem(MachineBlockEntity.SLOT_INPUT2, new ItemStack(ModItems.IRON_DUST, 2));
 		smelter.setItem(MachineBlockEntity.SLOT_FUEL, new ItemStack(Items.COAL));
 		helper.succeedWhen(() -> {
 			helper.assertTrue(smelter.result().is(ModItems.STEEL_INGOT), "강철이 아님: " + smelter.result());
 			helper.assertTrue(smelter.getItem(MachineBlockEntity.SLOT_INPUT).isEmpty(), "석탄 가루 2개를 다 쓰지 않음");
-			helper.assertTrue(smelter.getItem(MachineBlockEntity.SLOT_INPUT2).isEmpty(), "철가루를 쓰지 않음");
+			helper.assertTrue(smelter.getItem(MachineBlockEntity.SLOT_INPUT2).isEmpty(), "철가루 2개를 다 쓰지 않음");
 		});
 	}
 
 	@GameTest(maxTicks = 300)
-	public void alloySmelterWaitsForEnoughCoalDust(GameTestHelper helper) {
+	public void alloySmelterWaitsForEnoughIronDust(GameTestHelper helper) {
 		MachineBlockEntity smelter = machine(helper, MACHINE, ModMachines.ALLOY_SMELTER);
 		smelter.setItem(MachineBlockEntity.SLOT_INPUT, new ItemStack(ModItems.IRON_DUST, 1));
-		smelter.setItem(MachineBlockEntity.SLOT_INPUT2, new ItemStack(ModItems.COAL_DUST, 1));
+		smelter.setItem(MachineBlockEntity.SLOT_INPUT2, new ItemStack(ModItems.COAL_DUST, 2));
 		smelter.setItem(MachineBlockEntity.SLOT_FUEL, new ItemStack(Items.COAL));
 		helper.runAfterDelay(250, () -> {
-			helper.assertTrue(smelter.result().isEmpty(), "석탄 가루 1개로 강철이 나옴");
+			helper.assertTrue(smelter.result().isEmpty(), "철가루 1개로 강철이 나옴");
 			helper.succeed();
 		});
 	}
@@ -132,6 +132,18 @@ public class SanupcraftFactoryGameTest {
 		helper.assertBlockPresent(Blocks.OBSIDIAN, hard);
 		helper.assertBlockPresent(Blocks.STONE, center.north());
 		helper.assertTrue(player.getMainHandItem().getDamageValue() >= 7, "해머 내구도를 안 씀");
+		helper.succeed();
+	}
+
+	/** 해머 · 굴삭 삽은 3x3 대가로 강철 곡괭이 · 삽보다 느리다 (60%). 강철은 인챈트가 다이아와 같다(10). */
+	@GameTest
+	public void areaToolsAreSlowerThanSingleTools(GameTestHelper helper) {
+		float hammer = new ItemStack(SteelGear.STEEL_HAMMER).getDestroySpeed(Blocks.STONE.defaultBlockState());
+		float ironPick = new ItemStack(Items.IRON_PICKAXE).getDestroySpeed(Blocks.STONE.defaultBlockState());
+		helper.assertTrue(hammer < ironPick, "해머 " + hammer + " ≥ 철 곡괭이 " + ironPick);
+		helper.assertValueEqual(hammer, SteelGear.STEEL_TOOL.speed() * SteelGear.AREA_SPEED_FACTOR, "해머 속도");
+		helper.assertValueEqual(SteelGear.STEEL_TOOL.enchantmentValue(), 10, "강철 도구 인챈트");
+		helper.assertValueEqual(SteelGear.STEEL_ARMOR.enchantmentValue(), 10, "강철 갑옷 인챈트");
 		helper.succeed();
 	}
 

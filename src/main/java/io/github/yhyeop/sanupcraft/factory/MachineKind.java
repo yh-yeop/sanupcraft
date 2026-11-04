@@ -14,7 +14,7 @@ public enum MachineKind {
 	ASSEMBLER("assembling"),
 	/** 심장 제련로 (3단계): 고대 잔해 → 네더라이트 파편 2, 블레이즈 막대 → 가루 4. */
 	FORGE("forging"),
-	/** 합금로: 재료 두 가지 → 합금 (철가루 + 석탄 가루 → 강철). */
+	/** 합금로: 재료 두 가지 → 합금 (철가루 2 + 석탄 가루 2 → 강철). */
 	ALLOY("alloying");
 
 	private final String recipeName;
