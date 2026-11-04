@@ -1,5 +1,5 @@
 {
-  "parent": "sanupcraft:crusher",
+  "parent": "sanupcraft:press",
   "criteria": {
     "has": {
       "trigger": "minecraft:inventory_changed",

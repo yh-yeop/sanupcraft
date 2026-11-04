@@ -11,6 +11,7 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ToolMaterial;
 import net.minecraft.world.item.equipment.ArmorMaterial;
 import net.minecraft.world.item.equipment.ArmorType;
@@ -22,7 +23,7 @@ import io.github.yhyeop.sanupcraft.core.ModRegistry;
 
 /**
  * 강철 주괴(합금로)로 만드는 장비. 철과 다이아 사이 (방어 17 · 단단함 1, 내구도 철의 1.5배).
- * 갑옷 한 벌을 다 입으면 녹슨 수호자의 녹 공격을 막고, 강철 검은 수호자에게 피해가 더 들어간다.
+ * 갑옷 한 벌을 다 입으면(내열 갑옷으로 올려 입어도) 녹슨 수호자의 녹 공격을 막고, 강철 검은 수호자에게 피해가 더 들어간다.
  * 강철 해머 · 굴삭 삽은 3x3으로 캔다 (AreaMining). 대신 캐는 속도가 강철 곡괭이 · 삽의 60%.
  * 강철 주괴 1 = 철가루 2(원석 철 1) + 석탄 가루 2: 철과 같은 원석으로 더 좋은 장비, 대가는 석탄과 기계.
  */
@@ -57,12 +58,20 @@ public final class SteelGear {
 		AreaMining.init();
 	}
 
-	/** 강철 갑옷 네 부위를 다 입었나. */
+	/**
+	 * 녹 방어 한 벌을 다 입었나. 부위마다 강철 또는 내열이면 된다 (내열은 강철의 윗단계라 섞어 입어도 인정).
+	 * 내열로 올려 입은 사람이 핵을 모으려고 수호자를 다시 잡을 때 녹 공격을 맞지 않게.
+	 */
 	public static boolean wearsFullSet(LivingEntity entity) {
-		return entity.getItemBySlot(EquipmentSlot.HEAD).is(STEEL_HELMET)
-				&& entity.getItemBySlot(EquipmentSlot.CHEST).is(STEEL_CHESTPLATE)
-				&& entity.getItemBySlot(EquipmentSlot.LEGS).is(STEEL_LEGGINGS)
-				&& entity.getItemBySlot(EquipmentSlot.FEET).is(STEEL_BOOTS);
+		return wears(entity, EquipmentSlot.HEAD, STEEL_HELMET, HeatproofGear.HEATPROOF_HELMET)
+				&& wears(entity, EquipmentSlot.CHEST, STEEL_CHESTPLATE, HeatproofGear.HEATPROOF_CHESTPLATE)
+				&& wears(entity, EquipmentSlot.LEGS, STEEL_LEGGINGS, HeatproofGear.HEATPROOF_LEGGINGS)
+				&& wears(entity, EquipmentSlot.FEET, STEEL_BOOTS, HeatproofGear.HEATPROOF_BOOTS);
+	}
+
+	private static boolean wears(LivingEntity entity, EquipmentSlot slot, Item steel, Item heatproof) {
+		ItemStack worn = entity.getItemBySlot(slot);
+		return worn.is(steel) || worn.is(heatproof);
 	}
 
 	private static Item armor(String name, ArmorType type) {

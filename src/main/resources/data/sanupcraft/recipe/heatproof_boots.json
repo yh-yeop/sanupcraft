@@ -3,10 +3,11 @@
   "category": "equipment",
   "key": {
     "G": "sanupcraft:gear_part",
-    "S": "sanupcraft:core_shard"
+    "S": "sanupcraft:core_shard",
+    "H": "sanupcraft:steel_boots"
   },
   "pattern": [
-    "S S",
+    "SHS",
     "G G"
   ],
   "result": {

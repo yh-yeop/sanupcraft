@@ -1,0 +1,32 @@
+{
+  "parent": "sanupcraft:crusher",
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:press"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:press"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.press.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.press.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ]
+}
