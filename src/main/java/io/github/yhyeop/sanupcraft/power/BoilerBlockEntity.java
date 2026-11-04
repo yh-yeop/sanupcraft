@@ -9,6 +9,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.Container;
+import net.minecraft.world.Containers;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.core.NonNullList;
@@ -24,12 +25,14 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.providers.number.ints.ResolvableInt;
+import io.github.yhyeop.sanupcraft.factory.MachineBlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /**
  * 보일러: 연료를 태우는 동안 물을 증기로 바꾸고, 파이프로 이어진 기계에 나눠 준다.
  * 연료 칸 하나 (깔때기로도 넣을 수 있음). 옆에 물 원천이 있으면 물이 계속 찬다.
+ * 증기를 실제로 만든 틱에만 연료가 탄다 (증기가 가득하거나 물이 없으면 불이 붙은 채로 기다린다).
  */
 public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer {
 	public static final int WATER_CAPACITY = 8000;
@@ -39,6 +42,8 @@ public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer {
 	public static final int BUCKET = 1000;
 	private static final int WATER_FROM_SOURCE_PER_TICK = 100;
 	private static final int NETWORK_REFRESH_TICKS = 20;
+	/** 증기를 못 만든 채 이 틱이 지나면 LIT를 끈다 (연료는 그대로 남아 있음). */
+	private static final int LIT_HOLD_TICKS = 10;
 	private static final int[] SLOTS = {0};
 
 	private NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
@@ -48,18 +53,18 @@ public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer {
 	private int litDuration;
 	private List<SteamConsumer> consumers = List.of();
 	private int refresh;
+	/** 증기를 만들지 못한 연속 틱 수 (저장하지 않음). */
+	private int idleTicks = LIT_HOLD_TICKS;
+	/** 증기를 나눠 줄 때 시작할 기계 순서. 모자랄 때 늘 같은 기계만 굶지 않게 틱마다 돌린다. */
+	private int rotation;
 
 	public BoilerBlockEntity(BlockPos pos, BlockState state) {
 		super(ModPower.BOILER_BLOCK_ENTITY, pos, state);
 	}
 
 	public static void serverTick(ServerLevel level, BlockPos pos, BlockState state, BoilerBlockEntity boiler) {
-		boolean wasLit = boiler.litTime > 0;
 		if (boiler.touchesWaterSource(level, pos)) {
 			boiler.water = Math.min(WATER_CAPACITY, boiler.water + WATER_FROM_SOURCE_PER_TICK);
-		}
-		if (boiler.litTime > 0) {
-			boiler.litTime--;
 		}
 		ItemStack fuel = boiler.items.get(0);
 		if (boiler.litTime <= 0 && !fuel.isEmpty() && boiler.water > 0 && boiler.steam < STEAM_CAPACITY) {
@@ -67,24 +72,33 @@ public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer {
 			if (burn > 0) {
 				boiler.litTime = burn;
 				boiler.litDuration = burn;
-				fuel.shrink(1);
+				ItemStack remainder = MachineBlockEntity.consumeFuel(fuel);
+				if (!remainder.isEmpty()) {
+					// 용암 양동이 → 빈 양동이: 보일러에는 빼낼 칸이 없으니 위에 떨군다
+					Containers.dropItemStack(level, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5, remainder);
+				}
 			}
 		}
+		int made = 0;
 		if (boiler.litTime > 0) {
-			int made = Math.min(STEAM_PER_TICK, Math.min(STEAM_CAPACITY - boiler.steam, boiler.water));
-			boiler.steam += made;
-			boiler.water -= made;
+			made = Math.min(STEAM_PER_TICK, Math.min(STEAM_CAPACITY - boiler.steam, boiler.water));
+			if (made > 0) {
+				boiler.steam += made;
+				boiler.water -= made;
+				boiler.litTime--;
+			}
 		}
+		boiler.idleTicks = made > 0 ? 0 : Math.min(boiler.idleTicks + 1, LIT_HOLD_TICKS);
 		boiler.distribute(level, pos);
 
-		boolean isLit = boiler.litTime > 0;
-		if (wasLit != isLit) {
+		boolean isLit = boiler.isLit();
+		if (state.getValue(BoilerBlock.LIT) != isLit) {
 			level.setBlockAndUpdate(pos, state.setValue(BoilerBlock.LIT, isLit));
 		}
 		setChanged(level, pos, state);
 	}
 
-	/** 이어진 기계들에 증기를 고르게 나눠 준다. */
+	/** 이어진 기계들에 증기를 고르게 나눠 준다. 시작 기계를 틱마다 돌려서, 모자랄 때도 모든 기계가 번갈아 받는다. */
 	private void distribute(ServerLevel level, BlockPos pos) {
 		if (--refresh <= 0) {
 			consumers = SteamNetwork.findConsumers(level, pos);
@@ -93,11 +107,15 @@ public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer {
 		if (steam <= 0 || consumers.isEmpty()) {
 			return;
 		}
-		int share = Math.max(1, steam / consumers.size());
-		for (SteamConsumer consumer : consumers) {
+		int count = consumers.size();
+		int share = Math.max(1, steam / count);
+		int start = rotation % count;
+		rotation = (start + 1) % count;
+		for (int i = 0; i < count; i++) {
 			if (steam <= 0) {
 				break;
 			}
+			SteamConsumer consumer = consumers.get((start + i) % count);
 			if (consumer instanceof BlockEntity be && be.isRemoved()) {
 				continue;
 			}
@@ -144,8 +162,14 @@ public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer {
 		return steam;
 	}
 
+	/** 불이 켜져 있는가: 타는 중이고 최근에 증기를 만들었을 때 (멈춘 채 기다리는 동안은 꺼진 모습). */
 	public boolean isLit() {
-		return litTime > 0;
+		return litTime > 0 && idleTicks < LIT_HOLD_TICKS;
+	}
+
+	/** 남은 연소 틱 (멈춘 채 기다리는 동안에도 남아 있다). */
+	public int litTime() {
+		return litTime;
 	}
 
 	public int fuelCount() {

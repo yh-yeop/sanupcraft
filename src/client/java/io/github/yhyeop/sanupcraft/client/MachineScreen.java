@@ -9,6 +9,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 
 import io.github.yhyeop.sanupcraft.Sanupcraft;
+import io.github.yhyeop.sanupcraft.factory.MachineBlockEntity;
 import io.github.yhyeop.sanupcraft.factory.MachineMenu;
 
 /**
@@ -21,6 +22,11 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
 	private static final Identifier LIT_PROGRESS_SPRITE = Identifier.withDefaultNamespace("container/furnace/lit_progress");
 	private static final Identifier BURN_PROGRESS_SPRITE = Identifier.withDefaultNamespace("container/furnace/burn_progress");
 
+	/** 불꽃 그림 자리 (화면 안 좌표). */
+	private static final int FLAME_X = 56;
+	private static final int FLAME_Y = 36;
+	private static final int FLAME_SIZE = 14;
+
 	public MachineScreen(MachineMenu menu, Inventory inventory, Component title) {
 		super(menu, inventory, title);
 	}
@@ -31,6 +37,34 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
 		titleLabelX = (imageWidth - font.width(title)) / 2;
 	}
 
+	/** 빈 칸에 마우스를 올리면 칸 설명, 불꽃 칸에는 모은 증기를 보여 준다. */
+	@Override
+	protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+		super.extractTooltip(graphics, mouseX, mouseY);
+		if (!menu.getCarried().isEmpty()) {
+			return;
+		}
+		if (hoveredSlot != null && !hoveredSlot.hasItem()) {
+			String key = slotKey(hoveredSlot.index);
+			if (key != null) {
+				graphics.setTooltipForNextFrame(font, Component.translatable(key), mouseX, mouseY);
+			}
+		} else if (hoveredSlot == null && isHovering(FLAME_X, FLAME_Y, FLAME_SIZE, FLAME_SIZE, mouseX, mouseY)) {
+			graphics.setTooltipForNextFrame(font, Component.translatable("gui.sanupcraft.machine.steam", menu.steam(), MachineBlockEntity.STEAM_CAPACITY), mouseX, mouseY);
+		}
+	}
+
+	private static String slotKey(int slotIndex) {
+		return switch (slotIndex) {
+			case MachineBlockEntity.SLOT_INPUT -> "gui.sanupcraft.machine.slot.input";
+			case MachineBlockEntity.SLOT_INPUT2 -> "gui.sanupcraft.machine.slot.input2";
+			case MachineBlockEntity.SLOT_FUEL -> "gui.sanupcraft.machine.slot.fuel";
+			case MachineBlockEntity.SLOT_RESULT -> "gui.sanupcraft.machine.slot.result";
+			case MachineBlockEntity.SLOT_BYPRODUCT -> "gui.sanupcraft.machine.slot.byproduct";
+			default -> null;
+		};
+	}
+
 	@Override
 	public void extractBackground(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
 		super.extractBackground(graphics, mouseX, mouseY, a);
@@ -39,7 +73,7 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
 		graphics.blit(RenderPipelines.GUI_TEXTURED, menu.twoInputs() ? ALLOY_TEXTURE : TEXTURE, xo, yo, 0.0F, 0.0F, imageWidth, imageHeight, 256, 256);
 		if (menu.isLit()) {
 			int litHeight = Mth.ceil(menu.litProgress() * 13.0F) + 1;
-			graphics.blitSprite(RenderPipelines.GUI_TEXTURED, LIT_PROGRESS_SPRITE, 14, 14, 0, 14 - litHeight, xo + 56, yo + 36 + 14 - litHeight, 14, litHeight);
+			graphics.blitSprite(RenderPipelines.GUI_TEXTURED, LIT_PROGRESS_SPRITE, 14, 14, 0, 14 - litHeight, xo + FLAME_X, yo + FLAME_Y + FLAME_SIZE - litHeight, 14, litHeight);
 		}
 		int burnWidth = Mth.ceil(menu.progress() * 24.0F);
 		graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BURN_PROGRESS_SPRITE, 24, 16, 0, 0, xo + 79, yo + 34, burnWidth, 16);

@@ -65,6 +65,15 @@ public class MachineRecipe implements Recipe<MachineInput> {
 		this.time = time;
 	}
 
+	public MachineKind kind() {
+		return kind;
+	}
+
+	/** stack이 이 레시피의 재료(첫째 또는 둘째)인가. 개수는 보지 않는다 (깔때기 · 벨트 입력 거름용). */
+	public boolean acceptsIngredient(ItemStack stack) {
+		return !stack.isEmpty() && (ingredient.test(stack) || ingredient2.map(second -> second.test(stack)).orElse(false));
+	}
+
 	/** 처리 시간 (틱). */
 	public int time() {
 		return time;

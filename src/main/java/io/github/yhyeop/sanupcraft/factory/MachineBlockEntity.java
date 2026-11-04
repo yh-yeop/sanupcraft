@@ -1,5 +1,10 @@
 package io.github.yhyeop.sanupcraft.factory;
 
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
+
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
@@ -9,12 +14,16 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.world.Containers;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.component.CookingFuel;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeManager;
@@ -29,7 +38,7 @@ import io.github.yhyeop.sanupcraft.power.SteamConsumer;
 /**
  * 기계의 칸과 진행 상태. 화로처럼 연료를 태우는 동안 재료를 하나씩 처리하고, 레시피에 부산물이 있으면 확률로 부산물 칸에 낸다.
  * 증기 파이프가 이어져 있으면 연료 대신 증기로 돈다 (증기가 있으면 연료를 태우지 않음).
- * 깔때기: 위 → 재료(합금로는 두 칸), 옆 → 연료, 아래 ← 결과 · 부산물.
+ * 깔때기: 위 → 재료(합금로는 두 칸, 이 기계 레시피의 재료만), 옆 → 연료, 아래 ← 결과 · 부산물 · 쓰고 남은 빈 양동이.
  */
 public class MachineBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, SteamConsumer {
 	public static final int SLOT_INPUT = 0;
@@ -44,13 +53,17 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 	public static final int DATA_TOTAL_TIME = 3;
 	/** 기계 종류 (MachineKind 순서). 화면이 재료 칸 수를 정하는 데 쓴다. */
 	public static final int DATA_KIND = 4;
-	public static final int DATA_COUNT = 5;
+	/** 지금 모아 둔 증기 (화면의 불꽃 칸 툴팁). */
+	public static final int DATA_STEAM = 5;
+	public static final int DATA_COUNT = 6;
 	public static final int STEAM_CAPACITY = 200;
 	/** 증기로 돌 때 틱마다 쓰는 증기. */
 	public static final int STEAM_PER_TICK = 1;
+	/** 일이 멈춘 뒤에도 이 틱 동안은 켜진 모습을 유지한다 (증기가 띄엄띄엄 와도 불빛이 깜빡이지 않게). */
+	public static final int LIT_HOLD_TICKS = 10;
 
 	private static final int[] SLOTS_FOR_UP = {SLOT_INPUT, SLOT_INPUT2};
-	private static final int[] SLOTS_FOR_DOWN = {SLOT_RESULT, SLOT_BYPRODUCT};
+	private static final int[] SLOTS_FOR_DOWN = {SLOT_RESULT, SLOT_BYPRODUCT, SLOT_FUEL};
 	private static final int[] SLOTS_FOR_SIDES = {SLOT_FUEL};
 
 	private final MachineKind kind;
@@ -62,6 +75,14 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 	private int totalTime;
 	private int steam;
 	private boolean steamWorking;
+	/** 일하지 않은 연속 틱 수 (저장하지 않음). 처음에는 쉬는 상태. */
+	private int idleTicks = LIT_HOLD_TICKS;
+
+	/** 서버가 가진 기계 레시피를 종류별로 모아 둔 것. RecipeManager가 새로 만들어지면(재로드) 다시 만든다. */
+	private record RecipeCache(RecipeManager manager, Map<MachineKind, List<MachineRecipe>> byKind) {
+	}
+
+	private static volatile @Nullable RecipeCache recipeCache;
 
 	private final ContainerData dataAccess = new ContainerData() {
 		@Override
@@ -72,6 +93,7 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 				case DATA_PROGRESS -> progress;
 				case DATA_TOTAL_TIME -> totalTime;
 				case DATA_KIND -> kind.ordinal();
+				case DATA_STEAM -> steam;
 				default -> 0;
 			};
 		}
@@ -109,7 +131,6 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 	}
 
 	public static void serverTick(ServerLevel level, BlockPos pos, BlockState state, MachineBlockEntity machine) {
-		boolean wasLit = machine.litTime > 0 || machine.steamWorking;
 		boolean changed = false;
 		machine.steamWorking = false;
 		if (machine.litTime > 0) {
@@ -132,7 +153,15 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 				if (burn > 0) {
 					machine.litTime = burn;
 					machine.litDuration = burn;
-					fuel.shrink(1);
+					ItemStack remainder = consumeFuel(fuel);
+					if (!remainder.isEmpty()) {
+						if (fuel.isEmpty()) {
+							// 바닐라 화로처럼 (용암 양동이 → 빈 양동이) 남은 것을 연료 칸에 둔다
+							machine.items.set(SLOT_FUEL, remainder);
+						} else {
+							Containers.dropItemStack(level, pos.getX() + 0.5, pos.getY() + 1.0, pos.getZ() + 0.5, remainder);
+						}
+					}
 					changed = true;
 				}
 			}
@@ -150,8 +179,11 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 			machine.progress = Mth.clamp(machine.progress - 2, 0, machine.totalTime);
 		}
 
-		boolean isLit = machine.litTime > 0 || machine.steamWorking;
-		if (wasLit != isLit) {
+		// 증기가 모자라 일했다 쉬었다 해도 불빛이 깜빡이지 않게, 멈춘 뒤 LIT_HOLD_TICKS 동안은 켜 둔다
+		boolean active = machine.litTime > 0 || machine.steamWorking;
+		machine.idleTicks = active ? 0 : Math.min(machine.idleTicks + 1, LIT_HOLD_TICKS);
+		boolean isLit = active || machine.idleTicks < LIT_HOLD_TICKS;
+		if (state.getValue(MachineBlock.LIT) != isLit) {
 			state = state.setValue(MachineBlock.LIT, isLit);
 			level.setBlockAndUpdate(pos, state);
 			changed = true;
@@ -216,6 +248,50 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 
 	public static boolean isFuel(ItemStack stack) {
 		return stack.has(DataComponents.COOKING_FUEL);
+	}
+
+	/**
+	 * 연료 하나를 쓴다. 쓰고 남는 것(용암 양동이 → 빈 양동이)을 돌려주고, 놓을 곳은 부르는 쪽이 정한다 (없으면 빈 스택).
+	 * 기계 · 보일러가 같이 쓴다.
+	 */
+	public static ItemStack consumeFuel(ItemStack fuel) {
+		Item item = fuel.getItem();
+		ItemStackTemplate remainder = item.getCraftingRemainder();
+		fuel.shrink(1);
+		return remainder == null ? ItemStack.EMPTY : remainder.create();
+	}
+
+	/** 이 종류의 기계 레시피 중 stack이 재료(첫째 · 둘째)인 게 있는가. 서버가 아니면 알 수 없으니 true. */
+	private boolean acceptsAsInput(ItemStack stack) {
+		if (!(level instanceof ServerLevel serverLevel)) {
+			return true;
+		}
+		for (MachineRecipe recipe : recipesOf(serverLevel, kind)) {
+			if (recipe.acceptsIngredient(stack)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/** 깔때기 · 벨트가 틱마다 부르므로, 바닐라 포함 1000개가 넘는 레시피를 매번 훑지 않고 RecipeManager별로 모아 둔다. */
+	private static List<MachineRecipe> recipesOf(ServerLevel level, MachineKind kind) {
+		RecipeManager manager = level.getServer().getRecipeManager();
+		RecipeCache cache = recipeCache;
+		if (cache == null || cache.manager() != manager) {
+			Map<MachineKind, List<MachineRecipe>> byKind = new EnumMap<>(MachineKind.class);
+			for (MachineKind each : MachineKind.values()) {
+				byKind.put(each, new ArrayList<>());
+			}
+			for (RecipeHolder<?> holder : manager.getRecipes()) {
+				if (holder.value() instanceof MachineRecipe recipe) {
+					byKind.get(recipe.kind()).add(recipe);
+				}
+			}
+			cache = new RecipeCache(manager, byKind);
+			recipeCache = cache;
+		}
+		return cache.byKind().get(kind);
 	}
 
 	@Override
@@ -287,17 +363,36 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 
 	@Override
 	public boolean canPlaceItemThroughFace(int slot, ItemStack stack, @Nullable Direction direction) {
-		if (slot == SLOT_INPUT2 && kind.twoInputs()) {
-			// 깔때기 하나로 두 재료를 넣을 때: 첫 칸에 이미 다른 재료가 있을 때만 둘째 칸으로
-			ItemStack first = items.get(SLOT_INPUT);
-			return !first.isEmpty() && !ItemStack.isSameItemSameComponents(first, stack);
+		if (!canPlaceItem(slot, stack)) {
+			return false;
 		}
-		return canPlaceItem(slot, stack);
+		if (slot != SLOT_INPUT && slot != SLOT_INPUT2) {
+			return true;
+		}
+		// 깔때기 · 벨트는 이 기계의 레시피 재료만 넣는다 (흙 하나가 재료 칸을 막지 않게). 손으로 넣는 건 그대로.
+		if (!acceptsAsInput(stack)) {
+			return false;
+		}
+		if (!kind.twoInputs()) {
+			return true;
+		}
+		// 합금로: 한 재료가 두 칸을 다 차지해 다른 재료가 못 들어오는 교착을 막는다
+		ItemStack first = items.get(SLOT_INPUT);
+		ItemStack second = items.get(SLOT_INPUT2);
+		if (slot == SLOT_INPUT) {
+			return sameStack(first, stack) || (first.isEmpty() && !sameStack(second, stack));
+		}
+		return sameStack(second, stack) || (second.isEmpty() && !first.isEmpty() && !sameStack(first, stack));
+	}
+
+	private static boolean sameStack(ItemStack current, ItemStack stack) {
+		return !current.isEmpty() && ItemStack.isSameItemSameComponents(current, stack);
 	}
 
 	@Override
 	public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction direction) {
-		return slot == SLOT_RESULT || slot == SLOT_BYPRODUCT;
+		// 연료 칸에는 쓰고 남은 빈 양동이만 아래로 꺼낼 수 있다 (바닐라 화로와 같음)
+		return slot == SLOT_RESULT || slot == SLOT_BYPRODUCT || (slot == SLOT_FUEL && direction == Direction.DOWN && stack.is(Items.BUCKET));
 	}
 
 	/** 테스트 · 디버그용: 지금 결과 칸. */

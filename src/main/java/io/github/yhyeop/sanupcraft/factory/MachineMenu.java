@@ -146,6 +146,11 @@ public class MachineMenu extends AbstractContainerMenu {
 		return data.get(MachineBlockEntity.DATA_LIT_TIME) > 0;
 	}
 
+	/** 기계가 모아 둔 증기 (최대 MachineBlockEntity.STEAM_CAPACITY). */
+	public int steam() {
+		return data.get(MachineBlockEntity.DATA_STEAM);
+	}
+
 	/** 결과 · 부산물 칸: 꺼내기만 한다. */
 	private static class OutputSlot extends Slot {
 		OutputSlot(Container container, int slot, int x, int y) {
