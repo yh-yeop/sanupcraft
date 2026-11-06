@@ -39,6 +39,7 @@ public class SanupcraftClient implements ClientModInitializer {
 		JetpackClient.init(); // 확장 M9a
 		// M7 보관 · 제작
 		StorageClient.init();
+		io.github.yhyeop.sanupcraft.client.boss.BossModelLayers.init(); // 확장 M11a: 보스 전용 모델
 	}
 
 	/**

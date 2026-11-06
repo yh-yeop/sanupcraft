@@ -2279,6 +2279,396 @@ def main_m5(made):
     made.append(save(boat_texture(), "entity/lava_steamboat.png"))
 
 
+# ---- M11 X1: 보스 전용 모델 텍스처 (128x64, 모델의 texOffs와 같은 자리) ----
+def m11a_hex(c):
+    return tuple(int(c[i:i + 2], 16) for i in (1, 3, 5)) + (255,)
+
+
+def m11a_faces(u, v, w, h, d):
+    """상자 하나의 면 자리 (x, y, 너비, 높이). right = 모델 -X 쪽, front = -Z (앞)."""
+    return {
+        "top": (u + d, v, w, d),
+        "bottom": (u + d + w, v, w, d),
+        "right": (u, v + d, d, h),
+        "front": (u + d, v + d, w, h),
+        "left": (u + d + w, v + d, d, h),
+        "back": (u + d + w + d, v + d, w, h),
+    }
+
+
+class M11aBox:
+    """면 단위로 칠하는 도우미. ramp는 어두운 색 → 밝은 색."""
+
+    def __init__(self, im, rnd, u, v, w, h, d):
+        self.im = im
+        self.rnd = rnd
+        self.faces = m11a_faces(u, v, w, h, d)
+
+    def put(self, face, x, y, col):
+        fx, fy, fw, fh = self.faces[face]
+        if 0 <= x < fw and 0 <= y < fh:
+            self.im.putpixel((fx + x, fy + y), m11a_hex(col) if isinstance(col, str) else col)
+
+    def size(self, face):
+        return self.faces[face][2], self.faces[face][3]
+
+    def fill(self, ramp, rust=None, rust_amount=0.0, bevel=True):
+        """면마다 기본 음영 (위 밝게 · 아래 어둡게) + 잡티 + 모서리 + 녹 얼룩."""
+        shade = {"top": 1, "front": 0, "right": 0, "left": 0, "back": -1, "bottom": -1}
+        for face, (fx, fy, fw, fh) in self.faces.items():
+            blobs = []
+            if rust:
+                n = int(fw * fh * rust_amount / 14) + (1 if self.rnd.random() < rust_amount * 4 else 0)
+                for _ in range(n):
+                    blobs.append((self.rnd.uniform(0, fw), self.rnd.uniform(0, fh), self.rnd.uniform(1.4, 3.2)))
+            for y in range(fh):
+                for x in range(fw):
+                    level = 2 + shade[face]
+                    r = self.rnd.random()
+                    if r < 0.07:
+                        level -= 1
+                    elif r > 0.95:
+                        level += 1
+                    if bevel and fw > 2 and fh > 2:
+                        if y == 0:
+                            level += 1
+                        elif y == fh - 1:
+                            level -= 1
+                    level = max(0, min(len(ramp) - 1, level))
+                    col = ramp[level]
+                    if rust:
+                        for bx, by, br in blobs:
+                            dd = math.hypot(x + 0.5 - bx, (y + 0.5 - by) * 1.3)
+                            if dd < br:
+                                k = 1 if dd > br * 0.65 else (2 if dd > br * 0.3 else 3)
+                                k = max(0, min(len(rust) - 1, k + shade[face] - (1 if self.rnd.random() < 0.12 else 0)))
+                                col = rust[k]
+                                break
+                    self.im.putpixel((fx + x, fy + y), m11a_hex(col))
+
+    def drips(self, face, rust, count):
+        """위에서 흘러내린 녹 줄기."""
+        fw, fh = self.size(face)
+        for _ in range(count):
+            x = self.rnd.randrange(fw)
+            length = self.rnd.randint(2, max(2, fh // 2))
+            for y in range(self.rnd.randint(0, 2), min(fh, length)):
+                self.put(face, x, y, rust[2] if y < length - 1 else rust[1])
+
+    def rivets(self, face, positions, light, dark):
+        for x, y in positions:
+            self.put(face, x, y, light)
+            self.put(face, x + 1, y + 1, dark)
+
+    def rect(self, face, x0, y0, x1, y1, col):
+        for y in range(y0, y1 + 1):
+            for x in range(x0, x1 + 1):
+                self.put(face, x, y, col)
+
+    def hline(self, face, y, col, x0=0, x1=None):
+        fw, _ = self.size(face)
+        self.rect(face, x0, y, fw - 1 if x1 is None else x1, y, col)
+
+    def vline(self, face, x, col, y0=0, y1=None):
+        _, fh = self.size(face)
+        self.rect(face, x, y0, x, fh - 1 if y1 is None else y1, col)
+
+
+def m11a_edge_rivets(box, face, light, dark, step=4, inset=1):
+    fw, fh = box.size(face)
+    pts = []
+    for x in range(inset, fw - inset - 1, step):
+        pts.append((x, inset))
+        pts.append((x, fh - inset - 2))
+    for y in range(inset + step, fh - inset - 2, step):
+        pts.append((inset, y))
+        pts.append((fw - inset - 2, y))
+    box.rivets(face, pts, light, dark)
+
+
+# 녹슨 수호자: 바랜 쇠 (따뜻한 회색) + 주황 녹, 푸른 눈 · 핵
+RG_IRON = ["#272020", "#40362f", "#5c4d43", "#786659", "#957f70", "#b3a091"]
+RG_RUST = ["#4a200e", "#7a3618", "#a84e22", "#d0702e", "#eb9446"]
+RG_RIVET = ("#a89688", "#2a221e")
+RG_GLOW = ["#0e3a52", "#16577a", "#2fb8ef", "#a6efff", "#e8fbff"]
+
+
+def rusty_guardian_textures():
+    rnd = random.Random(1101)
+    im = Image.new("RGBA", (128, 64), (0, 0, 0, 0))
+    glow = Image.new("RGBA", (128, 64), (0, 0, 0, 0))
+
+    def box(u, v, w, h, d, rust_amount=0.12):
+        b = M11aBox(im, rnd, u, v, w, h, d)
+        b.fill(RG_IRON, RG_RUST, rust_amount)
+        return b
+
+    # 몸통 20x18x12: 가로 이음매 두 줄, 리벳 테두리, 녹 줄기
+    torso = box(0, 0, 20, 18, 12, 0.14)
+    for face in ("front", "back", "right", "left"):
+        fw, fh = torso.size(face)
+        for y in (5, 12):
+            torso.hline(face, y, RG_IRON[1])
+            torso.hline(face, y + 1, RG_IRON[4])
+        m11a_edge_rivets(torso, face, *RG_RIVET, step=5)
+        torso.drips(face, RG_RUST, 3 if fw > 12 else 2)
+    # 등판: 보일러 뚜껑 같은 둥근 해치
+    for y in range(4, 13):
+        for x in range(6, 15):
+            dd = math.hypot(x - 9.5, y - 8.5)
+            if dd < 4.6:
+                inner = RG_IRON[4] if y < 7 else (RG_IRON[3] if y < 11 else RG_IRON[2])
+                torso.put("back", x, y, RG_IRON[1] if dd > 3.6 else inner)
+    torso.rivets("back", [(10, 4), (6, 8), (14, 8), (10, 12)], *RG_RIVET)
+    # 위 · 아래: 판 이음
+    torso.vline("top", 10, RG_IRON[1])
+    torso.vline("bottom", 10, RG_IRON[0])
+
+    # 가슴판 14x8x1: 두꺼운 판 + 가운데 핵 (빛남)
+    plate = M11aBox(im, rnd, 0, 30, 14, 8, 1)
+    plate.fill(RG_IRON[1:], RG_RUST, 0.08)
+    plate.rivets("front", [(1, 1), (11, 1), (1, 5), (11, 5), (4, 1), (8, 1)], *RG_RIVET)
+    for y in range(8):
+        for x in range(14):
+            dd = math.hypot(x - 6.5, y - 3.5)
+            if dd < 3.2:
+                if dd > 2.2:
+                    plate.put("front", x, y, "#8a6a2a" if y < 4 else "#5a4418")  # 놋쇠 테
+                else:
+                    plate.put("front", x, y, RG_GLOW[1])
+                    gx, gy = plate.faces["front"][0] + x, plate.faces["front"][1] + y
+                    glow.putpixel((gx, gy), m11a_hex(RG_GLOW[3] if dd < 1.0 else RG_GLOW[2]))
+
+    # 배기통 3x7x3 (둘이 같은 자리): 끝은 그을음
+    stack = box(110, 44, 3, 7, 3, 0.2)
+    for face in ("front", "back", "right", "left"):
+        stack.hline(face, 0, RG_IRON[0])
+        stack.hline(face, 2, RG_IRON[4])
+    stack.rect("top", 0, 0, 2, 2, "#120e0c")
+    stack.put("top", 1, 1, "#000000")
+
+    # 골반 12x4x8
+    pelvis = box(30, 34, 12, 4, 8, 0.1)
+    for face in ("front", "back"):
+        pelvis.hline(face, 0, RG_IRON[1])
+        pelvis.rivets(face, [(1, 1), (5, 1), (9, 1)], *RG_RIVET)
+
+    # 머리 8x8x8: 외눈 틈 (가로 한 줄), 이마 판
+    head = box(64, 0, 8, 8, 8, 0.1)
+    for face in ("front", "back", "right", "left"):
+        head.hline(face, 1, RG_IRON[4])
+        head.hline(face, 2, RG_IRON[2])
+    head.rect("front", 1, 3, 6, 4, "#0e0a08")
+    head.rect("front", 1, 3, 6, 3, RG_GLOW[0])
+    head.rect("front", 2, 3, 5, 3, RG_GLOW[1])
+    head.rivets("front", [(0, 6), (6, 6)], *RG_RIVET)
+    head.rect("front", 2, 6, 5, 6, RG_IRON[1])  # 입 쪽 환기구
+    head.put("front", 3, 7, RG_IRON[0])
+    head.put("front", 4, 7, RG_IRON[0])
+    hx, hy = head.faces["front"][0], head.faces["front"][1]
+    for x in range(1, 7):
+        glow.putpixel((hx + x, hy + 3), m11a_hex(RG_GLOW[4] if x in (3, 4) else (RG_GLOW[3] if x in (2, 5) else RG_GLOW[2])))
+    for x in range(2, 6):
+        glow.putpixel((hx + x, hy + 4), m11a_hex(RG_GLOW[1]))
+    head.rivets("top", [(1, 1), (5, 1), (1, 5), (5, 5)], *RG_RIVET)
+
+    # 어깨 갑옷 7x7x9: 둥근 테 + 리벳
+    paul = box(96, 0, 7, 7, 9, 0.16)
+    for face in ("front", "back", "right", "left"):
+        m11a_edge_rivets(paul, face, *RG_RIVET, step=3)
+    for face in ("front", "back", "right", "left"):
+        paul.hline(face, 6, RG_IRON[0])
+
+    # 위팔 5x8x6, 피스톤 통 3x6x2 (놋쇠), 막대 1x6x1 (반짝이는 쇠)
+    upper = box(96, 30, 5, 8, 6, 0.12)
+    for face in ("front", "back", "right", "left"):
+        upper.hline(face, 0, RG_IRON[1])
+        upper.hline(face, 7, RG_IRON[1])
+    cyl = M11aBox(im, rnd, 96, 44, 3, 6, 2)
+    cyl.fill(["#3a2a10", "#5a4418", "#8a6a2a", "#b08a3a", "#d8b060"])
+    for face in ("front", "back", "right", "left"):
+        cyl.hline(face, 1, "#3a2a10")
+        cyl.hline(face, 4, "#3a2a10")
+    rod = M11aBox(im, rnd, 106, 44, 1, 6, 1)
+    rod.fill(["#5c6066", "#7d828a", "#9ea4ab", "#c4c9cf", "#e4e8ec"], bevel=False)
+
+    # 아래팔 7x10x7: 띠 두 줄, 주먹 8x5x8: 손가락 마디
+    fore = box(64, 16, 7, 10, 7, 0.15)
+    for face in ("front", "back", "right", "left"):
+        fore.hline(face, 2, RG_IRON[1])
+        fore.hline(face, 3, RG_IRON[4])
+        fore.hline(face, 7, RG_IRON[1])
+        fore.rivets(face, [(1, 4), (4, 4)], *RG_RIVET)
+    fist = box(96, 16, 8, 5, 8, 0.1)
+    for face in ("front", "back", "right", "left"):
+        for x in (2, 4, 6):
+            fist.vline(face, x - 1, RG_IRON[1], 1, 4)
+        fist.hline(face, 0, RG_IRON[4])
+    fist.rect("bottom", 1, 1, 6, 6, RG_IRON[1])
+    for x in (1, 3, 5, 7):
+        fist.put("front", x - 1, 1, RG_IRON[5])
+
+    # 다리 6x10x6, 발 8x6x9
+    leg = box(70, 34, 6, 10, 6, 0.12)
+    for face in ("front", "back", "right", "left"):
+        leg.hline(face, 4, RG_IRON[1])
+        leg.hline(face, 5, RG_IRON[4])
+        leg.rivets(face, [(1, 1), (3, 7)], *RG_RIVET)
+    foot = box(0, 46, 8, 6, 9, 0.18)
+    for face in ("front", "right", "left", "back"):
+        foot.hline(face, 0, RG_IRON[4])
+        foot.hline(face, 5, RG_IRON[0])
+    for x in (1, 3, 5):
+        foot.vline("front", x, RG_IRON[1], 2, 4)
+    foot.rivets("top", [(1, 1), (5, 1), (1, 6), (5, 6)], *RG_RIVET)
+    return im, glow
+
+
+# 용광로 파수꾼: 검게 그을린 쇠 + 구리 테, 주황 불빛
+FW_IRON = ["#141418", "#202026", "#2e2e36", "#3e3e48", "#52525e", "#6a6a78"]
+FW_SOOT = ["#060606", "#0e0c0c", "#18140f", "#241c14"]
+FW_COPPER = ["#3a1e0e", "#6a3818", "#9a5a28", "#c8803c", "#e8a860"]
+FW_GLOW = ["#5a1804", "#a8380a", "#ff7a1a", "#ffb040", "#fff0a0"]
+FW_RIVET = ("#6a6a76", "#0a0a0c")
+
+
+def furnace_warden_textures():
+    rnd = random.Random(1102)
+    im = Image.new("RGBA", (128, 64), (0, 0, 0, 0))
+    glow = Image.new("RGBA", (128, 64), (0, 0, 0, 0))
+
+    def box(u, v, w, h, d, soot=0.05):
+        b = M11aBox(im, rnd, u, v, w, h, d)
+        b.fill(FW_IRON, FW_SOOT, soot)
+        return b
+
+    def glow_px(b, face, x, y, col):
+        fx, fy, fw, fh = b.faces[face]
+        if 0 <= x < fw and 0 <= y < fh:
+            glow.putpixel((fx + x, fy + y), m11a_hex(col))
+
+    def copper_band(b, face, y):
+        b.hline(face, y, FW_COPPER[3])
+        b.hline(face, y + 1, FW_COPPER[1])
+
+    # 몸통 20x14x14: 철판 이음 + 리벳, 아래쪽 구리 띠, 옆 환기 틈
+    torso = box(0, 18, 20, 14, 14)
+    for face in ("front", "back", "right", "left"):
+        fw, fh = torso.size(face)
+        copper_band(torso, face, fh - 3)
+        m11a_edge_rivets(torso, face, *FW_RIVET, step=4)
+        torso.vline(face, fw // 2, FW_IRON[1], 1, fh - 4)
+    for face in ("right", "left"):
+        for y in (4, 6, 8):
+            torso.rect(face, 4, y, 9, y, FW_SOOT[0])
+            for x in range(4, 10):
+                glow_px(torso, face, x, y, FW_GLOW[0] if x in (4, 9) else FW_GLOW[1])
+    # 앞면: 창살(4..15, 3..9) 둘레 구리 틀, 뒤는 불 빛
+    torso.rect("front", 3, 2, 16, 10, FW_COPPER[2])
+    torso.rect("front", 3, 2, 16, 2, FW_COPPER[4])
+    torso.rect("front", 3, 10, 16, 10, FW_COPPER[0])
+    torso.rect("front", 4, 3, 15, 9, FW_GLOW[1])
+    torso.rivets("front", [(3, 2), (15, 2), (3, 9), (15, 9)], FW_COPPER[4], FW_COPPER[0])
+    # 등: 큰 해치 + 경첩
+    torso.rect("back", 5, 2, 14, 9, FW_IRON[2])
+    torso.rect("back", 5, 2, 14, 2, FW_IRON[4])
+    torso.rect("back", 5, 9, 14, 9, FW_IRON[0])
+    torso.rivets("back", [(6, 3), (12, 3), (6, 7), (12, 7)], *FW_RIVET)
+    torso.rect("back", 3, 4, 4, 5, FW_COPPER[2])
+    torso.rect("back", 3, 7, 4, 8, FW_COPPER[2])
+
+    # 덮개판 22x2x16: 테두리는 구리, 위는 두꺼운 판
+    slab = M11aBox(im, rnd, 0, 0, 22, 2, 16)
+    slab.fill(FW_IRON[1:], FW_SOOT, 0.06)
+    for face in ("front", "back", "right", "left"):
+        slab.hline(face, 0, FW_COPPER[3])
+        slab.hline(face, 1, FW_COPPER[1])
+    m11a_edge_rivets(slab, "top", *FW_RIVET, step=4)
+    slab.rect("top", 6, 4, 15, 11, FW_IRON[2])
+    slab.rect("top", 6, 4, 15, 4, FW_IRON[4])
+
+    # 화구 창살 12x7x1: 놋쇠 틀, 세로 창살 사이로 불
+    grate = M11aBox(im, rnd, 38, 46, 12, 7, 1)
+    grate.fill(FW_COPPER)
+    for y in range(1, 6):
+        for x in range(1, 11):
+            if x % 2 == 0:
+                grate.put("front", x, y, FW_IRON[2] if y > 1 else FW_IRON[3])
+            else:
+                hot = 4 if y >= 4 else (3 if y >= 2 else 2)
+                if rnd.random() < 0.2:
+                    hot -= 1
+                grate.put("front", x, y, FW_GLOW[0])
+                glow_px(grate, "front", x, y, FW_GLOW[hot])
+    grate.rivets("front", [(0, 0), (10, 0), (0, 5), (10, 5)], FW_COPPER[4], FW_COPPER[0])
+
+    # 머리 아래 통 8x6x8: 눈 틈 둘
+    head = box(68, 18, 8, 6, 8)
+    for face in ("front", "back", "right", "left"):
+        copper_band(head, face, 4)
+    for x0 in (1, 5):
+        head.rect("front", x0, 2, x0 + 1, 2, FW_GLOW[0])
+        glow_px(head, "front", x0, 2, FW_GLOW[3])
+        glow_px(head, "front", x0 + 1, 2, FW_GLOW[3])
+        head.put("front", x0, 3, FW_SOOT[0])
+        head.put("front", x0 + 1, 3, FW_SOOT[0])
+        glow_px(head, "front", x0, 3, FW_GLOW[1])
+        glow_px(head, "front", x0 + 1, 3, FW_GLOW[1])
+    head.rivets("front", [(0, 0), (6, 0)], *FW_RIVET)
+
+    # 굴뚝 6x5x6: 그을음 줄, 테 7x1x7: 안에 불씨
+    chim = box(100, 18, 6, 5, 6, 0.25)
+    for face in ("front", "back", "right", "left"):
+        chim.hline(face, 0, FW_SOOT[1])
+        chim.hline(face, 3, FW_COPPER[2])
+    cap = M11aBox(im, rnd, 38, 54, 7, 1, 7)
+    cap.fill(FW_COPPER[:4], bevel=False)
+    cap.rect("top", 1, 1, 5, 5, FW_SOOT[0])
+    for y in range(1, 6):
+        for x in range(1, 6):
+            dd = math.hypot(x - 3, y - 3)
+            if dd < 2.2:
+                cap.put("top", x, y, FW_GLOW[0])
+                glow_px(cap, "top", x, y, FW_GLOW[4] if dd < 0.8 else (FW_GLOW[3] if dd < 1.5 else FW_GLOW[2]))
+
+    # 어깨 6x6x8, 팔 7x10x8, 주먹 8x5x9
+    shoulder = box(68, 32, 6, 6, 8)
+    for face in ("front", "back", "right", "left"):
+        m11a_edge_rivets(shoulder, face, *FW_RIVET, step=3)
+    arm = box(76, 0, 7, 10, 8)
+    for face in ("front", "back", "right", "left"):
+        copper_band(arm, face, 1)
+        copper_band(arm, face, 7)
+        arm.vline(face, 3, FW_IRON[1], 3, 6)
+    fist = box(66, 46, 8, 5, 9, 0.15)
+    for face in ("front", "back", "right", "left"):
+        fist.hline(face, 0, FW_COPPER[3])
+        fist.hline(face, 4, FW_IRON[0])
+    for x in (1, 3, 5, 7):
+        fist.put("front", x - 1, 2, FW_COPPER[4])
+        fist.put("front", x - 1, 3, FW_COPPER[2])
+    fist.rect("bottom", 1, 1, 6, 7, FW_IRON[1])
+
+    # 다리 7x8x7, 발 9x3x10
+    leg = box(100, 29, 7, 8, 7)
+    for face in ("front", "back", "right", "left"):
+        copper_band(leg, face, 2)
+        leg.rivets(face, [(1, 5), (4, 5)], *FW_RIVET)
+    foot = box(0, 46, 9, 3, 10, 0.2)
+    for face in ("front", "back", "right", "left"):
+        foot.hline(face, 0, FW_COPPER[3])
+    for x in (1, 4, 7):
+        foot.put("front", x, 1, FW_IRON[5])
+    return im, glow
+
+
+def main_m11a(made):
+    for name, maker in (("rusty_guardian", rusty_guardian_textures), ("furnace_warden", furnace_warden_textures)):
+        im, glow = maker()
+        made.append(save(im, f"entity/{name}.png"))
+        made.append(save(glow, f"entity/{name}_glow.png"))
+
+
 def save(im, rel, scale=1):
     path = os.path.join(OUT, *rel.split("/"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -2319,6 +2709,7 @@ def main():
     main_m8a(made)
     main_m7(made)
     main_m5(made)
+    main_m11a(made)
 
     if "--sheet" in sys.argv:
         tiles = [Image.open(p) for p in made]

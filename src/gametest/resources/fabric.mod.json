@@ -33,7 +33,8 @@
 			"io.github.yhyeop.sanupcraft.test.SanupcraftPromoShots",
 			"io.github.yhyeop.sanupcraft.test.SanupcraftM8aClientGameTest",
 			"io.github.yhyeop.sanupcraft.test.SanupcraftStorageClientGameTest",
-			"io.github.yhyeop.sanupcraft.test.SanupcraftM5ClientGameTest"
+			"io.github.yhyeop.sanupcraft.test.SanupcraftM5ClientGameTest",
+			"io.github.yhyeop.sanupcraft.test.SanupcraftM11aClientGameTest"
 		]
 	},
 	"depends": {
