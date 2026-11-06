@@ -926,5 +926,7 @@
   "advancements.sanupcraft.void_colossus_phase_two.title": "Torn Void",
   "advancements.sanupcraft.void_colossus_phase_two.description": "Bring the Void Colossus to half health and see its second phase. Touching a void rift erodes your max health.",
   "advancements.sanupcraft.boss_gear.title": "Trophy of the Fallen",
-  "advancements.sanupcraft.boss_gear.description": "Get a boss gear item (Rusty Hammer · Furnace Shield · Void Staff). Contributors get one by chance — tiered summoners raise the odds."
+  "advancements.sanupcraft.boss_gear.description": "Get a boss gear item (Rusty Hammer · Furnace Shield · Void Staff). Contributors get one by chance — tiered summoners raise the odds.",
+  "subtitles.sanupcraft.boss.guardian.rage": "Rusty Guardian rages",
+  "subtitles.sanupcraft.boss.warden.rage": "Furnace Warden rages"
 }

@@ -16,11 +16,14 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 
 import io.github.yhyeop.sanupcraft.Sanupcraft;
+import io.github.yhyeop.sanupcraft.boss.FurnaceWarden;
+import io.github.yhyeop.sanupcraft.boss.RustyGuardian;
 import io.github.yhyeop.sanupcraft.config.SanupcraftConfig;
 import io.github.yhyeop.sanupcraft.factory.MachineKind;
 
 /**
- * 효과음 (M11 X2). 소리 파일은 새로 넣지 않고 {@code assets/sanupcraft/sounds.json}에서 바닐라 .ogg를 다시 쓴다 (자막은 언어 파일).
+ * 효과음 (M11 X2). {@code assets/sanupcraft/sounds.json}이 이벤트마다 소리 파일을 고른다 (자막은 언어 파일).
+ * 파일은 {@code tools/make_sounds.py}가 합성한 우리 소리 {@code sounds/<분류>/<이름>.ogg} (M15 R8, 예전엔 바닐라 소리를 다시 씀).
  * 기계 소리는 서버가 {@link #working}으로 일하는 동안 몇 초에 한 번, 작게 낸다 (근처 모두가 듣는다).
  * 크기는 설정 {@code sounds.machineVolume}으로 줄이거나 끈다 (보스 소리는 그대로).
  */
@@ -41,8 +44,11 @@ public final class ModSounds {
 	public static final SoundEvent GUARDIAN_CHARGE = register("boss.guardian.charge");
 	/** 용광로 파수꾼: 증기 분출 방향을 잠글 때 (숨을 들이켜는 소리). */
 	public static final SoundEvent WARDEN_BURST = register("boss.warden.burst");
-	/** 보스 체력이 절반 아래로 (화남). */
+	/** 보스 체력이 절반 아래로 (화남). 보스마다 따로 둔 소리가 없을 때 쓴다. */
 	public static final SoundEvent BOSS_PHASE = register("boss.phase");
+	// M15 R8: 보스마다 다른 화남 소리 (쇠가 갈리는 포효 · 불길 포효 + 증기 비명)
+	public static final SoundEvent GUARDIAN_RAGE = register("boss.guardian.rage");
+	public static final SoundEvent WARDEN_RAGE = register("boss.warden.rage");
 	public static final SoundEvent GUARDIAN_DEATH = register("boss.guardian.death");
 	public static final SoundEvent WARDEN_DEATH = register("boss.warden.death");
 	/** 공허 거상: 끌어당기기 예고 (공허가 차오르는 소리). */
@@ -119,9 +125,20 @@ public final class ModSounds {
 		playedCount++;
 	}
 
-	/** 보스가 화날 때 (체력 절반 아래): 으르렁 + 연기 · 보스 색 입자를 한 번. */
+	/** 보스가 화날 때 (체력 절반 아래): 으르렁 + 연기 · 보스 색 입자를 한 번. 소리는 {@link #rageOf}. */
 	public static void bossPhase(ServerLevel level, Entity boss, ParticleOptions particle) {
-		bossPhase(level, boss, BOSS_PHASE, particle);
+		bossPhase(level, boss, rageOf(boss), particle);
+	}
+
+	/** 보스의 화남 소리 (M15 R8): 수호자 · 파수꾼은 자기 소리, 나머지는 공용 {@link #BOSS_PHASE}. */
+	public static SoundEvent rageOf(Entity boss) {
+		if (boss instanceof RustyGuardian) {
+			return GUARDIAN_RAGE;
+		}
+		if (boss instanceof FurnaceWarden) {
+			return WARDEN_RAGE;
+		}
+		return BOSS_PHASE;
 	}
 
 	/** 화남 소리를 보스가 따로 고른다 (공허 거상). */

@@ -926,5 +926,7 @@
   "advancements.sanupcraft.void_colossus_phase_two.title": "찢어진 공허",
   "advancements.sanupcraft.void_colossus_phase_two.description": "공허 거상의 체력을 절반까지 깎아 2페이즈를 보자. 공허 균열에 닿으면 최대 체력이 깎인다.",
   "advancements.sanupcraft.boss_gear.title": "보스의 유품",
-  "advancements.sanupcraft.boss_gear.description": "보스 전용 장비(녹슨 망치 · 화구 방패 · 공허 지팡이)를 얻자. 보스를 잡은 기여자가 확률로 받고, 강화 소환석일수록 잘 나온다."
+  "advancements.sanupcraft.boss_gear.description": "보스 전용 장비(녹슨 망치 · 화구 방패 · 공허 지팡이)를 얻자. 보스를 잡은 기여자가 확률로 받고, 강화 소환석일수록 잘 나온다.",
+  "subtitles.sanupcraft.boss.guardian.rage": "녹슨 수호자: 분노",
+  "subtitles.sanupcraft.boss.warden.rage": "용광로 파수꾼: 분노"
 }
