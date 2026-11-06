@@ -16,9 +16,11 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
 import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.attributes.RangedAttribute;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -39,8 +41,12 @@ import io.github.yhyeop.sanupcraft.config.SanupcraftConfig;
  *   <li>보상: 최대 체력의 5% 이상을 깎은 플레이어 각자에게 진행 필수품(핵 · 심장) 하나씩 인벤토리로 준다.
  *       기여자가 없으면 (명령어 · 환경 피해로 죽음) 보스 자리에 하나만 떨군다. 나머지 전리품(판 · 부품 · 조각)은 전리품 표 그대로.</li>
  *   <li>강화 (C3, {@link BossTier}): 강화 소환석으로 불렀으면 {@link #setTier}로 단계 1 ~ 3을 건다. 최대 체력은 인원 배율 위에
- *       × (1 + 0.5 · 단계), 공격력 속성 × (1 + 0.25 · 단계) (패턴 피해는 {@link #damageScale()}로 보스가 직접 곱한다).
+ *       × (1 + 0.5 · 단계), 공격력 속성 × (1 + 0.25 · 단계) (패턴 피해는 {@link #outgoingDamageScale()}로 보스가 직접 곱한다).
  *       보상은 핵 · 심장 {@code 1 + 단계}개 + 기계 업그레이드 하나, 보스 기록에도 단계가 남는다.</li>
+ *   <li>체력 상한: 바닐라 최대 체력 속성은 {@link #healthCap()}(1024)에서 잘린다. 기본 × 인원 × 단계가 그보다 크면 최대 체력은 상한에 두고
+ *       받는 피해를 상한 / 원래 체력만큼 줄인다 ({@link #incomingDamageScale}) → 실제로 버티는 체력은 원래 값과 같다.
+ *       보스는 {@code getDamageAfterMagicAbsorb}(갑옷 · 마법 계산 뒤)에서 곱한다. 원래 체력은 속성 수정자에서 다시 계산한다 ({@link #intendedMaxHealth}).
+ *       체력 비율(보스 바)은 그대로 맞다.</li>
  * </ul>
  */
 public final class BossParty {
@@ -104,9 +110,51 @@ public final class BossParty {
 		return tier;
 	}
 
-	/** 패턴 피해 배율 (근접 공격은 공격력 속성에 이미 들어 있다). */
-	public double damageScale() {
+	/** 보스가 주는 패턴 피해 배율 = 강화 단계 배율 (근접 공격은 공격력 속성에 이미 들어 있다). */
+	public double outgoingDamageScale() {
 		return BossTier.damageScale(tier);
+	}
+
+	/** 바닐라 최대 체력 속성의 상한 (1024). */
+	public static double healthCap() {
+		return ((RangedAttribute) Attributes.MAX_HEALTH.value()).getMaxValue();
+	}
+
+	/**
+	 * 인원 · 단계 배율까지 넣은 원래 최대 체력 (상한을 넘을 수 있다). 속성 계산과 같은 순서:
+	 * 기본값 + 더하기 → × (1 + 기본 배율 합) → × 전체 배율들.
+	 */
+	public static double intendedMaxHealth(LivingEntity boss) {
+		AttributeInstance instance = boss.getAttribute(Attributes.MAX_HEALTH);
+		if (instance == null) {
+			return boss.getMaxHealth();
+		}
+		double value = instance.getBaseValue();
+		for (AttributeModifier modifier : instance.getModifiers()) {
+			if (modifier.operation() == AttributeModifier.Operation.ADD_VALUE) {
+				value += modifier.amount();
+			}
+		}
+		double base = value;
+		for (AttributeModifier modifier : instance.getModifiers()) {
+			if (modifier.operation() == AttributeModifier.Operation.ADD_MULTIPLIED_BASE) {
+				value += base * modifier.amount();
+			}
+		}
+		for (AttributeModifier modifier : instance.getModifiers()) {
+			if (modifier.operation() == AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL) {
+				value *= 1.0 + modifier.amount();
+			}
+		}
+		return Math.max(value, 1.0);
+	}
+
+	/**
+	 * 보스가 받는 피해 배율: 최대 체력이 상한에 잘렸으면 상한 / 원래 체력, 아니면 1.
+	 * 예: 수호자 5명 +3 = 300 × 3 × 2.5 = 2250 → 체력 1024 + 받는 피해 × 0.455 (실제로 2250을 버틴다).
+	 */
+	public float incomingDamageScale(LivingEntity boss) {
+		return (float) Math.min(1.0, boss.getMaxHealth() / intendedMaxHealth(boss));
 	}
 
 	/** 강화 단계를 건다: 최대 체력 × 단계 배율(인원 배율 위에 곱), 공격력 속성 올림. 체력을 꽉 채우고 보스 바 제목을 고친다. */

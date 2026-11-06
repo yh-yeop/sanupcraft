@@ -706,5 +706,10 @@
   "subtitles.sanupcraft.boss.warden.burst": "용광로 파수꾼: 증기 분출 준비",
   "subtitles.sanupcraft.boss.phase": "보스: 분노",
   "subtitles.sanupcraft.boss.guardian.death": "녹슨 수호자: 쓰러짐",
-  "subtitles.sanupcraft.boss.warden.death": "용광로 파수꾼: 꺼짐"
+  "subtitles.sanupcraft.boss.warden.death": "용광로 파수꾼: 꺼짐",
+  "item.sanupcraft.colossus_summoner.tooltip3": "작업대에서 공허 핵 1개와 함께 놓으면 한 단계 강화 (+3까지)",
+  "subtitles.sanupcraft.boss.colossus.pull": "공허 거상: 끌어당기기 준비",
+  "subtitles.sanupcraft.boss.colossus.crystals": "공허 거상: 수정 소환",
+  "subtitles.sanupcraft.boss.colossus.rage": "공허 거상: 분노",
+  "subtitles.sanupcraft.boss.colossus.death": "공허 거상: 무너짐"
 }

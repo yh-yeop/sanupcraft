@@ -34,8 +34,8 @@ public final class ModEnd {
 	private static final ResourceKey<EntityType<?>> VOID_COLOSSUS_KEY = ResourceKey.create(Registries.ENTITY_TYPE, Sanupcraft.id("void_colossus"));
 	private static final ResourceKey<EntityType<?>> VOID_CRYSTAL_KEY = ResourceKey.create(Registries.ENTITY_TYPE, Sanupcraft.id("void_crystal"));
 
-	/** 제단에 쓰면 공허 거상을 부른다 (엔드, 원점에서 500칸 밖). */
-	public static final Item COLOSSUS_SUMMONER = ModRegistry.item("colossus_summoner",
+	/** 제단에 쓰면 공허 거상을 부른다 (엔드, 원점에서 500칸 밖). 강화 소환석 (C3): 공허 핵으로 +3까지. */
+	public static final Item COLOSSUS_SUMMONER = ModRegistry.item("colossus_summoner", io.github.yhyeop.sanupcraft.boss.BossSummonerItem::new,
 			new Item.Properties().rarity(Rarity.EPIC).stacksTo(16).fireResistant());
 	/** 공허 거상의 기여자 보상. 공허 장비 재료. */
 	public static final Item VOID_CORE = ModRegistry.item("void_core", new Item.Properties().rarity(Rarity.EPIC).fireResistant());

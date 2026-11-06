@@ -180,5 +180,70 @@
         "pitch": 0.5
       }
     ]
+  },
+  "boss.colossus.pull": {
+    "subtitle": "subtitles.sanupcraft.boss.colossus.pull",
+    "sounds": [
+      {
+        "name": "minecraft:mob/warden/sonic_charge1",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:mob/warden/sonic_charge2",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:mob/warden/sonic_charge3",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:mob/warden/sonic_charge4",
+        "pitch": 0.6
+      }
+    ]
+  },
+  "boss.colossus.crystals": {
+    "subtitle": "subtitles.sanupcraft.boss.colossus.crystals",
+    "sounds": [
+      {
+        "name": "minecraft:block/beacon/activate",
+        "pitch": 0.6
+      }
+    ]
+  },
+  "boss.colossus.rage": {
+    "subtitle": "subtitles.sanupcraft.boss.colossus.rage",
+    "sounds": [
+      {
+        "name": "minecraft:mob/warden/roar_1",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:mob/warden/roar_2",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:mob/warden/roar_3",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:mob/warden/roar_4",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:mob/warden/roar_5",
+        "pitch": 0.7
+      }
+    ]
+  },
+  "boss.colossus.death": {
+    "subtitle": "subtitles.sanupcraft.boss.colossus.death",
+    "sounds": [
+      {
+        "name": "minecraft:mob/wither/death",
+        "volume": 0.8,
+        "pitch": 0.6
+      }
+    ]
   }
 }

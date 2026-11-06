@@ -154,8 +154,8 @@ public class SanupcraftC3GameTest {
 		tier2.party().setTier(tier2, 2);
 		double base = plain.getAttributeValue(Attributes.ATTACK_DAMAGE);
 		helper.assertValueEqual(tier2.getAttributeValue(Attributes.ATTACK_DAMAGE), base * 1.5, "단계 2 공격력 속성");
-		helper.assertValueEqual(tier2.party().damageScale(), 1.5, "단계 2 패턴 피해 배율");
-		helper.assertValueEqual(plain.party().damageScale(), 1.0, "단계 0 패턴 피해 배율");
+		helper.assertValueEqual(tier2.party().outgoingDamageScale(), 1.5, "단계 2 패턴 피해 배율");
+		helper.assertValueEqual(plain.party().outgoingDamageScale(), 1.0, "단계 0 패턴 피해 배율");
 
 		// 패턴 타격이 실제로 1.5배 아픈가 (갑옷 없는 쇠골렘 둘에게 같은 타격)
 		IronGolem golemA = helper.spawn(EntityTypes.IRON_GOLEM, new BlockPos(1, 1, 5));
@@ -176,7 +176,7 @@ public class SanupcraftC3GameTest {
 		double wardenBase = warden.getAttributeValue(Attributes.ATTACK_DAMAGE);
 		warden.party().setTier(warden, 1);
 		helper.assertValueEqual(warden.getAttributeValue(Attributes.ATTACK_DAMAGE), wardenBase * 1.25, "파수꾼 단계 1 공격력 속성");
-		helper.assertValueEqual(warden.party().damageScale(), 1.25, "파수꾼 단계 1 패턴 피해 배율");
+		helper.assertValueEqual(warden.party().outgoingDamageScale(), 1.25, "파수꾼 단계 1 패턴 피해 배율");
 		helper.succeed();
 	}
 

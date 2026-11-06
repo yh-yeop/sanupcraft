@@ -523,6 +523,10 @@ public final class PlaytestCommand {
 		give(p, ModItems.CORE_SHARD, 12);
 		give(p, ModItems.WARDEN_HEART, 3);
 		give(p, Items.CRAFTING_TABLE, 1);
+		// 공허 거상 강화 (엔드 제단): +2 하나 · 단계 0 하나 + 공허 핵 2
+		give(p, BossTier.stack(io.github.yhyeop.sanupcraft.end.ModEnd.COLOSSUS_SUMMONER, 2));
+		give(p, io.github.yhyeop.sanupcraft.end.ModEnd.COLOSSUS_SUMMONER, 1);
+		give(p, io.github.yhyeop.sanupcraft.end.ModEnd.VOID_CORE, 2);
 		food(p);
 	}
 

@@ -45,6 +45,13 @@ public final class ModSounds {
 	public static final SoundEvent BOSS_PHASE = register("boss.phase");
 	public static final SoundEvent GUARDIAN_DEATH = register("boss.guardian.death");
 	public static final SoundEvent WARDEN_DEATH = register("boss.warden.death");
+	/** 공허 거상: 끌어당기기 예고 (공허가 차오르는 소리). */
+	public static final SoundEvent COLOSSUS_PULL = register("boss.colossus.pull");
+	/** 공허 거상: 공허 수정을 띄울 때. */
+	public static final SoundEvent COLOSSUS_CRYSTALS = register("boss.colossus.crystals");
+	/** 공허 거상: 체력이 절반 아래로 (화남, 다른 보스의 {@link #BOSS_PHASE} 대신). */
+	public static final SoundEvent COLOSSUS_RAGE = register("boss.colossus.rage");
+	public static final SoundEvent COLOSSUS_DEATH = register("boss.colossus.death");
 
 	/** 서버에서 낸 기계 소리 수 (시험용). */
 	private static int playedCount;
@@ -103,7 +110,12 @@ public final class ModSounds {
 
 	/** 보스가 화날 때 (체력 절반 아래): 으르렁 + 연기 · 보스 색 입자를 한 번. */
 	public static void bossPhase(ServerLevel level, Entity boss, ParticleOptions particle) {
-		level.playSound(null, boss.getX(), boss.getY(), boss.getZ(), BOSS_PHASE, SoundSource.HOSTILE, 2.0F, 0.8F);
+		bossPhase(level, boss, BOSS_PHASE, particle);
+	}
+
+	/** 화남 소리를 보스가 따로 고른다 (공허 거상). */
+	public static void bossPhase(ServerLevel level, Entity boss, SoundEvent sound, ParticleOptions particle) {
+		level.playSound(null, boss.getX(), boss.getY(), boss.getZ(), sound, SoundSource.HOSTILE, 2.0F, 0.8F);
 		level.sendParticles(ParticleTypes.LARGE_SMOKE, boss.getX(), boss.getY() + boss.getBbHeight() * 0.6, boss.getZ(), 30, 0.8, 0.8, 0.8, 0.03);
 		level.sendParticles(particle, boss.getX(), boss.getY() + boss.getBbHeight() * 0.5, boss.getZ(), 40, 1.0, 1.0, 1.0, 0.1);
 	}

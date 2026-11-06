@@ -23,12 +23,13 @@ import io.github.yhyeop.sanupcraft.factory.ModMachines;
  * 제단이 강화 소환석으로 부르면 보스 체력 × (1 + 0.5 · 단계) (인원 배율 위에 곱), 피해 × (1 + 0.25 · 단계), 기여자 보상 = 핵 · 심장
  * {@code 1 + 단계}개 + 기계 업그레이드 하나. 값은 서버 설정 {@code bossTier} 구역. 상세는 {@link BossParty}.
  *
- * <p><b>새 보스(예: 공허 거상)를 더하는 법</b> — 네 곳만 건드린다:
+ * <p><b>새 보스를 더하는 법</b> (녹슨 수호자 · 용광로 파수꾼 · 공허 거상이 이렇게 붙어 있다) — 네 곳만 건드린다:
  * <ol>
  *   <li>소환석 아이템을 {@link BossSummonerItem}으로 등록한다 ({@code ModBoss}의 다른 소환석처럼). 이름 · 툴팁의 "+N"이 저절로 붙는다.</li>
  *   <li>{@code GuardianAltarBlock.bossFor}에 소환석 → 보스 종류 한 줄. (강화 단계는 제단이 {@link #of}로 읽어 소환에 넘긴다.)</li>
  *   <li>보스 엔티티는 {@link PartyBoss}를 구현한다: {@code refreshBossBar()}에서 {@link #barName}으로 보스 바 제목을 쓰고,
- *       패턴 피해를 {@code party().damageScale()}로 곱하고 (근접은 공격력 속성에 이미 반영됨), 보상은 {@code party().giveKeyItem}으로 준다.</li>
+ *       패턴 피해를 {@code party().outgoingDamageScale()}로 곱하고 (근접은 공격력 속성에 이미 반영됨), 보상은 {@code party().giveKeyItem}으로 준다.
+ *       체력 상한 보정은 {@code getDamageAfterMagicAbsorb}에서 {@code party().incomingDamageScale(this)}를 곱한다 ({@link BossParty} 주석).</li>
  *   <li>데이터에 레시피 파일 하나: {@code recipe/<보스>_summoner_upgrade.json}
  *       ({@code "type": "sanupcraft:crafting_boss_tier", "summoner": …, "material": 공허 핵, "count": 1}).</li>
  * </ol>

@@ -122,9 +122,10 @@ public class SanupcraftM6GameTest {
 		colossus.party().scale(colossus, 3);
 		// 바닐라 최대 체력 상한(1024)을 넘는 몫은 받는 피해를 줄여 맞춘다
 		double wanted = VoidColossus.MAX_HEALTH * BossParty.healthScale(3);
-		helper.assertValueEqual(colossus.uncappedMaxHealth(), wanted, "3명 체력 (상한 전)");
+		helper.assertValueEqual(BossParty.intendedMaxHealth(colossus), wanted, "3명 체력 (상한 전)");
 		helper.assertValueEqual((double) colossus.getMaxHealth(), Math.min(wanted, 1024.0), "3명 체력 (속성)");
-		helper.assertTrue(Math.abs(colossus.damageScale() - colossus.getMaxHealth() / wanted) < 1.0E-4, "피해 배율: " + colossus.damageScale());
+		float incoming = colossus.party().incomingDamageScale(colossus);
+		helper.assertTrue(Math.abs(incoming - colossus.getMaxHealth() / wanted) < 1.0E-4, "받는 피해 배율: " + incoming);
 		helper.assertValueEqual(colossus.getHealth(), colossus.getMaxHealth(), "체력이 꽉 차지 않음");
 		helper.assertTrue(VoidColossus.wakeProblem(Level.OVERWORLD, new BlockPos(1000, 64, 0)) == VoidColossus.WakeProblem.NOT_END, "오버월드에서 깨어남");
 		helper.assertTrue(VoidColossus.wakeProblem(Level.END, new BlockPos(300, 64, 300)) == VoidColossus.WakeProblem.TOO_CLOSE, "중앙 섬 가까이서 깨어남");

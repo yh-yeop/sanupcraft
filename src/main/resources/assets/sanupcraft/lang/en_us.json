@@ -706,5 +706,10 @@
   "subtitles.sanupcraft.boss.warden.burst": "Furnace Warden builds up steam",
   "subtitles.sanupcraft.boss.phase": "Boss enrages",
   "subtitles.sanupcraft.boss.guardian.death": "Rusty Guardian collapses",
-  "subtitles.sanupcraft.boss.warden.death": "Furnace Warden goes out"
+  "subtitles.sanupcraft.boss.warden.death": "Furnace Warden goes out",
+  "item.sanupcraft.colossus_summoner.tooltip3": "Combine with 1 void core in a crafting grid to raise its tier (up to +3)",
+  "subtitles.sanupcraft.boss.colossus.pull": "Void Colossus gathers the void",
+  "subtitles.sanupcraft.boss.colossus.crystals": "Void Colossus summons crystals",
+  "subtitles.sanupcraft.boss.colossus.rage": "Void Colossus rages",
+  "subtitles.sanupcraft.boss.colossus.death": "Void Colossus crumbles"
 }

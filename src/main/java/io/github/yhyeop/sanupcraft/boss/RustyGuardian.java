@@ -364,7 +364,7 @@ public class RustyGuardian extends Monster implements PartyBoss {
 	public boolean hitWithRust(ServerLevel level, LivingEntity target, float damage, boolean pattern) {
 		if (pattern) {
 			breakShield(level, target);
-			damage *= (float) party.damageScale(); // 강화 단계 (근접은 공격력 속성에 이미 들어 있다)
+			damage *= (float) party.outgoingDamageScale(); // 강화 단계 (근접은 공격력 속성에 이미 들어 있다)
 		}
 		boolean rustproof = SteelGear.wearsFullSet(target);
 		boolean hurt = target.hurtServer(level, damageSources().mobAttack(this), rustproof ? damage : damage * RUST_MULTIPLIER);
@@ -462,6 +462,12 @@ public class RustyGuardian extends Monster implements PartyBoss {
 		float before = getHealth();
 		super.actuallyHurt(level, source, damage);
 		party.record(source.getEntity(), before - getHealth());
+	}
+
+	/** 최대 체력이 속성 상한(1024)에 잘렸으면 받는 피해를 그만큼 줄인다 (갑옷 · 마법 계산 뒤, {@link BossParty#incomingDamageScale}). */
+	@Override
+	protected float getDamageAfterMagicAbsorb(DamageSource source, float damage) {
+		return super.getDamageAfterMagicAbsorb(source, damage) * party.incomingDamageScale(this);
 	}
 
 	/** 핵은 전리품 표가 아니라 기여자 각자에게 준다. */
