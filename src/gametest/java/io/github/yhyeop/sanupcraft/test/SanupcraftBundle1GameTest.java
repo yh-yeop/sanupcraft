@@ -33,6 +33,7 @@ import io.github.yhyeop.sanupcraft.factory.ModMachines;
 import io.github.yhyeop.sanupcraft.logistics.EnderAnchorBlockEntity;
 import io.github.yhyeop.sanupcraft.logistics.ModLogistics;
 import io.github.yhyeop.sanupcraft.mining.QuarryBlockEntity;
+import io.github.yhyeop.sanupcraft.module.ModuleEffects;
 import io.github.yhyeop.sanupcraft.power.GeothermalVentBlockEntity;
 import io.github.yhyeop.sanupcraft.power.ModPower;
 import io.github.yhyeop.sanupcraft.power.SteamFlowMeter;
@@ -57,6 +58,9 @@ public class SanupcraftBundle1GameTest {
 		helper.assertValueEqual(defaults.anchorTicksPerFuel, EnderAnchorBlockEntity.TICKS_PER_FUEL, "닻 연료 틱");
 		helper.assertValueEqual(defaults.anchorRadius, EnderAnchorBlockEntity.RADIUS, "닻 반경");
 		helper.assertValueEqual(defaults.quarryTicksPerBlock, QuarryBlockEntity.TICKS_PER_BLOCK, "굴착기 틱");
+		helper.assertValueEqual(defaults.moduleRapidCooldownPercent, ModuleEffects.RAPID_COOLDOWN_PERCENT, "연발 쿨다운");
+		helper.assertValueEqual(defaults.moduleScatterPellets, ModuleEffects.SCATTER_PELLETS, "산탄 발 수");
+		helper.assertValueEqual(defaults.moduleScatterDamagePercent, ModuleEffects.SCATTER_DAMAGE_PERCENT, "산탄 피해");
 		// 기본값으로 쓴 JSON을 다시 읽어도 같고, 경고도 없고, 빠진 키도 없다
 		SanupcraftConfig.Loaded again = SanupcraftConfig.parse(defaults.toJson());
 		helper.assertTrue(again.warnings().isEmpty(), "기본 JSON에 경고: " + again.warnings());

@@ -2,9 +2,11 @@ package io.github.yhyeop.sanupcraft.test;
 
 import java.util.List;
 
+import net.fabricmc.fabric.api.entity.event.v1.ServerEntityLevelChangeEvents;
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.Registries;
@@ -31,6 +33,7 @@ import net.minecraft.world.item.enchantment.Enchantment;
 import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -56,6 +59,8 @@ import io.github.yhyeop.sanupcraft.gear.RivetProjectile;
 import io.github.yhyeop.sanupcraft.gear.SteamCharge;
 import io.github.yhyeop.sanupcraft.gear.SteamGear;
 import io.github.yhyeop.sanupcraft.gear.SteelGear;
+import io.github.yhyeop.sanupcraft.gear.special.HeadLamp;
+import io.github.yhyeop.sanupcraft.gear.special.ModSpecialGear;
 import io.github.yhyeop.sanupcraft.hazard.ToxicGasBlock;
 import io.github.yhyeop.sanupcraft.module.GearModule;
 import io.github.yhyeop.sanupcraft.module.GearModules;
@@ -492,6 +497,58 @@ public class SanupcraftModulesGameTest {
 		String json = SanupcraftConfig.defaults().toJson();
 		helper.assertTrue(json.contains("\"modules\"") && json.contains("\"repairStation\"") && json.contains("scatterPellets"), "설정 구역");
 		helper.succeed();
+	}
+
+	/** 증기 수리대 깔때기(4차 L2 #17): 장비가 올라가기 전에는 재료를 안 받고, 올라간 뒤에는 그 장비의 재료만 받는다. 손으로 넣는 길(canPlaceItem)은 그대로. */
+	@GameTest
+	public void repairStationHopperWaitsForGear(GameTestHelper helper) {
+		BlockPos pos = new BlockPos(1, 1, 1);
+		helper.setBlock(pos, ModModules.STEAM_REPAIR_STATION);
+		RepairStationBlockEntity station = helper.getBlockEntity(pos, RepairStationBlockEntity.class);
+		int material = RepairStationBlockEntity.SLOT_MATERIAL;
+		ItemStack dirt = new ItemStack(Items.DIRT);
+		ItemStack steelIngot = new ItemStack(ModItems.STEEL_INGOT);
+		helper.assertFalse(station.canPlaceItemThroughFace(material, dirt, Direction.UP), "빈 수리대에 깔때기로 흙이 들어감");
+		helper.assertFalse(station.canPlaceItemThroughFace(material, steelIngot, Direction.UP), "장비 없이 깔때기로 재료가 들어감");
+		station.setItem(RepairStationBlockEntity.SLOT_GEAR, new ItemStack(SteelGear.STEEL_SWORD));
+		helper.assertTrue(station.canPlaceItemThroughFace(material, steelIngot, Direction.UP), "장비 위에 맞는 재료를 깔때기로 못 넣음");
+		helper.assertFalse(station.canPlaceItemThroughFace(material, dirt, Direction.UP), "장비 위에 깔때기로 흙이 들어감");
+		helper.assertFalse(station.canPlaceItemThroughFace(material, new ItemStack(Items.IRON_INGOT), Direction.UP), "강철 검에 철 주괴가 깔때기로 들어감");
+		// 손으로 넣는 길은 그대로 (장비가 비어 있으면 무엇이든)
+		station.setItem(RepairStationBlockEntity.SLOT_GEAR, ItemStack.EMPTY);
+		helper.assertTrue(station.canPlaceItem(material, dirt), "손으로 넣는 길이 막힘");
+		helper.succeed();
+	}
+
+	/** 머리 조명(4차 L2 #28): 차원을 옮기는 그 틱(AFTER_PLAYER_CHANGE_LEVEL)에 옛 차원의 빛 블록을 지운다. */
+	@GameTest(maxTicks = 100)
+	public void headLampClearsOnDimensionChange(GameTestHelper helper) {
+		BlockPos foot = new BlockPos(2, 2, 2);
+		for (int dx = -1; dx <= 1; dx++) {
+			for (int dz = -1; dz <= 1; dz++) {
+				for (int dy = -1; dy <= 2; dy++) {
+					boolean inside = dx == 0 && dz == 0 && (dy == 0 || dy == 1);
+					helper.setBlock(foot.offset(dx, dy, dz), inside ? Blocks.AIR : Blocks.STONE);
+				}
+			}
+		}
+		ServerPlayer player = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
+		player.setItemSlot(EquipmentSlot.HEAD, new ItemStack(ModSpecialGear.MINER_HELMET));
+		player.setPos(Vec3.atBottomCenterOf(helper.absolutePos(new BlockPos(6, 1, 6))));
+		helper.runAfterDelay(30, () -> {
+			ServerLevel level = helper.getLevel();
+			player.setPos(Vec3.atBottomCenterOf(helper.absolutePos(foot)));
+			BlockPos lamp = HeadLamp.tick(player);
+			helper.assertValueEqual(lamp, helper.absolutePos(foot.above()), "조명 자리 (머리 칸)");
+			helper.assertBlockPresent(Blocks.LIGHT, foot.above());
+			// 모의 플레이어는 연결이 없어 실제로 teleport할 수 없다 → 차원 이동 직후 불리는 Fabric 이벤트를 직접 불러 연결을 본다
+			ServerLevel nether = level.getServer().getLevel(Level.NETHER);
+			helper.assertTrue(nether != null, "네더가 없음");
+			ServerEntityLevelChangeEvents.AFTER_PLAYER_CHANGE_LEVEL.invoker().afterChangeLevel(player, level, nether);
+			helper.assertTrue(HeadLamp.lampOf(player) == null, "차원을 옮겼는데 조명 추적이 남음");
+			helper.assertBlockPresent(Blocks.AIR, foot.above());
+			helper.succeed();
+		});
 	}
 
 	private static void assertCarried(GameTestHelper helper, ItemStack out, Holder<Enchantment> enchantment, GearModule module, String name, int damage) {

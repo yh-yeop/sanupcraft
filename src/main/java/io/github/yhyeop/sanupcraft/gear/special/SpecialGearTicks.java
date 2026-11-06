@@ -1,5 +1,6 @@
 package io.github.yhyeop.sanupcraft.gear.special;
 
+import net.fabricmc.fabric.api.entity.event.v1.ServerEntityLevelChangeEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.entity.event.v1.effect.ServerMobEffectEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
@@ -34,6 +35,8 @@ final class SpecialGearTicks {
 		});
 		ServerMobEffectEvents.ALLOW_ADD.register((effect, entity, context) -> !MinerGear.blocks(entity, effect));
 		ServerPlayerEvents.LEAVE.register(HeadLamp::clear);
+		// 차원을 옮긴 그 틱에 지운다 (옛 칸이 아직 불러와져 있다. 다음 조명 틱까지 기다리면 칸이 언로드될 수 있다)
+		ServerEntityLevelChangeEvents.AFTER_PLAYER_CHANGE_LEVEL.register((player, origin, destination) -> HeadLamp.clear(player));
 		ServerLifecycleEvents.SERVER_STOPPING.register(HeadLamp::clearAll);
 	}
 }

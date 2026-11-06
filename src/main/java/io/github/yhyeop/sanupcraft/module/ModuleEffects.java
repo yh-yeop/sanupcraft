@@ -30,6 +30,9 @@ public final class ModuleEffects {
 	public static final int EFFICIENCY_PERCENT = 30;
 	public static final int AREA_SPEED_PERCENT = 60;
 	public static final double KNOCKBACK = 1.0;
+	public static final int RAPID_COOLDOWN_PERCENT = 50;
+	public static final int SCATTER_PELLETS = 3;
+	public static final int SCATTER_DAMAGE_PERCENT = 50;
 	/** 증기 추진: 점프 강화 I과 같은 값. */
 	public static final double JUMP = 0.1;
 	public static final double SAFE_FALL = 1.0;

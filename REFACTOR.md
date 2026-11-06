@@ -1385,5 +1385,13 @@ Opus 샘플링(직접 읽음, Haiku 담당 영역): `boss/gear/VoidStaffItem` ·
 2. **#25** `Downed.goDown`에 `LAST_HIT.remove(player.getUUID());`(쓰러질 때마다 새로). `SERVER_STARTING` 훅은 넣지 않는다. 시험 없음
 3. 주석: **#27** `FlamethrowerItem` 클래스 문서에 "물속에서는 증기 · 연료를 쓰고 거품만 난다 (불이 안 붙는다)". **#37** `ToxicGasPocketFeature` "불 · 용암 · 횃불 옆 칸" → "불씨({@link ToxicGasBlock#isIgnitionSource}: 불 · 용암 · 횃불 · 켜진 모닥불) 옆 칸". **#40** `MultiblockShape.unform` 문서 "안 불러온 청크는 건드리지 않는다" → "안 불러온 청크의 이웃 제어기는 못 보므로, 그 제어기가 가진 공유 외벽은 잠시 꺼졌다가 그 제어기의 다음 확인에서 다시 켜진다". **#44** `kitIndustry` 문서 "외벽 33 + 제어기로" → "외벽 33(여분 포함 40개) + 제어기로". **#45** `ModSounds.machine` 문서 "40틱에 한 번쯤" → "40틱(분쇄기 30틱)에 한 번쯤"
 
+### 8-6a. L2 수정 기록 (모듈 · 장비 · 설정)
+- **#17** `RepairStationBlockEntity.canPlaceItemThroughFace` 재료 갈래를 `!gear.isEmpty() && gear.isValidRepairItem(stack)`로 (`canPlaceItem` 그대로), 클래스 문서 보강. 시험 `repairStationHopperWaitsForGear` — 고치기 전 실패("빈 수리대에 깔때기로 흙이 들어감").
+- **#19** `working()` · `pool()` · `working` 필드(대입 두 줄) 삭제. `pool` 필드 · 저장 키는 유지.
+- **#20** `GearUpgradeRecipes` 클래스 문서를 `source` 규칙에 맞게. **#24** `SteelGear` 문서 "갑옷은 철의 약 1.5배 · 도구는 2배".
+- **#28** `SpecialGearTicks.init`에 `ServerEntityLevelChangeEvents.AFTER_PLAYER_CHANGE_LEVEL` → `HeadLamp.clear(player)`, `HeadLamp` 문서에 "불러온 청크에서만" 한 줄. 시험 `headLampClearsOnDimensionChange` — 모의 플레이어는 연결이 없어 `teleport`가 실패("connection is null")하므로 이벤트를 직접 불러 연결을 본다. 고치기 전 실패("차원을 옮겼는데 조명 추적이 남음"). 28b 보류 그대로.
+- **#47** `ModuleEffects.RAPID_COOLDOWN_PERCENT` · `SCATTER_PELLETS` · `SCATTER_DAMAGE_PERCENT`(50 · 3 · 50), `SanupcraftConfig` 필드 초기값 · `OPTIONS` 기본값이 참조. `configDefaultsMatchConstants`에 세 줄.
+- 결과: `./gradlew build` GameTest 411개(409 + 2) 전부 통과, `runClientGameTest` 종료 코드 0.
+
 ### 8-7. 2단계 계획
 **2단계 없음.** 8-2에서 올린 셋은 반론으로 모두 닫았다: 1은 설계상 장비 상수(주석 한 줄, L1), 5 · 6은 #62 기준 오탐. 3단계도 없음. 다음 라운드 후보는 보류 11(렌더러 기반 클래스, 보스가 넷이 될 때)과 보류 메모 17b · 27b · 28b.

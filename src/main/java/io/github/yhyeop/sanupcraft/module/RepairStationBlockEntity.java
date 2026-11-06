@@ -27,7 +27,7 @@ import io.github.yhyeop.sanupcraft.power.SteamStorage;
  * 증기 수리대 (G4). 칸 둘: 장비 · 재료 (그 장비의 수리 재료 — 아이템의 {@code repairable} 컴포넌트, 우리 장비는 {@code #sanupcraft:repairs_…} 태그).
  * 재료 하나를 넣으면 최대 내구도의 25%만큼 "수리할 몫"이 생기고, 틱마다 증기 4를 쓰며 몫에서 조금씩 (빈 장비가 10초에 다 차는 빠르기) 내구도를 채운다.
  * 장비는 그대로 두고 닳은 정도만 고치므로 마법 부여 · 모듈 · 이름이 그대로다. 수리 비용(모루)도 늘지 않는다.
- * 장비를 꺼내면 남은 몫은 사라진다 (재료 하나치 안쪽). 깔때기: 위로 재료, 옆으로 장비를 넣고, 아래로는 다 고친 장비만 빠진다.
+ * 장비를 꺼내면 남은 몫은 사라진다 (재료 하나치 안쪽). 깔때기: 위로 재료(장비가 올라간 뒤 그 장비의 재료만), 옆으로 장비를 넣고, 아래로는 다 고친 장비만 빠진다.
  */
 public class RepairStationBlockEntity extends BlockEntity implements WorldlyContainer, SteamConsumer, SteamStorage {
 	public static final int SLOT_GEAR = 0;
@@ -46,7 +46,6 @@ public class RepairStationBlockEntity extends BlockEntity implements WorldlyCont
 	private int steam;
 	/** 재료로 받아 두고 아직 채우지 않은 내구도. */
 	private int pool;
-	private boolean working;
 
 	public RepairStationBlockEntity(BlockPos pos, BlockState state) {
 		super(ModModules.REPAIR_STATION_BLOCK_ENTITY, pos, state);
@@ -60,7 +59,6 @@ public class RepairStationBlockEntity extends BlockEntity implements WorldlyCont
 
 	/** 한 틱 수리. 채운 내구도를 돌려준다. 시험이 직접 부른다. */
 	public int repairTick() {
-		working = false;
 		ItemStack gear = items.get(SLOT_GEAR);
 		if (gear.isEmpty() || !gear.isDamageableItem() || !gear.isDamaged()) {
 			return 0;
@@ -80,17 +78,8 @@ public class RepairStationBlockEntity extends BlockEntity implements WorldlyCont
 		gear.setDamageValue(gear.getDamageValue() - amount);
 		pool -= amount;
 		steam -= config.repairSteamPerTick;
-		working = true;
 		setChanged();
 		return amount;
-	}
-
-	public boolean working() {
-		return working;
-	}
-
-	public int pool() {
-		return pool;
 	}
 
 	public ItemStack gear() {
@@ -163,7 +152,12 @@ public class RepairStationBlockEntity extends BlockEntity implements WorldlyCont
 
 	@Override
 	public boolean canPlaceItemThroughFace(int slot, ItemStack stack, @Nullable Direction direction) {
-		return slot == SLOT_GEAR ? items.get(SLOT_GEAR).isEmpty() && accepts(stack) : canPlaceItem(slot, stack);
+		// 깔때기는 장비가 올라간 뒤에 그 장비의 재료만 넣는다 (아무거나 끼면 칸이 막혀 자동화가 멈춘다). 손으로 넣는 길(canPlaceItem)은 그대로.
+		if (slot == SLOT_GEAR) {
+			return items.get(SLOT_GEAR).isEmpty() && accepts(stack);
+		}
+		ItemStack gear = items.get(SLOT_GEAR);
+		return !gear.isEmpty() && gear.isValidRepairItem(stack);
 	}
 
 	@Override
