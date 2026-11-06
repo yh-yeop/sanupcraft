@@ -21,7 +21,7 @@ import net.minecraft.world.level.levelgen.structure.templatesystem.LiquidSetting
 /**
  * 엔드 섬 위 구조물 (구조물 종류 {@code sanupcraft:end_island}, 버려진 정거장이 쓴다).
  * 엔드는 섬 사이가 공허라 그냥 직소로 놓으면 공허 한가운데 떠 버린다. 엔드 도시처럼 놓을 자리와 네 귀퉁이(±{@link #FOOTPRINT})의
- * 지면 높이(WORLD_SURFACE_WG)를 보고, 가운데와 귀퉁이 셋 이상이 {@link #MIN_SURFACE} 위 땅이고 서로 ±{@link #MAX_STEP} 안일 때만 놓는다.
+ * 지면 높이(WORLD_SURFACE_WG)를 보고, 가운데와 귀퉁이 셋 이상이 {@link #MIN_SURFACE} 위 땅이고 가운데와 ±{@link #MAX_STEP} 안일 때만 놓는다.
  * 틀의 y=0을 가운데 지면 + {@code hover} 높이에 맞춘다 (틀의 다리가 땅에 닿게 틀을 만든다).
  */
 public class EndIslandStructure extends Structure {

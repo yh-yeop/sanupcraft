@@ -72,16 +72,6 @@ public class ItemFilter extends SimpleContainer {
 		return ItemStack.isSameItem(entry, stack);
 	}
 
-	/** 같은 견본이 이미 있는가 (Shift 클릭으로 같은 걸 또 넣지 않으려고). */
-	public boolean contains(ItemStack stack) {
-		for (ItemStack entry : items) {
-			if (!entry.isEmpty() && ItemStack.isSameItem(entry, stack)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 	public void save(ValueOutput output) {
 		ContainerHelper.saveAllItems(output.child("filter"), items);
 	}

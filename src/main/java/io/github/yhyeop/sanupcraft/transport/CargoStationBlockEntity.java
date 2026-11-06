@@ -24,7 +24,7 @@ import io.github.yhyeop.sanupcraft.config.SanupcraftConfig;
 
 /**
  * 적재 · 하역 역: 9칸 창고. 옆 레일(가로 한 칸, 대각선 포함)에 화물칸(상자 달린 수레)이 서거나 지나가면
- * {@link #TICKS_PER_TRANSFER}틱마다 아이템을 최대 {@link #ITEMS_PER_TRANSFER}개 옮긴다.
+ * {@link #TICKS_PER_TRANSFER}틱마다 아이템을 최대 설정값(기본 {@link #ITEMS_PER_TRANSFER})개 옮긴다.
  * 적재: 역 → 화물칸, 하역: 화물칸 → 역. 깔때기로 역에 넣고 뺄 수 있다.
  */
 public class CargoStationBlockEntity extends BaseContainerBlockEntity {
