@@ -19,6 +19,7 @@ import net.minecraft.util.Mth;
 /**
  * 보스의 빛나는 부분 (눈 · 화구 등). 바닐라 눈 레이어처럼 어둠 속에서도 밝게 그리고,
  * 밝기(0~1)는 상태에서 받아 투명도로 맥박치게 한다 (죽는 동안은 레이어가 먼저 꺼 간다). 텍스처는 빛나는 칸만 칠하고 나머지는 투명.
+ * 2페이즈인 보스({@link BossRenderState#phaseTwo})는 한 번 더 겹쳐 더 진하게 빛난다.
  */
 public class BossGlowLayer<S extends LivingEntityRenderState, M extends EntityModel<S>> extends RenderLayer<S, M> {
 	private final RenderType renderType;
@@ -43,5 +44,10 @@ public class BossGlowLayer<S extends LivingEntityRenderState, M extends EntityMo
 		}
 		collector.order(1).submitModel(getParentModel(), state, poseStack, renderType, lightCoords, OverlayTexture.NO_OVERLAY,
 				ARGB.white(alpha), null, state.outlineColor);
+		// 2페이즈 (확장 3 C4): 같은 빛을 한 번 더 겹쳐 진하게 (빛 칸만 칠한 텍스처라 다른 곳은 그대로)
+		if (state instanceof BossRenderState boss && boss.phaseTwo && state.deathTime <= 0) {
+			collector.order(1).submitModel(getParentModel(), state, poseStack, renderType, lightCoords, OverlayTexture.NO_OVERLAY,
+					ARGB.white(Math.min(1.0F, alpha * 0.8F)), null, state.outlineColor);
+		}
 	}
 }

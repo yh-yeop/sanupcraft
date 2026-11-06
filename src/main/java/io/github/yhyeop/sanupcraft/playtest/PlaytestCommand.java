@@ -87,7 +87,9 @@ public final class PlaytestCommand {
 		// 확장 3 D1 새 광석
 		ORES("새 광석: 크롬철석 · 보크사이트 · 원석 · 블록 · 가공 기계", null, PlaytestCommand::kitOres),
 		// 확장 3 D3 · D5
-		BLAST("증기 발파 · 위험 요소: 발파 장약 · 원격 기폭기 · 유독 가스 · 무른 바위", null, PlaytestCommand::kitBlast);
+		BLAST("증기 발파 · 위험 요소: 발파 장약 · 원격 기폭기 · 유독 가스 · 무른 바위", null, PlaytestCommand::kitBlast),
+		// 확장 3 C4 보스 2페이즈 · 전용 장비
+		BOSSGEAR("보스 전용 장비 · 2페이즈: 녹슨 망치 · 화구 방패 · 공허 지팡이 · 소환석 셋 · 제단", null, PlaytestCommand::kitBossGear);
 
 		final String description;
 		final ResourceKey<Level> dimension;
@@ -666,6 +668,18 @@ public final class PlaytestCommand {
 		give(p, io.github.yhyeop.sanupcraft.factory.ModMachines.CRUSHER.asItem(), 1);
 		give(p, io.github.yhyeop.sanupcraft.hazard.ModHazard.LOOSE_ROCK.asItem(), 8);
 		give(p, Items.MILK_BUCKET, 2);
+		food(p);
+	}
+
+	/** 확장 3 C4: 보스 전용 장비 셋과 소환석 셋 (2페이즈 패턴 · 장비 효과를 직접 본다). 공허 거상은 엔드 원점에서 500칸 밖 제단에서만 깨어난다. */
+	private static void kitBossGear(ServerPlayer p) {
+		give(p, io.github.yhyeop.sanupcraft.boss.gear.ModBossGear.RUSTY_HAMMER, 1);
+		give(p, io.github.yhyeop.sanupcraft.boss.gear.ModBossGear.FURNACE_SHIELD, 1);
+		give(p, io.github.yhyeop.sanupcraft.boss.gear.ModBossGear.VOID_STAFF, 1);
+		give(p, ModBoss.GUARDIAN_SUMMONER, 2);
+		give(p, ModBoss.WARDEN_SUMMONER, 2);
+		give(p, io.github.yhyeop.sanupcraft.end.ModEnd.COLOSSUS_SUMMONER, 2);
+		give(p, ModBoss.GUARDIAN_ALTAR.asItem(), 2);
 		food(p);
 	}
 }

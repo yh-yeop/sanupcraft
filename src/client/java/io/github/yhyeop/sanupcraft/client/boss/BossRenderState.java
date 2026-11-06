@@ -4,12 +4,14 @@ import net.minecraft.client.renderer.entity.state.LivingEntityRenderState;
 
 import io.github.yhyeop.sanupcraft.boss.PartyBossMonster;
 
-/** 세 보스 렌더 상태의 공통 몫: 공격 동작 남은 틱 · 화남. */
+/** 세 보스 렌더 상태의 공통 몫: 공격 동작 남은 틱 · 화남 · 2페이즈. */
 public class BossRenderState extends LivingEntityRenderState {
 	/** 공격 동작(휘두르기 · 내려치기) 남은 틱 (10 → 0). 0이면 공격 중이 아님. */
 	public float attackTicksRemaining;
 	/** 체력 절반 아래: 빛이 더 세게 · 빨리 맥박친다. */
 	public boolean enraged;
+	/** 2페이즈 (확장 3 C4, 동기화 데이터): 금 간 갑옷 레이어 + 더 센 빛 ({@link BossCrackLayer}, {@link BossGlowLayer}). */
+	public boolean phaseTwo;
 
 	/** 공격 진행 (0 → 1). 공격 중일 때만 뜻이 있다. */
 	public float attackProgress() {
@@ -26,5 +28,6 @@ public class BossRenderState extends LivingEntityRenderState {
 	public static void extractCommon(PartyBossMonster boss, BossRenderState state, float partialTicks) {
 		state.attackTicksRemaining = boss.getAttackTick() > 0 ? boss.getAttackTick() - partialTicks : 0.0F;
 		state.enraged = boss.isEnraged();
+		state.phaseTwo = boss.isPhaseTwo();
 	}
 }

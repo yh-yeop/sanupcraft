@@ -53,6 +53,8 @@ public class Sanupcraft implements ModInitializer {
 		SteamGear.init();
 		ModBoss.init();
 		ModWorld.init();
+		io.github.yhyeop.sanupcraft.boss.phase.ModBossPhase.init(); // 확장 3 C4 보스 2페이즈
+		io.github.yhyeop.sanupcraft.boss.gear.ModBossGear.init(); // 확장 3 C4 보스 전용 장비
 		io.github.yhyeop.sanupcraft.effect.ModEffects.init(); // 확장 3 C3 상태 이상
 		io.github.yhyeop.sanupcraft.resource.ModResources.init(); // 확장 3 D1 새 광석 (크롬철석 · 보크사이트)
 		io.github.yhyeop.sanupcraft.mining.blast.ModBlast.init(); // 확장3 D3 증기 발파

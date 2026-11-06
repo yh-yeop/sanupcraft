@@ -34,6 +34,7 @@ import net.minecraft.world.phys.Vec3;
 
 import io.github.yhyeop.sanupcraft.config.SanupcraftConfig;
 import io.github.yhyeop.sanupcraft.core.ModItems;
+import io.github.yhyeop.sanupcraft.boss.gear.ModBossGear;
 import io.github.yhyeop.sanupcraft.effect.ModEffects;
 import io.github.yhyeop.sanupcraft.effect.Resistances;
 import io.github.yhyeop.sanupcraft.gear.HeatproofGear;
@@ -45,6 +46,8 @@ import io.github.yhyeop.sanupcraft.sound.ModSounds;
  *   <li>증기 분출: 20틱 동안 포효하며 입에 증기가 모인다. 10틱에 방향을 잠그고(부채꼴 경계가 불꽃 선으로 보인다) → 앞쪽 부채꼴(7칸, 좌우 35도) 피해. 옆이나 뒤로 돌면 된다.</li>
  *   <li>화염 장판: 주변 플레이어 발밑(인원수만큼 3 ~ 6곳)에 25틱 동안 불꽃 고리 → 반경 2.5칸 폭발. 고리 밖으로 나가면 된다.</li>
  *   <li>도약 내려찍기: 15틱 웅크렸다가 대상에게 뛰어올라 착지하면 반경 4칸 피해 + 띄우기. 뛰는 순간 예상 착지점에 고리가 보인다.</li>
+ *   <li>용암 기둥 (2페이즈, 확장 3 C4): 주변 플레이어 최대 {@value #MAX_PILLARS}명 발밑에 25틱 동안 불꽃 원 →
+ *       반경 {@value #PILLAR_RADIUS}칸 불기둥 (피해 6 + 과열 II, 방패를 깬다). 블록은 바꾸지 않는다 (입자 · 피해만).</li>
  * </ul>
  * 과열: 내열 갑옷 한 벌을 다 입지 않은 대상은 피해 1.5배 + 과열 효과(1초마다 피해 1, 5초, 물에 들어가면 풀림 — 확장 3 C3, 전에는 불 붙음).
  * 패턴 타격은 방패를 깨고 들어간다.
@@ -67,6 +70,13 @@ public class FurnaceWarden extends PartyBossMonster {
 	public static final float LEAP_DAMAGE = 11.0F;
 	public static final double LEAP_RADIUS = 4.0;
 	public static final byte EVENT_ROAR = 61;
+	public static final float PILLAR_DAMAGE = 6.0F;
+	public static final double PILLAR_RADIUS = 1.5;
+	public static final int MAX_PILLARS = 4;
+	public static final int PILLAR_OVERHEAT_TICKS = 100;
+	public static final int PILLAR_OVERHEAT_LEVEL = 2;
+	public static final int PILLAR_WINDUP = 25;
+	private static final int PILLAR_END = 35;
 
 	private static final int BLAST_LOCK = 10;
 	private static final int BLAST_WINDUP = 20;
@@ -83,16 +93,19 @@ public class FurnaceWarden extends PartyBossMonster {
 	private static final int WARNING_COOLDOWN = 200;
 
 	public enum Pattern {
-		NONE, STEAM_BLAST, FIRE_RINGS, LEAP
+		NONE, STEAM_BLAST, FIRE_RINGS, LEAP, LAVA_PILLARS
 	}
 
 	private static final Pattern[] CYCLE = {Pattern.STEAM_BLAST, Pattern.LEAP, Pattern.FIRE_RINGS, Pattern.STEAM_BLAST, Pattern.FIRE_RINGS, Pattern.LEAP};
+	/** 2페이즈: 용암 기둥으로 시작해 세 패턴마다 한 번 (화염 장판 하나를 대신한다). */
+	private static final Pattern[] CYCLE_TWO = {Pattern.LAVA_PILLARS, Pattern.STEAM_BLAST, Pattern.LEAP, Pattern.LAVA_PILLARS, Pattern.FIRE_RINGS, Pattern.LEAP};
 
 	private Pattern pattern = Pattern.NONE;
 	private int patternTick;
 	private int cooldown = 60;
 	private int cycleIndex;
 	private final List<Vec3> rings = new ArrayList<>();
+	private final List<Vec3> pillars = new ArrayList<>();
 	private boolean airborne;
 	private int roarTick;
 	private boolean blastLocked;
@@ -138,6 +151,23 @@ public class FurnaceWarden extends PartyBossMonster {
 		ModSounds.bossPhase(level, this, ParticleTypes.FLAME); // M11 X2
 	}
 
+	@Override
+	protected Item gearItem() {
+		return ModBossGear.FURNACE_SHIELD;
+	}
+
+	/** 2페이즈: 다음 패턴은 용암 기둥부터. */
+	@Override
+	protected void onPhaseTwo(ServerLevel level) {
+		cycleIndex = 0;
+	}
+
+	/** 쿨다운이 끝나면 쓸 패턴 (시험용). */
+	public Pattern upcomingPattern() {
+		Pattern[] cycle = isPhaseTwo() ? CYCLE_TWO : CYCLE;
+		return cycle[cycleIndex % cycle.length];
+	}
+
 	/** 화염 장판 상한 (인원수, 3 ~ 6). 장판은 가로 · 세로 ±20칸 상자 안 플레이어 발밑마다 하나. */
 	public int maxRings() {
 		return Mth.clamp(party().size(), MIN_RINGS, MAX_RINGS);
@@ -179,6 +209,18 @@ public class FurnaceWarden extends PartyBossMonster {
 				airborne = false;
 				playSound(SoundEvents.RAVAGER_STEP, 2.0F, 0.5F);
 			}
+			case LAVA_PILLARS -> {
+				pillars.clear();
+				for (Player player : BossCombat.targets(level, getBoundingBox().inflate(20.0))) {
+					if (pillars.size() < MAX_PILLARS) {
+						pillars.add(player.position());
+					}
+				}
+				if (pillars.isEmpty() && getTarget() != null) {
+					pillars.add(getTarget().position());
+				}
+				playSound(ModSounds.WARDEN_LAVA_PILLAR, 2.0F, 1.0F);
+			}
 			case NONE -> {
 			}
 		}
@@ -192,7 +234,9 @@ public class FurnaceWarden extends PartyBossMonster {
 			if (cooldown > 0) {
 				cooldown--;
 			} else if (target != null && target.isAlive()) {
-				startPattern(level, CYCLE[cycleIndex++ % CYCLE.length]);
+				Pattern next = upcomingPattern();
+				cycleIndex++;
+				startPattern(level, next);
 			}
 			return;
 		}
@@ -207,6 +251,7 @@ public class FurnaceWarden extends PartyBossMonster {
 			case STEAM_BLAST -> tickBlast(level);
 			case FIRE_RINGS -> tickRings(level);
 			case LEAP -> tickLeap(level);
+			case LAVA_PILLARS -> tickPillars(level);
 			case NONE -> {
 			}
 		}
@@ -340,6 +385,70 @@ public class FurnaceWarden extends PartyBossMonster {
 	public void setRings(List<Vec3> centers) {
 		rings.clear();
 		rings.addAll(centers);
+	}
+
+	private void tickPillars(ServerLevel level) {
+		if (patternTick < PILLAR_WINDUP) {
+			if (patternTick % 3 == 0) {
+				for (Vec3 center : pillars) {
+					for (int i = 0; i < 12; i++) {
+						double a = i * Math.PI * 2.0 / 12.0;
+						level.sendParticles(ParticleTypes.FLAME, center.x + Math.cos(a) * PILLAR_RADIUS, center.y + 0.1,
+								center.z + Math.sin(a) * PILLAR_RADIUS, 1, 0.0, 0.0, 0.0, 0.0);
+					}
+					// 끓어오르는 땅: 가운데에서 용암 방울이 튄다 (예고가 끝날수록 많이)
+					level.sendParticles(ParticleTypes.LAVA, center.x, center.y + 0.1, center.z, 1 + patternTick / 8, 0.4, 0.0, 0.4, 0.0);
+				}
+			}
+			return;
+		}
+		if (patternTick == PILLAR_WINDUP) {
+			eruptPillars(level);
+			return;
+		}
+		if (patternTick >= PILLAR_END) {
+			endPattern();
+		}
+	}
+
+	/** 용암 기둥 자리를 직접 정한다 (테스트용). */
+	public void setPillars(List<Vec3> centers) {
+		pillars.clear();
+		pillars.addAll(centers);
+	}
+
+	/** 용암 기둥 자리 (시험용). */
+	public List<Vec3> pillars() {
+		return List.copyOf(pillars);
+	}
+
+	/**
+	 * 용암 기둥이 솟는다: 기둥 반경 안, 높이 −1 ~ +4칸 안 플레이어에게 피해 6(강화 배율) + 과열 II. 방패는 깨고 들어간다.
+	 * 맞은 수를 돌려준다 (한 사람은 한 번만).
+	 */
+	public int eruptPillars(ServerLevel level) {
+		List<Player> hit = new ArrayList<>();
+		float damage = PILLAR_DAMAGE * (float) party().outgoingDamageScale();
+		for (Vec3 center : pillars) {
+			for (int y = 0; y < 8; y++) {
+				level.sendParticles(ParticleTypes.FLAME, center.x, center.y + y * 0.5, center.z, 6, PILLAR_RADIUS * 0.4, 0.2, PILLAR_RADIUS * 0.4, 0.02);
+			}
+			level.sendParticles(ParticleTypes.LAVA, center.x, center.y + 0.3, center.z, 16, PILLAR_RADIUS * 0.5, 0.5, PILLAR_RADIUS * 0.5, 0.0);
+			level.sendParticles(ParticleTypes.LARGE_SMOKE, center.x, center.y + 3.5, center.z, 8, 0.4, 0.4, 0.4, 0.02);
+			AABB box = new AABB(center.x - PILLAR_RADIUS, center.y - 1.0, center.z - PILLAR_RADIUS, center.x + PILLAR_RADIUS, center.y + 4.0, center.z + PILLAR_RADIUS);
+			for (Player player : BossCombat.targets(level, box)) {
+				if (hit.contains(player) || BossCombat.horizontalDistance(player.position(), center) > PILLAR_RADIUS) {
+					continue;
+				}
+				BossCombat.breakShield(level, player);
+				player.hurtServer(level, damageSources().mobAttack(this), damage);
+				ModEffects.inflict(player, ModEffects.OVERHEAT, PILLAR_OVERHEAT_TICKS, PILLAR_OVERHEAT_LEVEL, this); // 막 맞아 무적 틱이어도 과열은 건다
+				player.push(0.0, 0.6, 0.0);
+				hit.add(player);
+			}
+		}
+		playSound(ModSounds.WARDEN_LAVA_ERUPT, 2.0F, 1.0F);
+		return hit.size();
 	}
 
 	private void tickLeap(ServerLevel level) {

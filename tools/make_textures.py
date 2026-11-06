@@ -3908,6 +3908,174 @@ def main_a5(made):
     made.append(save(a5_gui_machine(water=True), "gui/washer.png"))
 
 
+# ---------- 확장 3 C4 보스 2페이즈 금 · 보스 전용 장비 ----------
+def c4_art(rows, palette):
+    """글자 그림을 팔레트(글자 -> #색)로 칠한다. '.'은 투명. 크기는 rows가 정한다."""
+    im = Image.new("RGBA", (len(rows[0]), len(rows)))
+    for y, row in enumerate(rows):
+        for x, ch in enumerate(row):
+            if ch != ".":
+                im.putpixel((x, y), hex_px(palette[ch]))
+    return im
+
+
+def c4_cracks(name, glow_colors, seed):
+    """보스 텍스처의 몸통 칸 위에만 금을 긋는다: 금 레이어(어두운 금 + 둘레 그늘)와 빛 레이어(금 속 빛)."""
+    base = Image.open(os.path.join(OUT, "entity", name + ".png")).convert("RGBA")
+    w, h = base.size
+    rnd = random.Random(seed)
+    solid = [[base.getpixel((x, y))[3] > 0 for x in range(w)] for y in range(h)]
+    count = sum(row.count(True) for row in solid)
+    crack = set()
+
+    def walk(x, y, steps, dx, dy):
+        for _ in range(steps):
+            if not (0 <= x < w and 0 <= y < h) or not solid[y][x]:
+                return
+            crack.add((x, y))
+            if rnd.random() < 0.12 and steps > 4:
+                walk(x, y, steps // 2, rnd.choice((-1, 1)) if dx == 0 else dx, rnd.choice((-1, 1)) if dy == 0 else dy)
+            # 대체로 같은 쪽으로, 가끔 꺾인다
+            r = rnd.random()
+            if r < 0.55:
+                x += dx
+                y += dy
+            elif r < 0.8:
+                x += dx
+            else:
+                y += dy
+
+    cells = [(x, y) for y in range(h) for x in range(w) if solid[y][x]]
+    for _ in range(max(6, count // 90)):
+        x, y = rnd.choice(cells)
+        walk(x, y, rnd.randint(4, 9), rnd.choice((-1, 0, 1)) or 1, rnd.choice((-1, 1)))
+    cracks = Image.new("RGBA", (w, h))
+    glow = Image.new("RGBA", (w, h))
+    for (x, y) in crack:
+        cracks.putpixel((x, y), (24, 18, 16, 255))
+        c = glow_colors[(x * 7 + y * 13) % len(glow_colors)]
+        glow.putpixel((x, y), hex_px(c)[:3] + (230,))
+    # 금 둘레 한 칸은 그늘 (원래 색을 어둡게)
+    for (x, y) in crack:
+        for nx, ny in ((x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)):
+            if 0 <= nx < w and 0 <= ny < h and solid[ny][nx] and (nx, ny) not in crack and cracks.getpixel((nx, ny))[3] == 0:
+                r, g, b, _ = base.getpixel((nx, ny))
+                cracks.putpixel((nx, ny), (int(r * 0.6), int(g * 0.6), int(b * 0.6), 255))
+    return cracks, glow
+
+
+C4_HAMMER = [
+    "................",
+    "......rrsrr.....",
+    ".....rsttsur....",
+    "....rstsrtsur...",
+    "....rssttsrsr...",
+    ".....rsrsstr....",
+    "......rrwsrr....",
+    ".......wxr......",
+    "......wxw.......",
+    ".....wxw........",
+    "....wxw.........",
+    "...wxw..........",
+    "..axw...........",
+    ".abx............",
+    ".ba.............",
+    "................",
+]
+C4_HAMMER_PAL = {"r": "#5a2a16", "s": "#a85628", "t": "#de8442", "u": "#ffc27a", "w": "#4a3420", "x": "#7a5634",
+                 "a": "#2c3138", "b": "#5f6873"}
+
+C4_STAFF = [
+    "..........ghg...",
+    ".........gpkpg..",
+    ".........hkwkh..",
+    ".........gpkpg..",
+    "........d.ghg...",
+    ".......dad......",
+    "......dad.......",
+    ".....dad........",
+    "....dad.........",
+    "...dad..........",
+    "..dad...........",
+    ".dad............",
+    ".ad.............",
+    "................",
+    "................",
+    "................",
+]
+C4_STAFF_PAL = {"g": "#7a1a9e", "h": "#b632d8", "p": "#e872ff", "k": "#3b0f52", "w": "#ffd2ff", "d": "#2a2236", "a": "#4e4260"}
+
+C4_BOLT = [
+    "................",
+    "................",
+    "................",
+    "................",
+    "......ghhg......",
+    ".....hppkph.....",
+    "....gpwwpkpg....",
+    "....hpwpkkph....",
+    "....hpkkkpph....",
+    "....gpkkpwpg....",
+    ".....hppppg.....",
+    "......ghhg......",
+    "................",
+    "................",
+    "................",
+    "................",
+]
+
+
+def c4_shield():
+    """화구 방패 32x32: 앞면 12x22 (0,0), 뒷면 (12,0), 테두리 (24,0) · (0,22), 손잡이 (26,0)."""
+    rnd = random.Random(4404)
+    im = Image.new("RGBA", (32, 32))
+    iron = ["#3a3d44", "#454952", "#4f545e"]
+    brick = ["#6e2c16", "#7d3519", "#8a3d1d"]
+    for x in range(12):
+        for y in range(22):
+            edge = x in (0, 11) or y in (0, 21)
+            if edge:
+                c = "#2a2c31"
+            elif 2 <= x <= 9 and 5 <= y <= 15:
+                # 가운데 화구 창살: 가로 창살 사이로 불빛
+                c = "#2a2c31" if y % 3 == 2 or x in (2, 9) else ("#ffb040" if 4 <= x <= 7 and 8 <= y <= 12 else "#d8601a")
+            elif y >= 17:
+                c = rnd.choice(brick)
+            else:
+                c = rnd.choice(iron)
+            im.putpixel((x, y), hex_px(c))
+    for (x, y) in ((1, 1), (10, 1), (1, 20), (10, 20), (1, 10), (10, 10)):
+        im.putpixel((x, y), hex_px("#b5a06a"))  # 놋쇠 리벳
+    for x in range(12, 24):
+        for y in range(22):
+            im.putpixel((x, y), hex_px("#2a2c31" if x in (12, 23) or y in (0, 21) else rnd.choice(iron)))
+    for x in range(24, 26):
+        for y in range(22):
+            im.putpixel((x, y), hex_px("#2a2c31"))
+    for x in range(0, 12):
+        for y in range(22, 24):
+            im.putpixel((x, y), hex_px("#2a2c31"))
+    for x in range(26, 32):
+        for y in range(0, 6):
+            im.putpixel((x, y), hex_px(rnd.choice(["#4a3420", "#5c3f24"])))
+    return im
+
+
+def main_c4(made):
+    # R7: 보스 2페이즈 금 간 갑옷 (금 + 금 속 빛, 보스 빛 색)
+    for name, colors, seed in (("rusty_guardian", ["#2fb8ef", "#a6efff", "#5fd0ff"], 4401),
+                               ("furnace_warden", ["#ffb040", "#fff0a0", "#ff7a1a"], 4402),
+                               ("void_colossus", ["#e872ff", "#ffd2ff", "#b632d8"], 4403)):
+        cracks, glow = c4_cracks(name, colors, seed)
+        made.append(save(cracks, f"entity/{name}_cracks.png"))
+        made.append(save(glow, f"entity/{name}_cracks_glow.png"))
+    # C4: 보스 전용 장비
+    made.append(save(c4_art(C4_HAMMER, C4_HAMMER_PAL), "item/rusty_hammer.png"))
+    made.append(save(c4_art(C4_STAFF, C4_STAFF_PAL), "item/void_staff.png"))
+    made.append(save(c4_art(C4_BOLT, C4_STAFF_PAL), "item/void_bolt.png"))
+    made.append(save(c4_shield(), "item/furnace_shield.png"))
+
+
 def save(im, rel, scale=1):
     path = os.path.join(OUT, *rel.split("/"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -3957,6 +4125,7 @@ def main():
     main_a1(made)  # 확장 3 D1 새 광석
     main_blast(made)
     main_a5(made)
+    main_c4(made)  # 확장 3 C4 보스 2페이즈 · 전용 장비
 
     if "--sheet" in sys.argv:
         tiles = [Image.open(p) for p in made]
