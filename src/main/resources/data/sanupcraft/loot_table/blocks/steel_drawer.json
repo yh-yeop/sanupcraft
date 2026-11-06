@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "sanupcraft:steel_drawer",
+          "modifier": {
+            "type": "minecraft:copy_components",
+            "include": [
+              "sanupcraft:drawer_contents"
+            ],
+            "source": "block_entity"
+          }
+        }
+      ]
+    }
+  ],
+  "random_sequence": "sanupcraft:blocks/steel_drawer"
+}

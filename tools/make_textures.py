@@ -1176,6 +1176,183 @@ def main_bundle3(made):
     made.append(save(charger_side(), "block/steam_charger_side.png"))
     made.append(save(charger_bottom(), "block/steam_charger_bottom.png"))
 
+# ---- M7 보관 · 제작 ----
+IRON = {"a": "#3a3a3a", "b": "#6b6b6b", "c": "#9a9a9a", "d": "#c4c4c4", "e": "#ececec"}
+WOOD = {"a": "#3b2814", "b": "#5c3f24", "c": "#7a5634", "d": "#9c7448", "e": "#c49a64"}
+
+
+def drawer_front(steel):
+    """서랍 앞면: 테두리 안쪽에 어두운 칸 (아이템 · 개수가 그려질 자리)과 손잡이."""
+    im = panel(seed=701 if steel else 702)
+    if not steel:
+        im = recolor(im, IRON)
+    for y in range(2, 14):
+        for x in range(2, 14):
+            edge = x in (2, 13) or y in (2, 13)
+            im.putpixel((x, y), px("a") if edge else px("m" if steel else "w"))
+    for x in range(6, 10):
+        im.putpixel((x, 3), px("d"))
+    return im
+
+
+def drawer_side(steel):
+    im = panel(seed=703 if steel else 704)
+    if not steel:
+        im = recolor(im, IRON)
+    for x in range(1, 15):
+        im.putpixel((x, 7), px("b"))
+        im.putpixel((x, 8), px("d"))
+    return im
+
+
+def upgrade_icon(void):
+    """서랍 업그레이드: 강철판 위에 위 화살표 (넘침 버림은 검은 구멍)."""
+    im = Image.new("RGBA", (16, 16))
+    for y in range(3, 13):
+        for x in range(2, 14):
+            edge = x in (2, 13) or y in (3, 12)
+            im.putpixel((x, y), px("a") if edge else px("c" if (x + y) % 5 else "d"))
+    if void:
+        for y in range(5, 11):
+            for x in range(5, 11):
+                d = math.hypot(x - 7.5, y - 7.5)
+                if d < 3.0:
+                    im.putpixel((x, y), (20, 10, 30, 255) if d < 2.0 else px("R"))
+    else:
+        for y in range(5, 11):
+            im.putpixel((7, y), px("u"))
+            im.putpixel((8, y), px("u"))
+        for i in range(3):
+            im.putpixel((7 - i, 5 + i), px("t"))
+            im.putpixel((8 + i, 5 + i), px("t"))
+    return im
+
+
+def cable_tex():
+    """창고 관: 어두운 철 관에 초록 신호 줄."""
+    im = Image.new("RGBA", (16, 16))
+    noise_fill(im, "abb", 711)
+    for x in range(16):
+        im.putpixel((x, 7), (60, 170, 90, 255))
+        im.putpixel((x, 8), (40, 120, 60, 255))
+    return im
+
+
+def terminal_front(crafting):
+    """창고 단말 앞면: 초록 화면 (제작 단말은 화면 아래에 3x3 칸)."""
+    im = panel(seed=721 if crafting else 722)
+    for y in range(2, 10 if crafting else 13):
+        for x in range(2, 14):
+            edge = x in (2, 13) or y in (2, 9 if crafting else 12)
+            im.putpixel((x, y), px("a") if edge else (25, 60 + ((x * 7 + y * 3) % 3) * 12, 35, 255))
+    for x in (4, 6, 8, 10):
+        im.putpixel((x, 4), (110, 230, 140, 255))
+    for x in (4, 5, 7, 9, 11):
+        im.putpixel((x, 6), (80, 200, 110, 255))
+    if crafting:
+        for gy in range(3):
+            for gx in range(3):
+                x0, y0 = 4 + gx * 3, 10 + gy * 2
+                im.putpixel((x0, y0), recolor_px(WOOD["d"]))
+                im.putpixel((x0 + 1, y0), recolor_px(WOOD["c"]))
+    return im
+
+
+def recolor_px(color):
+    return hex_px(color)
+
+
+def terminal_top(crafting):
+    im = panel(seed=723)
+    if crafting:
+        for y in range(3, 13):
+            for x in range(3, 13):
+                im.putpixel((x, y), hex_px(WOOD["b" if (x in (3, 12) or y in (3, 12)) else ("c" if (x // 3 + y // 3) % 2 else "d")]))
+    else:
+        for x in range(3, 13):
+            im.putpixel((x, 7), (60, 170, 90, 255))
+    return im
+
+
+def autocrafter_front():
+    """자동 제작대 앞면: 3x3 나무 칸과 톱니."""
+    im = panel(seed=731)
+    for y in range(2, 14):
+        for x in range(2, 14):
+            if x in (2, 13) or y in (2, 13):
+                im.putpixel((x, y), px("a"))
+            else:
+                cell = (x - 3) % 4 == 3 or (y - 3) % 4 == 3
+                im.putpixel((x, y), hex_px(WOOD["a"] if cell else WOOD["c" if (x + y) % 3 else "d"]))
+    return im
+
+
+def autocrafter_top():
+    im = panel(seed=732)
+    gear = cog()
+    for y in range(16):
+        for x in range(16):
+            p = gear.getpixel((x, y))
+            if p[3]:
+                im.putpixel((x, y), p)
+    return im
+
+
+def stocker_front():
+    """재고 유지기 앞면: 눈금 막대 셋 (빨강 · 노랑 · 초록)과 파수꾼 심장 빛."""
+    im = panel(seed=741)
+    for y in range(2, 14):
+        for x in range(2, 14):
+            if x in (2, 13) or y in (2, 13):
+                im.putpixel((x, y), px("a"))
+            else:
+                im.putpixel((x, y), px("m"))
+    bars = [(4, 9, (200, 60, 60, 255)), (7, 6, (220, 190, 60, 255)), (10, 4, (80, 200, 100, 255))]
+    for x0, top, color in bars:
+        for y in range(top, 12):
+            im.putpixel((x0, y), color)
+            im.putpixel((x0 + 1, y), color)
+    im.putpixel((7, 3), px("Q"))
+    im.putpixel((8, 3), px("Q"))
+    return im
+
+
+def portable_icon(ender):
+    """휴대 단말: 손에 드는 판 + 초록 화면 (셜커판은 보라 테두리)."""
+    im = Image.new("RGBA", (16, 16))
+    rim = (120, 70, 140, 255) if ender else px("b")
+    for y in range(1, 15):
+        for x in range(3, 13):
+            edge = x in (3, 12) or y in (1, 14)
+            im.putpixel((x, y), px("a") if edge else rim)
+    for y in range(3, 10):
+        for x in range(5, 11):
+            im.putpixel((x, y), (25, 70 + ((x + y) % 2) * 15, 40, 255))
+    for x in (6, 8):
+        im.putpixel((x, 5), (110, 230, 140, 255))
+    for x in range(5, 11, 2):
+        im.putpixel((x, 12), px("d"))
+    return im
+
+
+def main_m7(made):
+    for steel in (False, True):
+        name = "steel_drawer" if steel else "iron_drawer"
+        made.append(save(drawer_front(steel), f"block/{name}_front.png"))
+        made.append(save(drawer_side(steel), f"block/{name}_side.png"))
+    made.append(save(upgrade_icon(False), "item/drawer_upgrade.png"))
+    made.append(save(upgrade_icon(True), "item/drawer_void_upgrade.png"))
+    made.append(save(cable_tex(), "block/storage_cable.png"))
+    made.append(save(terminal_front(False), "block/storage_terminal_front.png"))
+    made.append(save(terminal_front(True), "block/crafting_terminal_front.png"))
+    made.append(save(terminal_top(False), "block/storage_terminal_top.png"))
+    made.append(save(terminal_top(True), "block/crafting_terminal_top.png"))
+    made.append(save(autocrafter_front(), "block/autocrafter_front.png"))
+    made.append(save(autocrafter_top(), "block/autocrafter_top.png"))
+    made.append(save(stocker_front(), "block/stocker_front.png"))
+    made.append(save(portable_icon(False), "item/portable_terminal.png"))
+    made.append(save(portable_icon(True), "item/ender_portable_terminal.png"))
+
 
 def save(im, rel, scale=1):
     path = os.path.join(OUT, *rel.split("/"))
@@ -1210,6 +1387,7 @@ def main():
     main_bundle1(made)
     main_bundle2(made)
     main_bundle3(made)
+    main_m7(made)
 
     if "--sheet" in sys.argv:
         tiles = [Image.open(p) for p in made]

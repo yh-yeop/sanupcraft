@@ -14,6 +14,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
 import io.github.yhyeop.sanupcraft.boss.ModBoss;
+import io.github.yhyeop.sanupcraft.client.storage.StorageClient;
 import io.github.yhyeop.sanupcraft.factory.ModMachines;
 import io.github.yhyeop.sanupcraft.gear.SteamGear;
 import io.github.yhyeop.sanupcraft.logistics.ModLogistics;
@@ -28,6 +29,8 @@ public class SanupcraftClient implements ClientModInitializer {
 		EntityRendererRegistry.register(ModBoss.FURNACE_WARDEN, FurnaceWardenRenderer::new);
 		EntityRendererRegistry.register(SteamGear.RIVET_ENTITY, ThrownItemRenderer::new);
 		ItemTooltipCallback.EVENT.register((stack, context, flag, lines) -> addGuideTooltip(stack, lines));
+		// M7 보관 · 제작
+		StorageClient.init();
 	}
 
 	/**

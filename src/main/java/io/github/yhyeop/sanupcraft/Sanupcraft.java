@@ -21,6 +21,7 @@ import io.github.yhyeop.sanupcraft.logistics.ModLogistics;
 import io.github.yhyeop.sanupcraft.mining.ModMining;
 import io.github.yhyeop.sanupcraft.playtest.PlaytestCommand;
 import io.github.yhyeop.sanupcraft.power.ModPower;
+import io.github.yhyeop.sanupcraft.storage.ModStorage;
 import io.github.yhyeop.sanupcraft.world.ModWorld;
 
 public class Sanupcraft implements ModInitializer {
@@ -42,6 +43,8 @@ public class Sanupcraft implements ModInitializer {
 		SteamGear.init();
 		ModBoss.init();
 		ModWorld.init();
+		// M7 보관 · 제작
+		ModStorage.init();
 		ModTab.init();
 		CorpseGravesCompat.init();
 		PlaytestCommand.init();

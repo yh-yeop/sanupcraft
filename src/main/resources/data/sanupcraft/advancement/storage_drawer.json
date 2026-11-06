@@ -1,0 +1,43 @@
+{
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:iron_drawer"
+          }
+        ]
+      }
+    },
+    "has1": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:steel_drawer"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:iron_drawer"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.storage_drawer.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.storage_drawer.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has",
+      "has1"
+    ]
+  ],
+  "parent": "sanupcraft:iron_plate"
+}

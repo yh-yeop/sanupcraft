@@ -38,6 +38,7 @@ import io.github.yhyeop.sanupcraft.gear.SteelGear;
 import io.github.yhyeop.sanupcraft.logistics.ModLogistics;
 import io.github.yhyeop.sanupcraft.mining.ModMining;
 import io.github.yhyeop.sanupcraft.power.ModPower;
+import io.github.yhyeop.sanupcraft.storage.ModStorage;
 
 /**
  * 싱글 실테스트용: {@code /sanupcraft playtest <단계>} (OP). 그 단계를 시험하는 데 필요한 장비 · 재료를 주고,
@@ -55,7 +56,8 @@ public final class PlaytestCommand {
 		FORGE("심장 제련로 · 고대 잔해", Level.NETHER, PlaytestCommand::kitForge),
 		OUTPOST("네더 전초기지: 지열 분출구 · 내열 드릴 굴착기 · 엔더 닻", Level.NETHER, PlaytestCommand::kitOutpost),
 		HOME("오버월드로 돌아오기", Level.OVERWORLD, PlaytestCommand::kitHome),
-		END("엔드 · 엔더 운반기", Level.END, PlaytestCommand::kitEnd);
+		END("엔드 · 엔더 운반기", Level.END, PlaytestCommand::kitEnd),
+		STORAGE("보관 · 제작: 서랍 · 창고 네트워크 · 자동 제작", null, PlaytestCommand::kitStorage);
 
 		final String description;
 		final ResourceKey<Level> dimension;
@@ -315,5 +317,17 @@ public final class PlaytestCommand {
 			}
 			p.setItemSlot(slots.get(i), new ItemStack(items.get(i)));
 		}
+	}
+
+	/** M7 보관 · 제작: 서랍 · 업그레이드 · 창고 네트워크 · 단말 · 자동 제작대 · 재고 유지기 · 휴대 단말. */
+	private static void kitStorage(ServerPlayer p) {
+		give(p, ModStorage.IRON_DRAWER.asItem(), 4);
+		give(p, ModStorage.STEEL_DRAWER.asItem(), 2);
+		give(p, ModStorage.DRAWER_UPGRADE, 4);
+		give(p, ModStorage.DRAWER_VOID_UPGRADE, 1);
+		give(p, Items.COBBLESTONE, 256);
+		give(p, Items.CHEST, 4);
+		give(p, Items.HOPPER, 4);
+		food(p);
 	}
 }
