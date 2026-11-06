@@ -452,6 +452,14 @@ public final class PlaytestCommand {
 		give(p, ModStorage.ENDER_PORTABLE_TERMINAL, 1);
 		give(p, ModLogistics.ENDER_ANCHOR.asItem(), 1);
 		give(p, Items.POPPED_CHORUS_FRUIT, 8);
+		give(p, ModPower.BOILER.asItem(), 1);
+		give(p, ModPower.STEAM_PIPE.asItem(), 16);
+		give(p, Items.WATER_BUCKET, 1);
+		give(p, Items.COAL, 32);
 		give(p, Items.OAK_LOG, 64);
 		give(p, Items.COBBLESTONE, 256);
+		give(p, Items.CHEST, 4);
+		give(p, Items.HOPPER, 4);
+		food(p);
+	}
 }
