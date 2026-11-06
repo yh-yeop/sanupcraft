@@ -36,7 +36,6 @@ public class VoidCrystalRenderer extends EntityRenderer<VoidCrystal, EndCrystalR
 	@Override
 	public void submit(EndCrystalRenderState state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
 		poseStack.pushPose();
-		poseStack.scale(1.0F, 1.0F, 1.0F);
 		poseStack.translate(0.0F, -0.5F, 0.0F);
 		collector.submitModel(model, state, poseStack, TEXTURE, state.lightCoords, OverlayTexture.NO_OVERLAY, state.outlineColor);
 		poseStack.popPose();
