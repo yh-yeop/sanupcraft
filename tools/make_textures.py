@@ -5641,7 +5641,7 @@ def g5_miner_layers():
     jacket = G5Armor(G5W_JACKET, 8502, im)
     steel = G5Armor(G5W_STEEL, 8503, im)
     boot = G5Armor(G5W_LEATHER, 8504, im)
-    # 안전모: 위 · 옆 0~4행 노랑, 5행 챙, 아래는 비워 얼굴이 보이게. 앞에 머리 조명, 옆에 턱끈
+    # 안전모: 위 · 옆 0~3행 노랑, 4행 챙, 아래는 비워 얼굴이 보이게. 앞에 머리 조명, 옆에 턱끈
     top = hat.rect(B1_HEAD, "top")
     hat.metal(top)
     hat.bevel(top, 0, 7)
@@ -5649,24 +5649,24 @@ def g5_miner_layers():
     hat.vline(top, 4, "l", 0, 7)
     for f in ("right", "front", "left", "back"):
         r = hat.rect(B1_HEAD, f)
-        hat.metal(r, rows=range(0, 5))
+        hat.metal(r, rows=range(0, 4))
         hat.hline(r, 0, "l")
-        hat.hline(r, 4, "s")
-        hat.hline(r, 5, "o")
-        hat.clear(r, 0, 6, 7, 7)
+        hat.hline(r, 3, "s")
+        hat.hline(r, 4, "o")
+        hat.clear(r, 0, 5, 7, 7)
         if f in ("front", "back"):
-            hat.vline(r, 3, "h", 0, 3)
-            hat.vline(r, 4, "l", 0, 3)
+            hat.vline(r, 3, "h", 0, 2)
+            hat.vline(r, 4, "l", 0, 2)
         if f in ("right", "left"):
-            hat.vline(r, 2, "#5a3a20", 6, 7)   # 턱끈
-            hat.put(r, 5, 2, "s")
+            hat.vline(r, 2, "#5a3a20", 5, 7)   # 턱끈
+            hat.put(r, 5, 1, "s")
     fr = hat.rect(B1_HEAD, "front")
-    for i, j, k in ((2, 1, "t"), (3, 1, "t"), (4, 1, "t"), (5, 1, "t"), (2, 2, "t"), (5, 2, "t"), (2, 3, "T"), (3, 3, "T"),
-                    (4, 3, "T"), (5, 3, "T"), (3, 2, "g"), (4, 2, "G")):
+    for i, j, k in ((2, 0, "t"), (3, 0, "t"), (4, 0, "t"), (5, 0, "t"), (2, 1, "t"), (5, 1, "t"), (2, 2, "T"), (3, 2, "T"),
+                    (4, 2, "T"), (5, 2, "T"), (3, 1, "g"), (4, 1, "G")):
         hat.put(fr, i, j, k)
     bk = hat.rect(B1_HEAD, "back")
-    hat.put(bk, 3, 2, "#5a3a20")   # 조명 끈 버클
-    hat.put(bk, 4, 2, "#5a3a20")
+    hat.put(bk, 3, 1, "#5a3a20")   # 조명 끈 버클
+    hat.put(bk, 4, 1, "#5a3a20")
 
     # 작업복 윗도리: 남색 천 + 노랑 · 은색 반사띠 (가슴 가로 + 어깨에서 내려오는 세로), 지퍼, 허리 가죽띠
     for f in ("top", "bottom", "right", "front", "left", "back"):
@@ -5722,9 +5722,9 @@ def g5_miner_layers():
         boot.hline(r, 11, "o", 0, 3)
         if f == "front":
             for i in range(4):
-                steel.put(r, i, 9, "l")
-                steel.put(r, i, 10, "b")
-            steel.put(r, 1, 9, "h")
+                steel.put(r, i, 10, "s")
+            steel.put(r, 1, 10, "b")
+            steel.put(r, 2, 10, "b")
         else:
             boot.hline(r, 10, "s", 0, 3)
     for j in range(4):
@@ -5750,16 +5750,14 @@ def g5_miner_layers():
         legs.metal(r, rows=range(0, 9))
         legs.hline(r, 0, "l")
         legs.hline(r, 2, "g")
-        legs.hline(r, 3, "r")
         legs.hline(r, 8, "o")
         if f == "front":
-            for i in range(4):
+            for i in (1, 2):
                 for j in (5, 6):
-                    knee.put(r, i, j, "b")
-            knee.hline(r, 4, "h")
-            knee.hline(r, 7, "o")
-            knee.put(r, 1, 5, "h")
-            knee.rivet(r, 2, 6)
+                    knee.put(r, i, j, "s")
+            knee.put(r, 1, 5, "b")
+            knee.put(r, 2, 4, "o")
+            knee.put(r, 1, 4, "o")
     legs.metal(legs.rect(B1_LEG, "top"))
     return im, legs.im
 
@@ -5831,11 +5829,11 @@ def g5_power_layers():
     # 등: 증기 통 둘 (놋쇠 띠)
     for x0 in (1, 4):
         for j in range(1, 9):
-            a.put(bk, x0, j, "l")
-            a.put(bk, x0 + 1, j, "b" if j % 3 else "T")
-            a.put(bk, x0 + 2, j, "s") if x0 + 2 < 7 else None
-        a.put(bk, x0, 1, "T")
-        a.put(bk, x0 + 1, 1, "r")
+            a.put(bk, x0, j, "r" if j % 3 else G5_COPPER_L)
+            a.put(bk, x0 + 1, j, "T" if j % 3 else G5_COPPER)
+            a.put(bk, x0 + 2, j, "t") if x0 + 2 < 7 else None
+        a.put(bk, x0, 1, "G")
+        a.put(bk, x0 + 1, 1, "g")
     a.vline(bk, 7, "s", 1, 8)
     for f in ("right", "left"):
         r = a.rect(B1_BODY, f)
