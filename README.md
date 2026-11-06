@@ -126,6 +126,7 @@ python tools/make_textures.py --sheet  # 임시 도트 텍스처 다시 만들�
 python tools/make_structures.py        # 월드 구조물(.nbt) 다시 만들기 (녹슨 사당)
 SANUPCRAFT_PROMO=1 ./gradlew runClientGameTest  # 소개 페이지용 스크린샷(HUD 없이 1600x900, promo-*.png)까지 찍기
 python tools/promo_crop.py build/run/clientGameTest/screenshots ../yh-yeop.github.io/assets/sanupcraft  # 사이트 이미지로
+python tools/make_sounds.py  # 효과음(.ogg) 다시 합성 (pip install --user soundfile)
 ```
 
 `runClientGameTest`는 창을 띄우므로 Actions의 `build`에는 넣지 않았다. 화면에 보이는 것을 바꿨을 때 손으로 돌린다.

@@ -22,7 +22,7 @@ import io.github.yhyeop.sanupcraft.power.BoilerBlockEntity;
 import io.github.yhyeop.sanupcraft.sound.ModSounds;
 
 /**
- * M11 X2 클라이언트 확인: sounds.json을 클라이언트가 읽어 모든 소리에 바닐라 소리 파일 · 자막이 붙는지 보고, 한 번씩 틀어 본다.
+ * M11 X2 클라이언트 확인: sounds.json을 클라이언트가 읽어 모든 소리에 소리 파일(M15 R8부터 우리 .ogg) · 자막이 붙는지 보고, 한 번씩 틀어 본다.
  * 그다음 돌고 있는 보일러(김) · 정밀 조립기(불꽃) · 세척기(물방울) · 분쇄기를 스크린샷으로 남긴다 (서버가 보낸 작동음도 이때 들림).
  * 로그에 "Missing sound for event" · "Unable to play unknown soundEvent" · "File ... does not exist"가 없어야 한다.
  * 스크린샷: build/run/clientGameTest/screenshots/m11b-*.png

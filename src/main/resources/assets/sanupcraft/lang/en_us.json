@@ -824,5 +824,7 @@
   "advancements.sanupcraft.combat_beacon.title": "Fight Together",
   "advancements.sanupcraft.combat_beacon.description": "Craft a combat beacon. Feed it steam to give your whole team Strength and Resistance.",
   "advancements.sanupcraft.steam_syringe.title": "Not Yet",
-  "advancements.sanupcraft.steam_syringe.description": "Craft an emergency steam syringe. Revive downed teammates before time runs out."
+  "advancements.sanupcraft.steam_syringe.description": "Craft an emergency steam syringe. Revive downed teammates before time runs out.",
+  "subtitles.sanupcraft.boss.guardian.rage": "Rusty Guardian rages",
+  "subtitles.sanupcraft.boss.warden.rage": "Furnace Warden rages"
 }

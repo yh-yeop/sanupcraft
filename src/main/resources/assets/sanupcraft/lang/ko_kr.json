@@ -824,5 +824,7 @@
   "advancements.sanupcraft.combat_beacon.title": "함께 싸운다",
   "advancements.sanupcraft.combat_beacon.description": "전투 신호기를 만든다. 증기를 대면 팀원 모두에게 힘과 저항을 건다.",
   "advancements.sanupcraft.steam_syringe.title": "아직 아니야",
-  "advancements.sanupcraft.steam_syringe.description": "응급 증기 주사기를 만든다. 쓰러진 동료를 시간 안에 살린다."
+  "advancements.sanupcraft.steam_syringe.description": "응급 증기 주사기를 만든다. 쓰러진 동료를 시간 안에 살린다.",
+  "subtitles.sanupcraft.boss.guardian.rage": "녹슨 수호자: 분노",
+  "subtitles.sanupcraft.boss.warden.rage": "용광로 파수꾼: 분노"
 }
