@@ -132,6 +132,14 @@ public class BoilerBlock extends BaseEntityBlock {
 		double x = pos.getX() + 0.5;
 		double z = pos.getZ() + 0.5;
 		level.addParticle(ParticleTypes.CLOUD, x + random.nextDouble() * 0.3 - 0.15, pos.getY() + 1.05, z + random.nextDouble() * 0.3 - 0.15, 0.0, 0.08, 0.0);
+		if (random.nextFloat() < 0.1F) {
+			// M11 X2: 가끔 옆면 틈으로 김이 픽 샌다
+			Direction side = Direction.Plane.HORIZONTAL.getRandomDirection(random);
+			for (int i = 0; i < 4; i++) {
+				level.addParticle(ParticleTypes.WHITE_SMOKE, x + side.getStepX() * 0.55, pos.getY() + 0.6 + random.nextDouble() * 0.2, z + side.getStepZ() * 0.55,
+						side.getStepX() * 0.08, 0.03, side.getStepZ() * 0.08);
+			}
+		}
 		if (random.nextDouble() < 0.08) {
 			level.playLocalSound(x, pos.getY() + 0.5, z, SoundEvents.FURNACE_FIRE_CRACKLE, SoundSource.BLOCKS, 0.7F, 0.9F, false);
 		}

@@ -37,6 +37,9 @@ public class SteamTurbineBlockEntity extends BlockEntity implements HPSteamConsu
 	public static void serverTick(ServerLevel level, BlockPos pos, BlockState state, SteamTurbineBlockEntity turbine) {
 		turbine.work(level, pos);
 		boolean lit = turbine.idleTicks < LIT_HOLD_TICKS;
+		if (lit) {
+			io.github.yhyeop.sanupcraft.sound.ModSounds.working(level, pos, io.github.yhyeop.sanupcraft.sound.ModSounds.STEAM_HISS, 60, 0.3F); // M11 X2
+		}
 		if (state.getValue(SteamTurbineBlock.LIT) != lit) {
 			level.setBlockAndUpdate(pos, state.setValue(SteamTurbineBlock.LIT, lit));
 		}

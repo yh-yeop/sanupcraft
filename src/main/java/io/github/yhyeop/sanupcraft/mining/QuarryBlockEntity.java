@@ -71,6 +71,9 @@ public class QuarryBlockEntity extends BlockEntity implements SteamConsumer, Ste
 
 	public static void serverTick(ServerLevel level, BlockPos pos, BlockState state, QuarryBlockEntity quarry) {
 		boolean running = quarry.work(level, pos) || level.getGameTime() - quarry.lastMinedTick < POWERED_HOLD_TICKS;
+		if (running) {
+			io.github.yhyeop.sanupcraft.sound.ModSounds.working(level, pos, io.github.yhyeop.sanupcraft.sound.ModSounds.QUARRY_DIG, 20, 0.4F); // M11 X2
+		}
 		if (state.getValue(QuarryBlock.POWERED) != running) {
 			level.setBlockAndUpdate(pos, state.setValue(QuarryBlock.POWERED, running));
 		}

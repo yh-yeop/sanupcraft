@@ -174,6 +174,9 @@ public final class SanupcraftConfig {
 	public int furnaceTowerBatchSize = io.github.yhyeop.sanupcraft.industry.FurnaceTowerControllerBlockEntity.BATCH_SIZE;
 	/** 용광로 탑: 아이템 하나를 굽는 데 드는 고압 증기. */
 	public int furnaceTowerSteamPerItem = io.github.yhyeop.sanupcraft.industry.FurnaceTowerControllerBlockEntity.STEAM_PER_ITEM;
+	// M11 X2 효과음
+	/** 기계 작동음 크기 배율 (0 = 끔, 1 = 기본). 보스 소리는 그대로. */
+	public double machineSoundVolume = 1.0;
 
 	/** float 상수를 0.05F -> 0.05처럼 보이는 그대로의 double로 (파일에 0.0500000007...이 안 찍히게). */
 	private static double asDouble(float value) {
@@ -296,7 +299,10 @@ public final class SanupcraftConfig {
 			new Option("furnaceTower", "batchSize", io.github.yhyeop.sanupcraft.industry.FurnaceTowerControllerBlockEntity.BATCH_SIZE, 1, 64, true,
 					c -> c.furnaceTowerBatchSize, (c, v) -> c.furnaceTowerBatchSize = (int) v),
 			new Option("furnaceTower", "steamPerItem", io.github.yhyeop.sanupcraft.industry.FurnaceTowerControllerBlockEntity.STEAM_PER_ITEM, 0, 10_000, true,
-					c -> c.furnaceTowerSteamPerItem, (c, v) -> c.furnaceTowerSteamPerItem = (int) v));
+					c -> c.furnaceTowerSteamPerItem, (c, v) -> c.furnaceTowerSteamPerItem = (int) v),
+			// M11 X2 효과음
+			new Option("sounds", "machineVolume", 1.0, 0.0, 2.0, false,
+					c -> c.machineSoundVolume, (c, v) -> c.machineSoundVolume = v));
 
 	/** 읽은 결과: 설정, 경고 문구, 파일에 빠진 키가 있었는지, 파일을 새로 썼는지. */
 	public record Loaded(SanupcraftConfig config, List<String> warnings, boolean missingKeys, boolean wroteFile) {

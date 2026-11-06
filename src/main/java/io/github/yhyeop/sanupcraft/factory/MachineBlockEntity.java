@@ -240,6 +240,9 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 		boolean active = machine.litTime > 0 || machine.steamWorking;
 		machine.idleTicks = active ? 0 : Math.min(machine.idleTicks + 1, LIT_HOLD_TICKS);
 		boolean isLit = active || machine.idleTicks < LIT_HOLD_TICKS;
+		if (active) {
+			io.github.yhyeop.sanupcraft.sound.ModSounds.machine(level, pos, machine.kind); // M11 X2 작동음
+		}
 		if (state.getValue(MachineBlock.LIT) != isLit) {
 			state = state.setValue(MachineBlock.LIT, isLit);
 			level.setBlockAndUpdate(pos, state);

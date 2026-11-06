@@ -635,5 +635,17 @@
   "item.sanupcraft.wrench.face_side.up": "Top",
   "item.sanupcraft.wrench.face_side.down": "Bottom",
   "advancements.sanupcraft.wrench.title": "Righty-Tighty",
-  "advancements.sanupcraft.wrench.description": "Make a wrench. Rotate blocks, move machines with their contents and choose in/out per face."
+  "advancements.sanupcraft.wrench.description": "Make a wrench. Rotate blocks, move machines with their contents and choose in/out per face.",
+  "subtitles.sanupcraft.machine.crusher": "Crusher grinds",
+  "subtitles.sanupcraft.machine.press": "Press thumps",
+  "subtitles.sanupcraft.machine.assembler": "Assembler clicks",
+  "subtitles.sanupcraft.machine.precision": "Precision assembler sparks",
+  "subtitles.sanupcraft.machine.washer": "Washer splashes",
+  "subtitles.sanupcraft.machine.steam": "Steam hisses",
+  "subtitles.sanupcraft.machine.quarry": "Quarry digs",
+  "subtitles.sanupcraft.boss.guardian.charge": "Rusty Guardian readies a charge",
+  "subtitles.sanupcraft.boss.warden.burst": "Furnace Warden builds up steam",
+  "subtitles.sanupcraft.boss.phase": "Boss enrages",
+  "subtitles.sanupcraft.boss.guardian.death": "Rusty Guardian collapses",
+  "subtitles.sanupcraft.boss.warden.death": "Furnace Warden goes out"
 }

@@ -54,6 +54,7 @@ public class Sanupcraft implements ModInitializer {
 		ModBoss.init();
 		ModWorld.init();
 		io.github.yhyeop.sanupcraft.wrench.ModWrench.init(); // M8 I4 렌치 · 면 설정
+		io.github.yhyeop.sanupcraft.sound.ModSounds.init(); // M11 X2 효과음
 		BossTier.init(); // C3 강화 소환석
 		io.github.yhyeop.sanupcraft.industry.ModFoundry.init(); // M8 묶음 B 용광로 탑 · 정제 가루
 		ModGrinder.init(); // M9b 몹 분쇄기 · 경험치 탱크

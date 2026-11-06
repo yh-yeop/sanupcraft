@@ -16,6 +16,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
@@ -51,6 +52,7 @@ import net.minecraft.world.phys.Vec3;
 import io.github.yhyeop.sanupcraft.core.ModItems;
 import io.github.yhyeop.sanupcraft.gear.HeatproofGear;
 import io.github.yhyeop.sanupcraft.gear.SteelGear;
+import io.github.yhyeop.sanupcraft.sound.ModSounds;
 
 /**
  * 녹슨 수호자. 첫 마일스톤 보스. 패턴 3개를 돌아가며 쓴다.
@@ -97,6 +99,8 @@ public class RustyGuardian extends Monster implements PartyBoss {
 	private Pattern pattern = Pattern.NONE;
 	private int patternTick;
 	private int cooldown = 60;
+	/** 화남(체력 절반 아래)을 알렸는가 (M11 X2). 불러올 때 체력으로 다시 정한다. */
+	private boolean phaseAnnounced;
 	private int cycleIndex;
 	private Vec3 chargeDirection = Vec3.ZERO;
 	private final Set<UUID> hitThisCharge = new HashSet<>();
@@ -174,6 +178,10 @@ public class RustyGuardian extends Monster implements PartyBoss {
 	protected void customServerAiStep(ServerLevel level) {
 		super.customServerAiStep(level);
 		bossEvent.setProgress(getHealth() / getMaxHealth());
+		if (!phaseAnnounced && isEnraged()) {
+			phaseAnnounced = true;
+			ModSounds.bossPhase(level, this, ParticleTypes.CRIT); // M11 X2
+		}
 
 		if (pattern == Pattern.NONE) {
 			LivingEntity target = getTarget();
@@ -221,6 +229,7 @@ public class RustyGuardian extends Monster implements PartyBoss {
 			return;
 		}
 		if (patternTick == CHARGE_LOCK) {
+			playSound(ModSounds.GUARDIAN_CHARGE, 1.5F, 0.8F); // M11 X2 돌진 방향을 잠금
 			Vec3 aim = target != null ? target.position().subtract(position()) : getLookAngle();
 			chargeDirection = new Vec3(aim.x, 0.0, aim.z).normalize();
 			hitThisCharge.clear();
@@ -306,6 +315,13 @@ public class RustyGuardian extends Monster implements PartyBoss {
 	}
 
 	private void tickSummon(ServerLevel level) {
+		if (patternTick < SUMMON_AT && patternTick % 2 == 0) {
+			// M11 X2 예고: 졸개가 나올 둘레(2칸)에 마법 입자
+			for (int i = 0; i < 12; i++) {
+				double angle = i * Math.PI * 2.0 / 12.0;
+				level.sendParticles(ParticleTypes.WITCH, getX() + Math.cos(angle) * 2.0, getY() + 0.2, getZ() + Math.sin(angle) * 2.0, 1, 0.0, 0.1, 0.0, 0.0);
+			}
+		}
 		if (patternTick == SUMMON_AT) {
 			summonMinions(level);
 		}
@@ -466,6 +482,12 @@ public class RustyGuardian extends Monster implements PartyBoss {
 		super.readAdditionalSaveData(input);
 		party.load(input);
 		refreshBossBar();
+		phaseAnnounced = isEnraged();
+	}
+
+	@Override
+	protected SoundEvent getDeathSound() {
+		return ModSounds.GUARDIAN_DEATH; // M11 X2
 	}
 
 	@Override
