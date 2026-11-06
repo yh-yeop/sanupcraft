@@ -1,0 +1,32 @@
+{
+  "parent": "sanupcraft:quarry",
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:vein_prospector"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:vein_prospector"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.vein_prospector.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.vein_prospector.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ]
+}

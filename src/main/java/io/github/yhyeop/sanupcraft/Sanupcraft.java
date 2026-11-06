@@ -57,6 +57,7 @@ public class Sanupcraft implements ModInitializer {
 		io.github.yhyeop.sanupcraft.resource.ModResources.init(); // 확장 3 D1 새 광석 (크롬철석 · 보크사이트)
 		io.github.yhyeop.sanupcraft.mining.blast.ModBlast.init(); // 확장3 D3 증기 발파
 		io.github.yhyeop.sanupcraft.hazard.ModHazard.init(); // 확장3 D5 위험 요소
+		io.github.yhyeop.sanupcraft.resource.vein.ModVeins.init(); // 확장 3 D2 광맥 탐사 (광맥 탐사기)
 		io.github.yhyeop.sanupcraft.wrench.ModWrench.init(); // M8 I4 렌치 · 면 설정
 		io.github.yhyeop.sanupcraft.sound.ModSounds.init(); // M11 X2 효과음
 		BossTier.init(); // C3 강화 소환석

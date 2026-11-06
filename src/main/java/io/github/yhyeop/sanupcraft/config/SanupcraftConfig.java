@@ -208,6 +208,16 @@ public final class SanupcraftConfig {
 	public boolean hazardToxicGas = true;
 	/** 위험 요소: 무른 바위 (월드 생성 + 떨어짐). 끄면 새로 깔리지 않고 있는 바위도 떨어지지 않는다. */
 	public boolean hazardLooseRock = true;
+	// 확장 3 D2 광맥 탐사
+	/** 광맥: 광맥이 있는 청크의 비율(%). */
+	public int veinChunkPercent = io.github.yhyeop.sanupcraft.resource.vein.Veins.CHUNK_PERCENT;
+	/** 광맥: 처음 매장량 범위 (고대 잔해 광맥은 따로 40 ~ 120). */
+	public int veinMinAmount = io.github.yhyeop.sanupcraft.resource.vein.Veins.MIN_AMOUNT;
+	public int veinMaxAmount = io.github.yhyeop.sanupcraft.resource.vein.Veins.MAX_AMOUNT;
+	/** 광맥: 굴착기가 블록 하나를 캘 때 덤이 나올 확률(%). */
+	public int veinBonusPercent = io.github.yhyeop.sanupcraft.resource.vein.Veins.BONUS_PERCENT;
+	/** 광맥 탐사기: 한 번에 드는 증기. */
+	public int prospectorSteam = io.github.yhyeop.sanupcraft.resource.vein.Veins.PROSPECTOR_STEAM;
 
 	/** float 상수를 0.05F -> 0.05처럼 보이는 그대로의 double로 (파일에 0.0500000007...이 안 찍히게). */
 	private static double asDouble(float value) {
@@ -364,7 +374,18 @@ public final class SanupcraftConfig {
 			new Option("hazards", "toxicGas", 1, 0, 1, true,
 					c -> c.hazardToxicGas ? 1 : 0, (c, v) -> c.hazardToxicGas = v >= 0.5),
 			new Option("hazards", "looseRock", 1, 0, 1, true,
-					c -> c.hazardLooseRock ? 1 : 0, (c, v) -> c.hazardLooseRock = v >= 0.5));
+					c -> c.hazardLooseRock ? 1 : 0, (c, v) -> c.hazardLooseRock = v >= 0.5),
+			// 확장 3 D2 광맥 탐사
+			new Option("veins", "chunkPercent", io.github.yhyeop.sanupcraft.resource.vein.Veins.CHUNK_PERCENT, 0, 100, true,
+					c -> c.veinChunkPercent, (c, v) -> c.veinChunkPercent = (int) v),
+			new Option("veins", "minAmount", io.github.yhyeop.sanupcraft.resource.vein.Veins.MIN_AMOUNT, 1, 1_000_000, true,
+					c -> c.veinMinAmount, (c, v) -> c.veinMinAmount = (int) v),
+			new Option("veins", "maxAmount", io.github.yhyeop.sanupcraft.resource.vein.Veins.MAX_AMOUNT, 1, 1_000_000, true,
+					c -> c.veinMaxAmount, (c, v) -> c.veinMaxAmount = (int) v),
+			new Option("veins", "bonusPercent", io.github.yhyeop.sanupcraft.resource.vein.Veins.BONUS_PERCENT, 0, 100, true,
+					c -> c.veinBonusPercent, (c, v) -> c.veinBonusPercent = (int) v),
+			new Option("veins", "prospectorSteam", io.github.yhyeop.sanupcraft.resource.vein.Veins.PROSPECTOR_STEAM, 0, io.github.yhyeop.sanupcraft.resource.vein.ProspectorItem.CAPACITY, true,
+					c -> c.prospectorSteam, (c, v) -> c.prospectorSteam = (int) v));
 
 	/** 읽은 결과: 설정, 경고 문구, 파일에 빠진 키가 있었는지, 파일을 새로 썼는지. */
 	public record Loaded(SanupcraftConfig config, List<String> warnings, boolean missingKeys, boolean wroteFile) {

@@ -36,7 +36,8 @@
 			"io.github.yhyeop.sanupcraft.test.SanupcraftStatusEffectGameTest",
 			"io.github.yhyeop.sanupcraft.test.SanupcraftD1GameTest",
 			"io.github.yhyeop.sanupcraft.test.SanupcraftBlastHazardGameTest",
-			"io.github.yhyeop.sanupcraft.test.SanupcraftA5GameTest"
+			"io.github.yhyeop.sanupcraft.test.SanupcraftA5GameTest",
+			"io.github.yhyeop.sanupcraft.test.SanupcraftD2GameTest"
 		],
 		"fabric-client-gametest": [
 			"io.github.yhyeop.sanupcraft.test.SanupcraftClientGameTest",

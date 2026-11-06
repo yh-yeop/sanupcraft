@@ -87,7 +87,9 @@ public final class PlaytestCommand {
 		// 확장 3 D1 새 광석
 		ORES("새 광석: 크롬철석 · 보크사이트 · 원석 · 블록 · 가공 기계", null, PlaytestCommand::kitOres),
 		// 확장 3 D3 · D5
-		BLAST("증기 발파 · 위험 요소: 발파 장약 · 원격 기폭기 · 유독 가스 · 무른 바위", null, PlaytestCommand::kitBlast);
+		BLAST("증기 발파 · 위험 요소: 발파 장약 · 원격 기폭기 · 유독 가스 · 무른 바위", null, PlaytestCommand::kitBlast),
+		// 확장 3 D2 광맥 탐사
+		VEINS("광맥 탐사: 광맥 탐사기 · 굴착기 · 보일러 · 파이프", null, PlaytestCommand::kitVeins);
 
 		final String description;
 		final ResourceKey<Level> dimension;
@@ -666,6 +668,23 @@ public final class PlaytestCommand {
 		give(p, io.github.yhyeop.sanupcraft.factory.ModMachines.CRUSHER.asItem(), 1);
 		give(p, io.github.yhyeop.sanupcraft.hazard.ModHazard.LOOSE_ROCK.asItem(), 8);
 		give(p, Items.MILK_BUCKET, 2);
+		food(p);
+	}
+
+	/** 확장 3 D2: 가득 찬 광맥 탐사기로 지도를 보고, 광맥 청크에 굴착기(보일러 · 파이프 · 위 상자)를 놓아 덤 광석이 나오는지 본다. */
+	private static void kitVeins(ServerPlayer p) {
+		give(p, charged(io.github.yhyeop.sanupcraft.resource.vein.ModVeins.VEIN_PROSPECTOR));
+		give(p, ModMining.STEAM_QUARRY.asItem(), 2);
+		give(p, ModPower.BOILER.asItem(), 2);
+		give(p, ModPower.STEAM_PIPE.asItem(), 16);
+		give(p, Items.WATER_BUCKET, 2);
+		give(p, Items.COAL, 64);
+		give(p, ModPower.STEAM_CHARGER.asItem(), 1);
+		give(p, SteamGear.STEAM_CANISTER, 2);
+		give(p, Items.HOPPER, 4);
+		give(p, Items.CHEST, 4);
+		give(p, Items.IRON_PICKAXE, 1);
+		give(p, Items.COMPASS, 1);
 		food(p);
 	}
 }

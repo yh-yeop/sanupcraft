@@ -10,6 +10,7 @@ import net.minecraft.world.Container;
 import net.minecraft.world.Containers;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.LevelEvent;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -22,6 +23,7 @@ import io.github.yhyeop.sanupcraft.config.SanupcraftConfig;
 import io.github.yhyeop.sanupcraft.power.SteamConsumer;
 import io.github.yhyeop.sanupcraft.power.SteamFlowMeter;
 import io.github.yhyeop.sanupcraft.power.SteamStorage;
+import io.github.yhyeop.sanupcraft.resource.vein.Veins;
 
 /**
  * 증기 굴착기: 아래 9x9를 위층부터 한 층씩 바닥까지 캔다. 철 곡괭이로 캔 것처럼 떨어뜨린 것을 바로 위 상자 · 깔때기 · 벨트에 넣는다.
@@ -61,6 +63,8 @@ public class QuarryBlockEntity extends BlockEntity implements SteamConsumer, Ste
 	private boolean drill;
 	/** 버린 아이템 수 (상태 표시용). */
 	private int voided;
+	/** 광맥 덤으로 캔 아이템 수 (D2, 상태 표시용). */
+	private int veinBonus;
 	/** 마지막으로 블록을 캔 게임 시각 (저장하지 않는다). */
 	private long lastMinedTick = Long.MIN_VALUE / 2;
 	private final List<ItemStack> pending = new ArrayList<>();
@@ -150,6 +154,12 @@ public class QuarryBlockEntity extends BlockEntity implements SteamConsumer, Ste
 		level.levelEvent(LevelEvent.PARTICLES_DESTROY_BLOCK, target, Block.getId(state));
 		level.removeBlock(target, false);
 		mined++;
+		// D2 광맥: 이 굴착기의 청크에 광맥이 있으면 확률로 그 광석 1개를 덤으로 (쓰레기 버림과 상관없이 올려 보낸다)
+		ItemStack bonus = Veins.rollBonus(level, ChunkPos.containing(worldPosition), level.getRandom());
+		if (!bonus.isEmpty()) {
+			pending.add(bonus);
+			veinBonus++;
+		}
 		return true;
 	}
 
@@ -261,6 +271,11 @@ public class QuarryBlockEntity extends BlockEntity implements SteamConsumer, Ste
 		return voided;
 	}
 
+	/** 광맥 덤으로 캔 아이템 수. */
+	public int veinBonus() {
+		return veinBonus;
+	}
+
 	/**
 	 * 지금 상태. 순서: 못 보낸 것이 남았거나 위에 상자 · 깔때기 · 벨트가 없으면 BLOCKED, 다 팠으면 FINISHED,
 	 * 아직 안 시작했으면 NOT_STARTED, 증기가 한 블록치보다 적으면 NO_STEAM, 아니면 RUNNING.
@@ -294,6 +309,7 @@ public class QuarryBlockEntity extends BlockEntity implements SteamConsumer, Ste
 		voidJunk = input.getBooleanOr("void_junk", true);
 		drill = input.getBooleanOr("drill", false);
 		voided = input.getIntOr("voided", 0);
+		veinBonus = input.getIntOr("vein_bonus", 0);
 		pending.clear();
 		input.read("pending", ItemStack.CODEC.listOf()).ifPresent(pending::addAll);
 	}
@@ -310,6 +326,7 @@ public class QuarryBlockEntity extends BlockEntity implements SteamConsumer, Ste
 		output.putBoolean("void_junk", voidJunk);
 		output.putBoolean("drill", drill);
 		output.putInt("voided", voided);
+		output.putInt("vein_bonus", veinBonus);
 		output.store("pending", ItemStack.CODEC.listOf(), pending);
 	}
 }

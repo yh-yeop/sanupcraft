@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "S": "sanupcraft:steel_plate",
+    "C": "minecraft:compass",
+    "K": "sanupcraft:steam_canister",
+    "P": "sanupcraft:steam_pipe"
+  },
+  "pattern": [
+    "SCS",
+    "PKP",
+    " S "
+  ],
+  "result": {
+    "id": "sanupcraft:vein_prospector"
+  }
+}

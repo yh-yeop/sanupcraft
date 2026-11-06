@@ -106,6 +106,7 @@
 | `wrench` (M8 I4) | 렌치: 돌리기 · 내용물째 집기 · 기계 면 설정 (면 설정 자체는 `factory/MachineFaces`) |
 | `sound` (M11 X2) | 효과음 등록 · 기계 작동음 (`ModSounds`, 정의는 `assets/sanupcraft/sounds.json`) |
 | `resource` (확장 3 D1) | 새 광석 2종 (`ModResources`): 크롬철석(심층암) · 보크사이트(사바나 · 메사 · 사막), 원석 · 가루 · 정제 가루 · 주괴 · 블록. 광석 배치는 `data/sanupcraft/worldgen`, 바이옴 연결은 Fabric `BiomeModifications` |
+| `resource/vein` (확장 3 D2) | 광맥 탐사: 청크마다 숨은 광맥(`Veins` - 월드 시드로 종류 · 매장량 결정, 남은 양은 차원별 저장 데이터 `VeinData`), 광맥 탐사기(`ProspectorItem`, 증기 500 · 5x5 청크 지도), 증기 굴착기의 광맥 덤 |
 
 `src/main` 공통 · 서버, `src/client` 클라이언트 전용(렌더링), `src/gametest` 자동 검사.
 
