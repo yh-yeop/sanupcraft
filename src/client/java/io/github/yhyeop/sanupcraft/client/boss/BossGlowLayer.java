@@ -18,7 +18,7 @@ import net.minecraft.util.Mth;
 
 /**
  * 보스의 빛나는 부분 (눈 · 화구 등). 바닐라 눈 레이어처럼 어둠 속에서도 밝게 그리고,
- * 밝기(0~1)는 상태에서 받아 투명도로 맥박치게 한다. 텍스처는 빛나는 칸만 칠하고 나머지는 투명.
+ * 밝기(0~1)는 상태에서 받아 투명도로 맥박치게 한다 (죽는 동안은 레이어가 먼저 꺼 간다). 텍스처는 빛나는 칸만 칠하고 나머지는 투명.
  */
 public class BossGlowLayer<S extends LivingEntityRenderState, M extends EntityModel<S>> extends RenderLayer<S, M> {
 	private final RenderType renderType;
@@ -35,7 +35,9 @@ public class BossGlowLayer<S extends LivingEntityRenderState, M extends EntityMo
 		if (state.isInvisible) {
 			return;
 		}
-		float alpha = Mth.clamp((float) brightness.applyAsDouble(state), 0.0F, 1.0F);
+		// 죽는 동안 (20틱) 빛이 꺼져 간다. 그 밖에는 보스마다 맥박
+		double glow = state.deathTime > 0 ? 1.0 - state.deathTime / 20.0 : brightness.applyAsDouble(state);
+		float alpha = Mth.clamp((float) glow, 0.0F, 1.0F);
 		if (alpha <= 0.0F) {
 			return;
 		}

@@ -10,6 +10,7 @@ import net.minecraft.util.Mth;
 import io.github.yhyeop.sanupcraft.boss.FurnaceWarden;
 import io.github.yhyeop.sanupcraft.client.boss.BossGlowLayer;
 import io.github.yhyeop.sanupcraft.client.boss.BossModelLayers;
+import io.github.yhyeop.sanupcraft.client.boss.BossRenderState;
 import io.github.yhyeop.sanupcraft.client.boss.FurnaceWardenModel;
 import io.github.yhyeop.sanupcraft.client.boss.FurnaceWardenRenderState;
 
@@ -30,9 +31,6 @@ public class FurnaceWardenRenderer extends MobRenderer<FurnaceWarden, FurnaceWar
 	}
 
 	private static double glow(FurnaceWardenRenderState state) {
-		if (state.deathTime > 0) {
-			return 1.0 - state.deathTime / 20.0;
-		}
 		if (state.roarAnimation > 0.0F) {
 			return 0.85 + 0.15 * Mth.sin(state.ageInTicks * 1.3F);
 		}
@@ -54,9 +52,8 @@ public class FurnaceWardenRenderer extends MobRenderer<FurnaceWarden, FurnaceWar
 	@Override
 	public void extractRenderState(FurnaceWarden entity, FurnaceWardenRenderState state, float partialTicks) {
 		super.extractRenderState(entity, state, partialTicks);
-		state.attackTicksRemaining = entity.getAttackTick() > 0 ? entity.getAttackTick() - partialTicks : 0.0F;
+		BossRenderState.extractCommon(entity, state, partialTicks);
 		state.roarAnimation = entity.getRoarTick() > 0 ? (ROAR_TICKS - entity.getRoarTick() + partialTicks) / ROAR_TICKS : 0.0F;
-		state.enraged = entity.isEnraged();
 	}
 
 	@Override
