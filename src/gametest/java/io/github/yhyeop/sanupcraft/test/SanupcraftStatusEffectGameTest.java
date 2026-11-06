@@ -229,8 +229,9 @@ public class SanupcraftStatusEffectGameTest {
 		ServerLevel level = helper.getLevel();
 		VoidColossus colossus = helper.spawn(ModEnd.VOID_COLOSSUS, new BlockPos(3, 1, 3));
 		colossus.setNoAi(true);
-		Player bare = playerAt(helper, colossus.position().add(6.0, 0.0, 0.0));
-		Player suited = playerAt(helper, colossus.position().add(0.0, 0.0, 6.0));
+		// 시험 구역 안에 둔다 (6칸이면 구역 밖이라 묶음 배치에 따라 로드 안 된 청크에 걸려 들어가지 못할 때가 있었다). 끌어당김은 2칸 밖이면 된다
+		Player bare = playerAt(helper, colossus.position().add(3.5, 0.0, 0.0));
+		Player suited = playerAt(helper, colossus.position().add(0.0, 0.0, 3.5));
 		wear(suited, VoidGear.VOID_HELMET, VoidGear.VOID_CHESTPLATE, VoidGear.VOID_LEGGINGS, VoidGear.VOID_BOOTS);
 		helper.assertTrue(colossus.pull(level) >= 2, "둘 다 안 끌려감");
 		MobEffectInstance erosion = bare.getEffect(ModEffects.VOID_EROSION);
