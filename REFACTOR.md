@@ -1097,3 +1097,18 @@ public Component problemMessage(Level level, Problem problem, String keyPrefix);
 | (1) ② 범위 확대 | 내용은 맞음. 한 커밋 묶음 + 효과 면역을 부모 계약으로 올림이 문제 | 중 | ②a/②b 두 커밋, 효과 둘은 각자 또는 이름 붙은 훅 |
 | (2) 77 지금 | 기반 클래스는 줄 수 순이득 0, 클라이언트 시험은 단언 없음 | 중 | 상태 · 레이어 · 모델 식만, `BossRenderer` 보류, 스크린숏 해시 비교, Jetpack 줄은 분리 |
 | (3) #43 규칙 | 설계는 유효. 대안 K(이웃이 가진 칸이면 유지)가 깜빡임 · 틱 의존이 없음 | 하 | D를 유지하되 `unform`/`notifyControllers`에 `isLoaded` 가드(중) |
+
+### 7-10. 최종 결정 (2단계, Opus)
+| 반론 | 결정 | 이유 |
+|---|---|---|
+| (1) ②를 ②a / ②b 두 커밋으로 | **받아들임** | 되돌리기 · 원인 좁히기 단위가 맞다. ②a = 7-7 범위(보스 바 · `party` · 저장/읽기 · 전리품 · 피해 후크 · `announcePhase` · `keyItem` · `phaseAnnounced` · `isEnraged` · `bossBarName` · `removeWhenFarAway`), ②b = `PatternGoal` + 공격 틱/이벤트(`EVENT_ATTACK` · `playAttackAnimation` · `getAttackTick`). `runClientGameTest`는 ②b 뒤에 |
+| (1) `makeStuckInBlock` · `canBeAffected`를 부모 계약으로 | **받아들임 (각자 둔다)** | 빈 몸통의 이유가 보스마다 다르고(돌진 · 도약이 막히지 않게 / 거상은 공중 부양까지) "인원 규칙 보스"의 뜻이 아니다. 이름 붙은 훅을 만들어도 세 줄 오버라이드보다 짧아지지 않는다 |
+| (2) `BossRenderer` 제네릭 기반 클래스 | **받아들임 (보류)** | 순이득이 0에 가깝고 형 매개변수 셋이 는다. ③은 `BossRenderState`(공통 두 필드 + `attackProgress()`는 `p` 그대로 · `attackRaise()`) · `BossGlowLayer` 사망 페이드 · 모델 두 줄 · 렌더러 추출 두 줄을 정적 도우미 하나(`BossRenderState.extractCommon`)로만 |
+| (2) 클라이언트 시험에 단언이 없음 → 스크린숏 비교 | **받아들임** | ② · ③ 전 커밋에서 `runClientGameTest` 스크린숏(M11a · Fin · 기존 보스 장면)을 보관하고, ③ 뒤 같은 이름끼리 픽셀 차이를 잰다. 보스는 숨쉬기 · 입자처럼 시각에 따라 움직이므로 바이트 일치는 기대하지 않는다 → 같은 코드로 한 번 더 찍어 잡음 수준을 먼저 재고, ③ 뒤 차이가 그 수준을 넘는 그림만 사람이 눈으로 본다. 결과는 7-11에 |
+| (2) `Jetpack.hasThrustSteam`을 보스 걸음에서 분리 | **받아들임** | 증기 장비 코드라 따로 한 커밋(③과 멀티블록 사이) |
+| (3) #43: D(끄고 이웃이 다시 켬) vs K(formed 이웃이 가진 칸이면 유지) | **K로 바꿈** | K가 깜빡임 · 이웃 틱 순서 · 틱 안 도는 청크 의존이 없고 `requestCheck` 연쇄도 없다. 판정은 링크가 아니라 "formed인 이웃 제어기의 `casings()`에 그 칸이 있나". 이웃 `formed`가 낡을 수 있지만 그 이웃이 정말 깨졌다면 같은 부숨 알림으로 스스로 `unform`하고 그때 끈다(마지막 `unform`이 정리). 유지한 칸의 벽돌은 그 이웃에 다시 잇는다. `Controller`에 `isFormed()` · `facing()` · (BE의) `getBlockPos()` 추가 |
+| (3) `isLoaded` 가드 | **받아들임** | `notifyControllers` · `unform` 상자 순회 모두 `if (!level.isLoaded(near)) continue;` — 안 불러온 청크를 강제로 불러오지 않게 |
+| 확인: 저장 키 시험이 자기 왕복이라 약함 → 파수꾼은 옛 형식 태그 손으로 | **받아들임** | `bossSaveKeysStayCompatible`: 세 보스는 저장 태그에 키 이름이 있는지 단언(+ 거상 두 키), 파수꾼은 새 개체를 저장한 태그에서 `party_*`를 지우고 손으로 쓴 옛 형식(`party_size` 2 · `party_summoned` · `party_tier` 1 · `party_damage` {uuid: 50})을 넣어 읽은 뒤 단계 · 인원 · 기여 · 보스 바 +N 확인 |
+| 확인: 시험 1은 B를 먼저 `check`하지 말 것 | 받아들임 | 두 탑을 A → B 순으로 `check`, B의 `checkTimer`가 40인 상태에서 3틱 안 판정 |
+
+그 밖의 7-8 내용(① `BossCombat`, 멀티블록 ① · ②의 나머지 API, #40 힌트)은 그대로 간다. 걸음: 보스 ① → ②a → ②b → ③ → 제트팩 → 멀티블록 ① → 멀티블록 ②(+43, K).
