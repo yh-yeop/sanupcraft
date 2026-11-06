@@ -88,13 +88,55 @@ public class EnderAnchorBlockEntity extends BlockEntity implements WorldlyContai
 		}
 		boolean active = fuelTicks > 0;
 		if (active) {
-			ACTIVE.computeIfAbsent(level.dimension(), k -> ConcurrentHashMap.newKeySet()).add(this);
+			track(level);
 		}
 		if (active && !forced) {
 			setForced(level, pos, true);
 		} else if (!active && forced) {
 			setForced(level, pos, false);
 		}
+	}
+
+	/** 켜진 닻 목록(ACTIVE)에 등록한다. 겹치는 청크를 넘겨받을 닻을 찾을 수 있게 한다. */
+	private void track(ServerLevel level) {
+		ACTIVE.computeIfAbsent(level.dimension(), k -> ConcurrentHashMap.newKeySet()).add(this);
+	}
+
+	/**
+	 * 청크에 들어갈 때 (loadAdditional → setLevel 다음에 불린다. 그래서 fuelTicks는 이미 읽혀 있다).
+	 * 서버를 다시 켠 직후 아직 한 번도 tick하지 않은 닻도 목록에 올려, 먼저 꺼지는 닻이 청크를 넘겨줄 수 있게 한다.
+	 */
+	@Override
+	public void clearRemoved() {
+		super.clearRemoved();
+		if (level instanceof ServerLevel serverLevel && fuelTicks > 0) {
+			track(serverLevel);
+		}
+	}
+
+	/**
+	 * 블록 엔티티가 내려갈 때 (부서질 때, 청크가 내려갈 때): 켜진 닻 목록에서만 뺀다.
+	 * 청크는 풀지 않는다 - 서버를 끌 때도 모든 청크가 내려가며 불리므로, 여기서 풀면 재시작 뒤 지속이 깨진다.
+	 * 부서질 때 푸는 건 {@link #preRemoveSideEffects}가 맡는다.
+	 */
+	@Override
+	public void setRemoved() {
+		if (level != null) {
+			Set<EnderAnchorBlockEntity> set = ACTIVE.get(level.dimension());
+			if (set != null) {
+				set.remove(this);
+			}
+		}
+		super.setRemoved();
+	}
+
+	/** 켜진 닻 목록에 올라 있는가 (시험용). */
+	public boolean isTracked() {
+		if (level == null) {
+			return false;
+		}
+		Set<EnderAnchorBlockEntity> set = ACTIVE.get(level.dimension());
+		return set != null && set.contains(this);
 	}
 
 	/** 3x3 청크를 붙잡거나 놓는다. 붙잡을 때 이미 강제 로드된 청크는 건드리지 않는다. */

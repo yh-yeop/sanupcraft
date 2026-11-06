@@ -106,7 +106,7 @@
   "block.sanupcraft.steam_quarry.void_on": "쓰레기 버림 켜짐: 돌 · 흙 · 심층암 · 네더랙 같은 흔한 블록은 버리고 원석 · 광물만 올린다",
   "block.sanupcraft.steam_quarry.void_off": "쓰레기 버림 꺼짐: 캔 것을 전부 올린다",
   "block.sanupcraft.steam_quarry.voided": "버린 블록 %s",
-  "block.sanupcraft.steam_quarry.drill_installed": "내열 드릴을 끼웠다: 이제 고대 잔해 · 흑요석도 캔다 (이미 지나간 층은 다시 보지 않는다)",
+  "block.sanupcraft.steam_quarry.drill_installed": "내열 드릴을 끼웠다: 이제 고대 잔해 · 흑요석도 캔다 (맨 위층부터 다시 훑는다)",
   "block.sanupcraft.steam_quarry.drill_already": "이미 내열 드릴이 끼워져 있다",
   "block.sanupcraft.steam_quarry.drill": "내열 드릴",
   "block.sanupcraft.geothermal_vent": "지열 증기 분출구",

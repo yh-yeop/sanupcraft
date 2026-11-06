@@ -106,7 +106,7 @@
   "block.sanupcraft.steam_quarry.void_on": "Junk voiding on: common stone, dirt, deepslate and netherrack are discarded; only ores and minerals go up",
   "block.sanupcraft.steam_quarry.void_off": "Junk voiding off: everything mined goes up",
   "block.sanupcraft.steam_quarry.voided": "Voided %s",
-  "block.sanupcraft.steam_quarry.drill_installed": "Heatproof drill installed: it now mines ancient debris and obsidian (layers already passed are not revisited)",
+  "block.sanupcraft.steam_quarry.drill_installed": "Heatproof drill installed: it now mines ancient debris and obsidian (rescans from the top layer)",
   "block.sanupcraft.steam_quarry.drill_already": "A heatproof drill is already installed",
   "block.sanupcraft.steam_quarry.drill": "Heatproof drill",
   "block.sanupcraft.geothermal_vent": "Geothermal Steam Vent",

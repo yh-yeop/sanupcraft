@@ -430,3 +430,176 @@ Sonnet 4기가 각자 작업 트리에서 고치고 `./gradlew build`로 확인�
 - `./gradlew runGameTest`: **94개 전부 통과** (전: 87).
 - `runClientGameTest` + 편의 모드 11개: 통과, JEI 플러그인 오류 없음.
 - 남은 보류: A9 · D4 · D9 · D12 (실테스트 뒤).
+
+## 6. 2차 리팩터링 1단계 (2026-11-06)
+
+대상: 지난 리팩터링(`dcdf97c`) 이후 바뀐 본 코드 — 2단계(보스 인원 배율 · 굴착기 버림 · 엔더 잠금 · JEI), M4(지열 분출구 · 내열 드릴 · 엔더 닻), 이번 고도화(녹슨 사당 · 요새 · 보루 전리품 · 드릴 재탐색).
+절차: Haiku 4기 병렬(파일 묶음 겹치지 않게) → Opus 1기 판정 → 비판적 Sonnet 반론 → Opus 최종 결정 → Sonnet n기 수정.
+기준 시험: `./gradlew build` (GameTest 108개), 화면 쪽은 `runClientGameTest`.
+
+### 6-1. 지적 (Haiku 4기)
+
+#### H1 보스 (`boss/`)
+1. FurnaceWarden.java:181-185 · 버그 · 중 — 화염 장판 수는 `party.size()`(48칸 인원)로 정하지만 위치는 `inflate(20)` 안 플레이어에게서만 뽑는다. 20~48칸에 있으면 장판이 0개 → 대상 한 곳 폴백. 혼자면 장판 1개인데 주석은 "3 ~ 6곳".
+2. FurnaceWarden.java:146-157 · 주석 불일치 · 하 — "보스 바 제목 (시험용)" 주석이 `party()` 위에 붙어 있고 `bossBarName()`에는 없다.
+3. RustyGuardian.java:441-467 / FurnaceWarden.java:541-570 · 중복 · 중 — `actuallyHurt` · `dropCustomDeathLoot` · party 저장/불러오기 · `party()`가 두 보스에 복사돼 있다. 키 아이템만 다르다.
+4. BossParty.java:55, 113-117 · 죽은 코드 · 하 — `seen` 폴백은 끊긴 플레이어(`isRemoved()` true)에 거의 안 쓰이고, 끊긴 플레이어 객체를 보스가 죽을 때까지 붙잡는다.
+5. BossParty.java:105-124 · 기타 · 하 — `contributors` 결과 정렬이 결과에 영향이 없다.
+6. GuardianAltarBlock.java:73-77 · 중복 · 하 — `party().size()`를 두 번 읽는다.
+
+#### H2 채굴 · 동력 (`mining/` · `power/`)
+7. QuarryBlockEntity.java:150-164 · 버그 · 중 — `flush()`가 pending을 줄여도 `setChanged()`가 없다. 상자로 보낸 뒤 저장되면 재로드 때 같은 아이템이 다시 나올 수 있다.
+8. GeothermalVentBlockEntity.java:95-104 · 버그 · 하 — `made == 0`이어도 `distribute()`가 증기를 줄이는데 `setChanged()`가 없다.
+9. QuarryBlockEntity.java:37-38, 90-106 · 주석 불일치 · 하 — `MAX_SCAN = 81`은 한 층. 빈 층마다 4틱이 걸려 "공기 층에서 멈추지 않게"와 다르고, 드릴 재탐색이 판 층 수 × 4틱 늦다.
+10. QuarryBlock.java:77, 84 · 기타 · 하 — 다 판 뒤 표시 층이 minY-1 (-65).
+11. BoilerBlockEntity.java:93 · 기타 · 하 — 유휴 상태에서도 매 틱 `setChanged`.
+12. BoilerBlockEntity.java:96-104 / GeothermalVentBlockEntity.java:106-115 · 중복 · 하 — 6방향 원천 유체 세기가 같은 패턴.
+
+#### H3 기계 · JEI · 월드 · 실테스트
+13. SanupcraftJeiPlugin.java:116-123 · 버그 · 중 — `JsonParser`의 언체크 예외는 `catch (IOException)`에 안 잡혀 등록 전체로 번지고, 한 파일의 IOException은 그 기계 폴더 나머지를 건너뛴다. 주석("못 읽은 파일은 건너뛰고")과 다르다.
+14. PlaytestCommand.java:167-168 · 중복 · 하 — `give(p, Items.COAL, 64)` 두 줄 (석탄 128).
+15. make_structures.py:20-25 · 죽은 코드 · 하 — `Int` · `Str` 클래스 미사용.
+16. PlaytestCommand.java:124 · 버그 · 하 — 네더 목적지를 `x / 8`로 계산해, 엔드에서 부르면 엔드 좌표 / 8이 된다.
+17. make_structures.py:141 · 기타 · 하 — 사슬이 높이 5 기둥의 y=4 석재를 덮어써 기둥 사이에 낀다.
+18. docs/PLAYTEST.md:31 · 문서 불일치 · 하 — `outpost` 받는 것에 상자 2 · 깔때기 4가 빠짐.
+
+#### H4 물류 (`logistics/`)
+19. EnderAnchorBlockEntity.java:91 · 버그 · 중 — ACTIVE 등록이 tick에서만. 재시작 직후 아직 tick 안 돈 닻 A의 청크를, 먼저 꺼지는 닻 C가 `coveringAnchor`로 못 찾고 풀어 버린다. A는 `forced=true`를 읽어 와서 다시 붙잡지 않는다.
+20. EnderAnchorBlockEntity.java:156-166 · 버그 · 중 — `setRemoved` 처리 없음. 청크 언로드로 BE가 내려가면 ACTIVE에 죽은 BE가 남는다 (EnderLinkBlockEntity는 `setRemoved`에서 해제).
+21. EnderAnchorBlockEntity.java:101-112 · 기타 · 하 — 이미 외부 강제 로드된 자기 청크는 소유하지 않아, 20번 상황과 겹치면 아무도 안 푼다.
+22. EnderLinkBlock.java:86-88, 98-110 · 주석 불일치 · 하 — "아니면 채널과 잠금 상태를 보여 준다"지만 안 잠긴 상태면 채널만.
+23. EnderLinkBlockEntity.java:108-110, 42 · 주석 불일치 · 하 — 주인 없는 블록(옛 데이터)은 아무나 잠그고 주인이 된다. 주석은 "주인 · OP만".
+24. EnderLinkBlockEntity.java:45-62 · 죽은 코드 · 하 — 송신기의 items 칸은 안 쓰인다.
+25. EnderLinkBlockEntity.java:216-217 · 기타 · 하 — `level == null`이면 아이템을 조용히 버린다.
+26. EnderLinkBlock.java:61-76 · 기타 · 하 — 클라이언트는 `canUse`를 안 보고 SUCCESS (잠긴 수신기에 염료 연출).
+27. EnderAnchorBlock.java:44-49 · 기타 · 하 — 티커가 람다 인자 대신 바깥 `serverLevel`을 캡처.
+28. EnderAnchorBlockEntity.java:85-87 · 기타 · 하 — 200틱마다 불필요한 `setChanged`.
+
+### 6-2. Opus 판정
+집계(28건): **수정 대상 8** · 보류 3 · 오탐 17 · 2단계로 0. 수정 대상 중 1 · 2 · 15 · 18은 주석 · 문서 · 도구만(동작 변화 없음).
+검증 메모:
+- 26.3 바닐라: `ServerLevel.unload` → `LevelChunk.clearAllBlockEntities()` → 모든 BE의 `setRemoved()`. 블록이 부서질 때도 `removeBlockEntity` → `setRemoved()`. 또 청크에 BE를 넣을 때 `setLevel` → `clearRemoved()` 순서(`LevelChunk.setBlockEntity`). → 20번 전제(청크가 내려가면 `setRemoved`)는 맞다. 다만 `coveringAnchor`가 이미 `isRemoved()`를 걸러서 오작동은 없고, 남는 것은 죽은 BE 참조(서버 종료 때 `clearActive`로 비움)뿐이다.
+- 7번(굴착기 `flush`): `HopperBlockEntity.addItem` → `tryMoveInItem`이 넣는 데 성공하면 `container.setChanged()`를 부르고, 위 블록(상자 · 깔때기 · 벨트 · 송신기)은 굴착기와 **같은 청크 기둥**이라 `blockEntityChanged` → `markUnsaved()`가 굴착기 청크를 표시한다. 청크가 저장되면 굴착기 BE(줄어든 pending)도 같이 저장되므로 복제 없음. 예외는 위에 상자 광산 수레(엔티티 컨테이너)를 둘 때뿐 — 실제 배치에서 쓰지 않는 극단이라 오탐.
+- `makeMockServerPlayer`(시험의 모의 플레이어)는 `PlayerList`에 안 들어간다 → 4번 `seen` 폴백은 시험(`SanupcraftStage2GameTest` 보상 시험)이 기대고 있다.
+
+| 번호 | 판정 | 근거 (검증) | 수정 방향 |
+|---|---|---|---|
+| 1 | 수정(주석 · 문서) | 동작은 2단계 전과 같은 설계: 장판은 20칸 안 플레이어 발밑마다, 개수 상한만 인원 비례(`clamp(n,3,6)`). 20칸 밖이면 대상 폴백, 혼자 1개도 예전(`MAX_RINGS = 3`)과 같다. 틀린 건 `maxRings()` 주석 "한 번에 까는 화염 장판 수"와 ROADMAP 256행 "화염 장판 = 인원수(3~6개)" — 개수가 아니라 상한 | `FurnaceWarden.maxRings()` 주석 → "화염 장판 상한 (인원수, 3 ~ 6). 장판은 20칸 안 플레이어 발밑마다 하나". ROADMAP 256행 → "화염 장판 = 20칸 안 플레이어마다 하나, 상한 인원수(3~6)". 시험 변경 없음 |
+| 2 | 수정(주석) | 확인: `FurnaceWarden` 146행 "보스 바에 보이는 제목 (시험용)"이 `party()` 위에 있고 `bossBarName()`에는 없다 (`RustyGuardian`은 제자리) | 주석을 `bossBarName()` 위로 옮긴다. 1번과 같은 파일 |
+| 3 | 보류 | 두 보스의 `actuallyHurt` · `dropCustomDeathLoot` · 저장/불러오기는 각각 `BossParty`로 3~4줄 위임뿐. 묶으려면 `Monster`와 두 보스 사이에 공통 부모 클래스를 넣어야 함(인터페이스 default로는 protected 오버라이드 불가) → 구조 변경 대비 이득 작음 | 보스가 셋째로 늘 때 공통 부모(`PartyBossMonster`)로 묶을지 정한다 |
+| 4 | 오탐 | `seen`은 `PlayerList`에 없는 플레이어용. 시험의 `makeMockServerPlayer`가 정확히 그 경우라 지우면 보상 시험이 깨진다. 끊긴 플레이어 참조는 보스가 죽거나 내려갈 때 같이 사라짐 | |
+| 5 | 오탐 | `damage`가 `HashMap`이라 정렬이 보상 순서 · 메시지 순서를 결정적으로 만든다. 무해 | |
+| 6 | 오탐 | `party().size()`는 필드 읽기. 노이즈 | |
+| 7 | 오탐 | 위 검증 메모: 넣기 성공 시 대상 `setChanged()`가 같은 청크를 표시 → 굴착기도 함께 저장. 광산 수레 위 극단만 예외 | |
+| 8 | 수정 | 확인: `work`가 `made > 0`일 때만 `setChanged`, 그런데 `distribute`는 `made == 0`(용암 없음 · 오버월드)이어도 증기를 내보낸다 → 저장값이 낡아 다시 불러오면 최대 1000 증기가 되살아남. 작지만 확실, 한 줄 수정 | `GeothermalVentBlockEntity.work`: `int before = steam;` … 끝에서 `if (steam != before) setChanged();` (`made > 0` 조건 대체). 시험 선택(필요 없음) |
+| 9 | 오탐 | `MAX_SCAN = 81` = 한 번에 한 층을 다 훑음 → "공기 층에서 멈추지 않게"(칸마다 4틱 쓰지 않게)와 맞다. 드릴 재탐색은 판 층마다 4틱(100층 ≈ 20초) — `installDrill` 주석 "빨리 지나간다"의 범위 안 | |
+| 10 | 오탐 | `steam_quarry.finished` 문구는 ko · en 둘 다 `%2$s`(캔 수)만 써서 층(−65)이 안 보인다 | |
+| 11 | 오탐 | 1.5단계 B9에서 같은 지적을 기각함(보일러 수 적음, `setChanged` = 청크 표시 + 비교기 이웃 갱신). 새 근거 없음 | |
+| 12 | 오탐 | 물(있나, bool)과 용암(몇 개, 상한 4)은 뜻이 달라 6줄 반복을 묶을 이득 없음 | |
+| 13 | 수정 | 확인: `JsonParser.parseReader`의 `JsonParseException`(언체크)은 어디서도 안 잡혀 JEI 등록으로 번지고, 한 파일의 `IOException`은 바깥 `catch`로 빠져 그 기계 폴더 나머지를 건너뛴다 — 주석 "못 읽은 파일은 건너뛰고"와 다름. 멀티(전용 서버) 클라이언트 경로라 시험에 안 걸림 | `fromModJar`: 파일마다 `try (Reader …) { … } catch (IOException \| JsonParseException e) { LOGGER.warn(…, file, e); }`로 그 파일만 건너뜀. 바깥 `catch (IOException)`은 `Files.walk` 실패용으로 남김. 시험: 없음(클라이언트 전용) — `./gradlew build` + 가능하면 `runClientGameTest` 로그 "기계 레시피 19개" 유지 |
+| 14 | 오탐 | 석탄 128이 의도(문서 표 "석탄"). `give`가 64씩 두 번이든 128 한 번이든 결과 같음. 노이즈 | |
+| 15 | 수정(도구) | 확인: `Int` · `Str` 클래스는 어디서도 안 쓰임(`_tag_id`는 `int` · `str`로 판별) | 두 클래스 삭제. 출력 `.nbt`에 영향 없음 — 다시 돌리지 않아도 됨(돌려도 `mtime=0`이라 같은 바이트여야 함, 다르면 되돌림) |
+| 16 | 오탐 | 엔드에서 `nether` 단계를 부르면 엔드 좌표 / 8에 흑요석 발판을 깔 뿐 — 실테스트 명령이라 어디든 서기만 하면 됨 | |
+| 17 | 보류 | 확인: (8,8) 기둥(높이 5)의 y=4 석재를 사슬이 덮어 석재 사이에 사슬이 낀다. 다만 "무너진 기둥" 연출일 수도 있는 모양 판단이고, 고치면 `.nbt`를 다시 만들어야 함 | 클라이언트 스크린샷(사당 장면)에서 주인이 보고 정한다 |
+| 18 | 수정(문서) | 확인: `kitOutpost`는 상자 2 · 깔때기 4를 주는데 PLAYTEST 표에 없음. 같은 표에서 `start`(레드스톤 4 · 참나무 판자 16, C11에서 추가)와 `end`(조약돌 64)도 빠져 있음 | `docs/PLAYTEST.md` 받는 것 표: `outpost`에 "상자 · 깔때기", `start`에 "레드스톤 · 판자", `end`에 "조약돌" 추가. 코드(`PlaytestCommand`)를 정본으로 한 번 대조 |
+| 19 | 수정 | 확인: `ACTIVE` 등록이 `tick`에서만. 서버를 다시 켠 첫 틱에 꺼지는 닻 C가, 아직 한 번도 안 돈 닻 A(겹치는 청크, `forced = true`로 불러옴)를 `coveringAnchor`로 못 찾아 공유 청크를 풀고, A는 `forced`라 다시 안 붙잡는다. 창은 첫 틱뿐이라 드물지만 결과가 "전초기지 청크가 조용히 내려감"이라 크다. 수정은 국소적 | `EnderAnchorBlockEntity`: `clearRemoved()` 오버라이드(청크에 들어갈 때 `setLevel` 다음에 불림) → `super` 뒤 `level instanceof ServerLevel && fuelTicks > 0`이면 `ACTIVE`에 등록(`tick`과 같은 등록 코드를 `private void track(ServerLevel)`로 묶어 공유). 시험: 닻 C · A를 같은 청크에 두고 C 먼저 tick(C가 소유) → A tick → `clearActive()`(재시작 흉내) → `A.clearRemoved()` → C를 부숨 → 가운데 청크가 여전히 강제 로드 · A가 넘겨받음(`ownChunkCount() > 0`) |
+| 20 | 수정 | 위 검증 메모: 26.3은 청크가 내려갈 때 `setRemoved`를 부른다. 지금은 `ACTIVE`에 죽은 BE가 서버 종료까지 남음(오작동은 `isRemoved()`로 걸러짐). `EnderLinkBlockEntity`와 같은 방식으로 맞춘다 | `setRemoved()` 오버라이드 → 그 차원 `ACTIVE`에서 `this`만 빼고 `super.setRemoved()`. **청크는 풀지 않는다**(서버 종료 때도 모든 청크가 내려가며 불리므로 여기서 풀면 재시작 지속이 깨짐 — 푸는 건 지금처럼 `preRemoveSideEffects` · 연료 끝에서만). 시험: 시험용 `isTracked()` getter, 켜진 닻에 `setRemoved()` → false |
+| 21 | 보류 | 맞음: 자기 청크가 이미 외부(`/forceload`)로 붙잡혀 있으면 소유하지 않으므로, 관리자가 나중에 그 청크를 풀면 닻 BE가 내려가 연료가 멈추고 둘레 8청크는 계속 붙잡힌다. 고치려면 "외부 강제 로드 청크는 건드리지 않는다"는 규칙 자체를 바꿔야 함 | 정책 결정: 닻이 자기 청크는 늘 소유(외부 표시와 별개로 기록)할지, 또는 지금 규칙 유지(관리자 책임). 실테스트 · 서버 운영 뒤 |
+| 22 | 오탐 | 잠긴 경우 `lockedMessage`(채널 · 주인), 안 잠긴 경우 채널 — "채널과 잠금 상태"의 뜻 그대로. 노이즈 | |
+| 23 | 오탐 | `canManage` 주석이 "주인이 없을 때 (처음 잠그는 사람이 주인이 된다)"로 이미 밝힌 의도된 규칙(주인 필드 전 옛 데이터용) | |
+| 24 | 오탐 | 송신기의 칸 1개는 깔때기 · 벨트가 넣을 자리(`getContainerSize` ≥ 1)로 필요. `getItem`이 늘 빈 것을 돌려줄 뿐 죽은 코드 아님 | |
+| 25 | 오탐 | `level == null`은 월드에 안 놓인 BE — 깔때기 · 벨트가 접근할 수 없는 상태 | |
+| 26 | 오탐 | 클라이언트는 잠금 상태를 모름(동기화 안 함). 손 흔들기 연출뿐이고 서버가 거부 · 안내, 염료 소모도 없음 | |
+| 27 | 오탐 | 티커는 그 BE의 레벨마다 만들어져 `l`과 `serverLevel`은 같은 객체. 동작 차이 없음 | |
+| 28 | 오탐 | 200틱마다 `setChanged`는 `fuelTicks` 감소를 주기적으로 저장하려는 의도(매 틱 표시를 피함) | |
+
+### 6-3. 수정 묶음 (파일 소유)
+세 묶음은 파일이 겹치지 않는다. 각자 작업 트리에서 고친 뒤 `./gradlew build`(GameTest 108 + 새 시험) 통과 확인. 2단계로 올린 것 없음.
+
+| 묶음 | 항목 | 소유 파일 (이 묶음만 수정) | 시험 |
+|---|---|---|---|
+| **G1 엔더 닻 등록** | 19, 20 | `logistics/EnderAnchorBlockEntity.java`, `src/gametest/.../SanupcraftNetherEndGameTest.java`(닻 시험 추가만) | 새 시험 2개: 재시작 흉내 뒤 넘겨받기(19) · `setRemoved` 뒤 `isTracked()` false(20). `clearActive()`는 같은 틱 안에서만 쓰고, 다른 시험의 켜진 닻은 다음 틱 `tick`에서 다시 등록되므로 영향 없음 — 그래도 시험 끝에서 두 닻을 부숴 정리. 시험 구역 청크가 이미 강제 로드돼 있을 수 있으니 기존 `anchorForcesChunksAndReleasesOnlyItsOwn`처럼 `centerWasForced`를 먼저 읽고, 판정은 C가 실제로 소유했던 청크로 한다 |
+| **G2 지열 · JEI** | 8, 13 | `power/GeothermalVentBlockEntity.java`, `client/.../jei/SanupcraftJeiPlugin.java` | 새 시험 없음. `./gradlew build`, 가능하면 `runClientGameTest`로 JEI 오류 없음 확인 |
+| **G3 주석 · 문서 · 도구** | 1, 2, 15, 18 | `boss/FurnaceWarden.java`(주석 두 곳만, 코드 변경 금지), `ROADMAP.md`(256행 한 줄), `docs/PLAYTEST.md`(받는 것 표), `tools/make_structures.py` | 시험 변경 없음. `./gradlew build`로 컴파일만 확인. `.nbt`는 다시 만들지 않음 |
+
+보류 3건(3 공통 부모, 17 사당 사슬, 21 외부 강제 로드 청크)은 ROADMAP에 옮기지 않고 이 표로만 넘긴다 — 최종 결정 단계에서 실테스트 항목으로 둘지 정한다.
+
+### 6-4. 비판적 Sonnet 반론
+판정당 1회. 근거는 코드 · 바닐라 소스를 직접 읽은 것 (`LevelChunk` · `BlockEntity` · `HopperBlockEntity` · `CompoundContainer` · `Level.blockEntityChanged`). 최종 결정은 Opus.
+28건 중 **반론 2건**(아래 R1 · R2), 동의하되 보정이 필요한 1건(R3), 그리고 질문받은 지점의 검증 결과(V1~V4)를 적는다. 나머지 판정은 읽어 보고 동의라 건너뛴다.
+
+| 번호 | 반론 | 근거 | 요청 | 확신도 |
+|---|---|---|---|---|
+| R1 (#9 주변, 지적에 없던 항목) | #9를 오탐으로 닫으면서 드릴 재탐색 변경의 **사용자 문구**를 안 봤다. 드릴을 끼울 때 나오는 안내가 이제 반대 말을 한다: ko "(이미 지나간 층은 다시 보지 않는다)", en "(layers already passed are not revisited)". 실제로는 `installDrill()`이 `started = false` · `finished = false` · `cursor = 0`으로 맨 위층부터 다시 훑는다. 플레이어가 "드릴 끼워도 지나간 층 흑요석은 못 캔다"고 믿고 굴착기를 새로 놓게 된다 | `src/main/resources/assets/sanupcraft/lang/ko_kr.json:109`, `en_us.json:109` (`block.sanupcraft.steam_quarry.drill_installed`). 같은 변경이 ROADMAP 181행("~~다시 안 본다~~ → 맨 위층부터 다시 훑는다")과 `QuarryBlockEntity.installDrill` 주석(219-220)에는 반영돼 있고 번역 파일만 빠짐 | **수정 대상 추가**: 두 번역 줄의 괄호를 "(맨 위층부터 다시 훑는다)" / "(rescans from the top layer)"로. 파일 소유는 G1 · G2 · G3 모두 안 건드리므로 G3에 넣으면 겹침 없음 | 상 |
+| R2 (#1 수정 방향) | 수정 방향의 **ROADMAP 줄 번호가 틀렸다**. "ROADMAP 256행"이라 했지만 이 작업 트리 ROADMAP 256행은 "### 실테스트에서 볼 것" 제목이다. 고칠 문장("화염 장판 = 인원수(3~6개)")은 **275행** (보스 인원 배율 항목 안). 묶음 담당 Sonnet이 줄 번호만 믿으면 엉뚱한 줄을 고친다 | `grep -n "화염 장판" ROADMAP.md` → 66 · 80 · 81 · 99 · 105 · 275. 인원수 문장은 275행뿐 | 6-3의 G3와 #1의 "256행"을 "`화염 장판 = 인원수(3~6개)` 문장(275행 근처, 줄 번호 말고 문구로 찾기)"으로 | 상 (사소하지만 확실) |
+| R3 (G1 시험 설계, 판정 유지 · 사양 보정) | 시험이 **아무것도 안 지키고 통과**할 수 있다. 시험 구역 청크는 이미 강제 로드돼 있을 수 있어서(`anchorForcesChunksAndReleasesOnlyItsOwn`가 `centerWasForced`를 읽는 이유) C가 소유한 청크가 0개면, 고치기 전에도 "C를 부숴도 청크가 그대로"가 참이 된다. 6-3은 "C가 실제로 소유했던 청크로 판정"이라 했지만 소유 목록은 `private`이고 공개된 건 `ownChunkCount()`뿐이다 | `EnderAnchorBlockEntity.java:109-112`(`already.contains`이면 `ownChunks`에 안 넣음), 시험 `SanupcraftNetherEndGameTest.java:136` | 사양 보정: C를 tick한 직후 `helper.assertTrue(c.ownChunkCount() > 0)`를 **전제**로 걸어 0이면 시험이 실패하게 하고(조용히 통과 금지), 판정은 `c.부수기 → a.ownChunkCount() == (부수기 전 c.ownChunkCount())`(넘겨받은 수가 같다)로. 시험 안에서 `clearActive()` · `clearRemoved()`는 같은 틱 안에서 끝내고 `helper.succeed()` (실제 BE 티커가 다음 틱에 다시 등록하므로 다른 시험엔 영향 없다는 6-3 판단에 동의) | 중 |
+
+#### 질문받은 세 지점 검증 (반론 아님)
+- **V1. G1 순서 (19)**: 청크를 읽을 때 `promotePendingBlockEntity` → `BlockEntity.loadStatic`(→ `loadAdditional`로 `fuelTicks` · `forced` · `ownChunks` 읽음) → `setLevel` → `addAndRegisterBlockEntity` → `setBlockEntity` 안에서 `setLevel` 다음 `clearRemoved` (`LevelChunk.java:421-442`, `594-610`). 즉 `clearRemoved`가 불리는 시점엔 `fuelTicks`가 이미 읽혀 있다. 새로 놓는 닻은 `fuelTicks = 0`이라 등록 안 됨. `ACTIVE.clear()`는 `SERVER_STARTING`(월드 불러오기 전)에서만 불려(`ModLogistics.java:60-62`) 청크 불러오기 때의 등록을 지우지 않는다. 판정 · 수정 방향 동의.
+- **V2. G1 언로드 때 `ACTIVE`에서 빼면 다른 닻이 청크를 잘못 풀 수 있나 (20)**: 일반 실행 중엔 닻 A의 둘레 3x3이 강제 로드(자기 또는 외부)라 켜진 A의 BE가 내려갈 일이 없다. 내려가는 건 서버 종료 때뿐이고 그땐 아무도 tick하지 않는다. 남는 경로는 21번(A의 자기 청크가 원래 외부 강제 로드였다가 관리자가 풀 때)뿐인데, 지금도 `coveringAnchor`가 `isRemoved()`로 A를 걸러서 결과가 같다 → 20번 수정이 새 오작동을 만들지 않는다. 동의. (참고: `/clone` · 구조물 붙여넣기는 NBT째로 `forced = true` · `own_chunks`를 복사해 복제 닻이 원본의 청크를 풀 수 있는 기존 문제가 있다. G1 때문에 생긴 게 아니고, 보류 21번 옆 메모로만 남긴다. 확신 하)
+- **V3. #7 굴착기 `flush`의 더티 표시 (오탐 판정)**: 위 블록은 늘 굴착기와 같은 x · z 기둥이라 같은 청크이고, 모든 경로에서 `tryMoveInItem`이 성공 시 `container.setChanged()`를 부른다 (`HopperBlockEntity.java:341`). 벨트: `setItem`이 아이템 엔티티를 만들 뿐 직접 `setChanged`는 없지만 `tryMoveInItem`이 벨트 BE의 `setChanged`를 부름 → 같은 청크 표시. 엔더 송신기: `getItem`이 늘 빈 칸이라 `setItem` 경로를 타고 역시 송신기의 `setChanged`. 큰 상자: `CompoundContainer.setChanged`가 두 반쪽 다 표시 (`CompoundContainer.java:64-66`) — 바로 위 반쪽이 굴착기 청크. `Level.blockEntityChanged`는 청크 단위 `markUnsaved` (`Level.java:871-875`). 자동저장이 채굴(N틱)과 `flush`(N+1틱) 사이에 끼어도 N+1에서 다시 표시된다. 오탐 판정 동의.
+- **V4. #9 재탐색 시간**: 루프는 한 번에 81칸 = 한 층이고 4틱마다 한 번 돈다(`QuarryBlockEntity.java:83, 90`). 빈 층 하나 = 4틱. 오버월드 Y 60 → −64면 124층 × 4 = 496틱 ≈ 25초, 네더 Y 120 → 0이면 120층 ≈ 24초, 오버월드 한계 높이(Y 300대)에서도 ≈ 75초. 그 동안 증기는 안 쓰이고(`mine`이 참일 때만 `steam -= 8`) `work`가 참을 돌려줘 POWERED도 유지된다. 한 번 끼우는 일회성 비용이라 허용 범위 — 오탐 판정 동의. 다만 R1 문구가 이 25초를 알려 주는 쪽이 낫다.
+
+#### 반론하지 않은 판정 (읽고 동의)
+2 · 8 · 13 · 15 · 18(`start` · `end` 행 빠짐도 `PlaytestCommand` 143-153 · 255-270행으로 확인) 수정 방향, 3 · 17 · 21 보류, 4 · 5 · 6 · 10 · 11 · 12 · 14 · 16 · 22~28 오탐.
+
+### 6-5. 최종 결정 (Opus)
+| 반론 | 결정 | 이유 |
+|---|---|---|
+| R1 드릴 안내 문구 | **받아들임 → 수정 대상 추가 (#29)** | 확인: ko · en `steam_quarry.drill_installed`가 "지나간 층은 다시 보지 않는다"인데 `installDrill`은 맨 위층부터 다시 훑는다. 플레이어를 잘못 이끄는 문구, 두 줄 수정 |
+| R2 ROADMAP 줄 번호 | **받아들임** | 확인: 문장은 "보스 인원 배율" 항목 안(지금 275행). 줄 번호 대신 문구로 찾게 고침 |
+| R3 G1 시험 전제 | **받아들임** | C가 소유한 청크가 0개면 고치기 전에도 통과한다. 전제 단언 + "넘겨받은 수 = C가 가졌던 수" 판정으로 바꿈 |
+| V1~V4 | 동의 | 6-2 판정 그대로. V2의 `/clone` 복제 닻 메모는 보류 21 옆 메모로만 둔다 |
+
+최종 집계(29건 = 지적 28 + 반론 추가 1): **수정 대상 9** (1 · 2 · 8 · 13 · 15 · 18 · 19 · 20 · 29) · 보류 3 (3 · 17 · 21) · 오탐 17 · 2단계로 0.
+
+### 6-6. 최종 수정 묶음
+파일은 묶음끼리 겹치지 않는다. 각자 고친 뒤 `./gradlew build`(GameTest 108 + G1 새 시험 2) 통과 확인. 위치는 줄 번호가 아니라 문구로 찾는다.
+
+| 묶음 | 소유 파일 (이 묶음만 수정) | 시험 |
+|---|---|---|
+| **G1 엔더 닻 등록** (19, 20) | `src/main/java/io/github/yhyeop/sanupcraft/logistics/EnderAnchorBlockEntity.java`, `src/gametest/java/io/github/yhyeop/sanupcraft/test/SanupcraftNetherEndGameTest.java`(닻 시험 추가만) | 새 시험 2개 (아래) |
+| **G2 지열 · JEI** (8, 13) | `src/main/java/io/github/yhyeop/sanupcraft/power/GeothermalVentBlockEntity.java`, `src/client/java/io/github/yhyeop/sanupcraft/client/jei/SanupcraftJeiPlugin.java` | 새 시험 없음. build, 가능하면 `runClientGameTest`에서 JEI 오류 없음 |
+| **G3 주석 · 문서 · 문구 · 도구** (1, 2, 15, 18, 29) | `src/main/java/io/github/yhyeop/sanupcraft/boss/FurnaceWarden.java`(주석만), `ROADMAP.md`, `docs/PLAYTEST.md`, `tools/make_structures.py`, `src/main/resources/assets/sanupcraft/lang/ko_kr.json`, `src/main/resources/assets/sanupcraft/lang/en_us.json` | 시험 변경 없음. build로 확인, `.nbt`는 다시 만들지 않음 |
+
+**G1 단계**
+- 19: `private void track(ServerLevel level)` = 지금 `tick` 안의 `ACTIVE.computeIfAbsent(...).add(this)`를 옮긴 것, `tick`은 이걸 부른다. `@Override clearRemoved()`: `super.clearRemoved()` 뒤 `level instanceof ServerLevel s && fuelTicks > 0`이면 `track(s)`.
+- 20: `@Override setRemoved()`: 그 차원 `ACTIVE` 집합에서 `this`만 빼고 `super.setRemoved()`. **청크는 풀지 않는다**(서버 종료 때도 불림). 시험용 `public boolean isTracked()` = 그 차원 집합에 `this`가 있는가.
+- 시험 ① `anchorHandsOverAfterReload`: 같은 청크에 닻 C · A, 둘 다 연료. `c.tick` → `helper.assertTrue(c.ownChunkCount() > 0, …)`(전제, 0이면 실패) → `int owned = c.ownChunkCount()` → `a.tick` → `EnderAnchorBlockEntity.clearActive()` → `a.clearRemoved()` → C 자리를 공기로 → `a.ownChunkCount() == owned` 단언 → 두 닻 정리 → `helper.succeed()`. 모두 같은 틱 안에서.
+- 시험 ② `anchorUntracksOnRemoved`: 연료 넣은 닻 `tick` → `isTracked()` 참 → `setRemoved()` → 거짓 → `clearRemoved()`로 되돌린 뒤 블록 정리 → `succeed()`.
+
+**G2 단계**
+- 8: `work` 처음에 `int before = steam;`, 끝의 `if (made > 0) setChanged();`를 `if (steam != before) setChanged();`로.
+- 13: `fromModJar` 파일 반복 안에서 `try (Reader …) { … } catch (IOException | JsonParseException e) { LOGGER.warn("JEI: 레시피 {}를 읽지 못함", file, e); }` — 그 파일만 건너뜀. 바깥 `catch (IOException)`은 `Files.walk` 실패용으로 그대로.
+
+**G3 단계**
+- 1: `FurnaceWarden.maxRings()` 주석 → "화염 장판 상한 (인원수, 3 ~ 6). 장판은 20칸 안 플레이어 발밑마다 하나". ROADMAP "보스 인원 배율" 항목의 `화염 장판 = 인원수(3~6개)` → `화염 장판 = 20칸 안 플레이어마다 하나, 상한 인원수(3~6)`.
+- 2: "보스 바에 보이는 제목 (시험용)" 주석을 `party()` 위에서 `bossBarName()` 위로.
+- 15: `make_structures.py`의 `class Int(int)` · `class Str(str)` 삭제.
+- 18: PLAYTEST "받는 것" 표를 `PlaytestCommand` 꾸러미와 대조: `outpost`에 "상자 · 깔때기", `start`에 "레드스톤 · 판자", `end`에 "조약돌".
+- 29: `block.sanupcraft.steam_quarry.drill_installed` 괄호 → ko "(맨 위층부터 다시 훑는다)", en "(rescans from the top layer)".
+
+### 6-7. 수정 기록 (Sonnet 3기, 파일 겹치지 않게)
+| 묶음 | 항목 | 바뀐 것 |
+|---|---|---|
+| G1 엔더 닻 등록 | 19, 20 | `clearRemoved()`에서 연료가 남은 닻을 ACTIVE에 등록 (재시작 직후 아직 tick 안 한 닻도 넘겨받기 대상), `setRemoved()`에서 ACTIVE에서만 뺌 (청크는 안 풂 — 서버 종료 때도 불림). 시험용 `isTracked()`. 시험 `anchorHandsOverAfterReload`(혼자 도는 환경 — 같은 묶음 다른 시험 구역이 강제 로드돼 있으면 C가 소유할 청크가 없어 전제에서 걸렸다) · `anchorUntracksOnRemoved` |
+| G2 지열 · JEI | 8, 13 | 분출구는 증기 값이 바뀐 틱마다 `setChanged`. JEI 모드 jar 레시피 읽기: 파일마다 `IOException \| JsonParseException`을 잡아 그 파일만 건너뜀, 폴더 순회의 `UncheckedIOException`도 잡음 |
+| G3 주석 · 문서 · 문구 · 도구 | 1, 2, 15, 18, 29 | 화염 장판 설명을 "20칸 안 플레이어마다 하나, 상한 인원수(3~6)"로 (FurnaceWarden · ROADMAP), 보스 바 제목 주석 제자리로, `make_structures.py`의 안 쓰는 클래스 삭제 (`.nbt` 바이트 그대로 확인), PLAYTEST 받는 것 표 (`start` · `outpost` · `end`), 드릴 끼울 때 안내 "맨 위층부터 다시 훑는다" (ko · en) |
+
+검증:
+- `./gradlew build`: GameTest 110개 통과 (108 + 닻 2).
+- 새 닻 시험이 버그를 잡는지: `clearRemoved` 등록을 잠시 끄면 두 시험이 실패 → 되돌림.
+- `runClientGameTest` (편의 모드 11개 포함): JEI 기계 레시피 25개, 우리 모드 오류 없음. 일반 지형 월드에서 녹슨 사당 생성 · 제단 확인.
+
+### 6-8. 보고
+| | 건수 |
+|---|---|
+| 지적 (Haiku 4기) | 28 (+ 반론에서 1 = 29) |
+| 실제 문제로 판정 (최종) | 9 |
+| 보류 | 3 (3 보스 공통 부모 — 보스가 셋째로 늘 때 · 17 사당 사슬 모양 — 주인 판단 · 21 외부 강제 로드 청크 정책) |
+| 오탐 | 17 |
+| 수정 | 9 |
+| 2단계 · 3단계로 올린 것 | 0 |
+| 시험 | GameTest 110개 통과, 클라이언트 시험 통과 |
+
+Opus 샘플링: 판정 단계에서 Opus가 지적 밖 코드(굴착기 flush 경로 · 블록 엔티티 언로드 순서)를 직접 읽어 확인했고, 비판적 Sonnet이 드릴 안내 문구(29)를 추가로 찾았다.

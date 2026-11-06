@@ -143,17 +143,17 @@ public class FurnaceWarden extends Monster implements PartyBoss {
 		targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
 	}
 
-	/** 보스 바에 보이는 제목 (시험용). */
 	@Override
 	public BossParty party() {
 		return party;
 	}
 
-	/** 한 번에 까는 화염 장판 수 (인원수, 3 ~ 6). */
+	/** 화염 장판 상한 (인원수, 3 ~ 6). 장판은 20칸 안 플레이어 발밑마다 하나. */
 	public int maxRings() {
 		return Mth.clamp(party.size(), MIN_RINGS, MAX_RINGS);
 	}
 
+	/** 보스 바에 보이는 제목 (시험용). */
 	public Component bossBarName() {
 		return bossEvent.getName();
 	}

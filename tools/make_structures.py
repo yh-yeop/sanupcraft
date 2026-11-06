@@ -17,14 +17,6 @@ OUT = Path(__file__).resolve().parent.parent / "src/main/resources/data/sanupcra
 
 # ---- 아주 작은 NBT 쓰기 ----
 
-class Int(int):
-    pass
-
-
-class Str(str):
-    pass
-
-
 def _name(buf, s):
     b = s.encode("utf-8")
     buf.write(struct.pack(">H", len(b)))

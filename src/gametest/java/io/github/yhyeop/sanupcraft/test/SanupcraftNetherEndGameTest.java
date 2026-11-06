@@ -141,6 +141,63 @@ public class SanupcraftNetherEndGameTest {
 		helper.succeed();
 	}
 
+	/**
+	 * 서버를 다시 켠 직후 흉내: 아직 tick하지 않은 닻 A도 청크에 들어올 때(clearRemoved) 켜진 닻 목록에 올라,
+	 * 먼저 꺼지는 닻 C가 공유 청크를 풀지 않고 A에게 넘긴다.
+	 * 전제: C가 실제로 청크를 하나 이상 소유해야 한다 (시험 구역 청크가 이미 강제 로드돼 0개면 고치기 전에도 통과하므로).
+	 */
+	// 혼자 돈다: 같은 묶음의 다른 시험 구역이 강제 로드돼 있으면 C가 소유할 청크가 없다
+	@GameTest(environment = "sanupcraft-test:alone")
+	public void anchorHandsOverAfterReload(GameTestHelper helper) {
+		BlockPos cPos = new BlockPos(1, 1, 1);
+		BlockPos aPos = new BlockPos(3, 1, 1);
+		helper.setBlock(cPos, ModLogistics.ENDER_ANCHOR);
+		helper.setBlock(aPos, ModLogistics.ENDER_ANCHOR);
+		EnderAnchorBlockEntity c = helper.getBlockEntity(cPos, EnderAnchorBlockEntity.class);
+		EnderAnchorBlockEntity a = helper.getBlockEntity(aPos, EnderAnchorBlockEntity.class);
+		helper.assertValueEqual(c.insertFuel(new ItemStack(Items.POPPED_CHORUS_FRUIT, 1)), 1, "C에 넣은 연료 수");
+		helper.assertValueEqual(a.insertFuel(new ItemStack(Items.POPPED_CHORUS_FRUIT, 1)), 1, "A에 넣은 연료 수");
+		var level = helper.getLevel();
+
+		c.tick(level, helper.absolutePos(cPos));
+		helper.assertTrue(c.ownChunkCount() > 0, "C가 소유한 청크가 없음 (시험이 아무것도 지키지 못함)");
+		int owned = c.ownChunkCount();
+		a.tick(level, helper.absolutePos(aPos));
+
+		// 재시작 흉내: 켜진 닻 목록을 비우고, A는 청크에 다시 들어온 것처럼 clearRemoved만 부른다
+		EnderAnchorBlockEntity.clearActive();
+		helper.assertFalse(a.isTracked(), "목록을 비웠는데 A가 남아 있음");
+		a.clearRemoved();
+		helper.assertTrue(a.isTracked(), "clearRemoved 뒤 A가 켜진 닻 목록에 없음");
+
+		helper.setBlock(cPos, Blocks.AIR);
+		helper.assertValueEqual(a.ownChunkCount(), owned, "A가 넘겨받은 청크 수");
+
+		helper.setBlock(aPos, Blocks.AIR);
+		helper.succeed();
+	}
+
+	/** 블록 엔티티가 내려가면(setRemoved) 켜진 닻 목록에서 빠진다. 청크는 풀지 않는다. */
+	@GameTest
+	public void anchorUntracksOnRemoved(GameTestHelper helper) {
+		BlockPos anchorPos = new BlockPos(1, 1, 1);
+		helper.setBlock(anchorPos, ModLogistics.ENDER_ANCHOR);
+		EnderAnchorBlockEntity anchor = helper.getBlockEntity(anchorPos, EnderAnchorBlockEntity.class);
+		helper.assertValueEqual(anchor.insertFuel(new ItemStack(Items.POPPED_CHORUS_FRUIT, 1)), 1, "넣은 연료 수");
+		anchor.tick(helper.getLevel(), helper.absolutePos(anchorPos));
+		helper.assertTrue(anchor.isTracked(), "켜진 닻이 목록에 없음");
+		boolean forcedBefore = anchor.isForced();
+
+		anchor.setRemoved();
+		helper.assertFalse(anchor.isTracked(), "setRemoved 뒤에도 목록에 남음");
+		helper.assertValueEqual(anchor.isForced(), forcedBefore, "setRemoved가 청크를 풀었음");
+
+		anchor.clearRemoved();
+		helper.assertTrue(anchor.isTracked(), "clearRemoved 뒤 다시 목록에 오르지 않음");
+		helper.setBlock(anchorPos, Blocks.AIR);
+		helper.succeed();
+	}
+
 	/** 연료는 튀긴 후렴과만 받는다. */
 	@GameTest
 	public void anchorOnlyTakesPoppedChorus(GameTestHelper helper) {

@@ -2,6 +2,7 @@ package io.github.yhyeop.sanupcraft.client.jei;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ import java.util.Optional;
 import java.util.stream.Stream;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
 
@@ -118,9 +120,13 @@ public class SanupcraftJeiPlugin implements IModPlugin {
 					MachineRecipe.codec(kind).codec().parse(ops, json)
 							.resultOrPartial(error -> Sanupcraft.LOGGER.warn("JEI: 레시피 {}를 읽지 못함: {}", file, error))
 							.ifPresent(result::add);
+				} catch (IOException | JsonParseException e) {
+					// 파일 하나가 깨져도 그 파일만 건너뛰고 같은 폴더의 나머지는 계속 읽는다
+					Sanupcraft.LOGGER.warn("JEI: 레시피 {}를 읽지 못함", file, e);
 				}
 			}
-		} catch (IOException e) {
+		} catch (IOException | UncheckedIOException e) {
+			// Files.walk 시작 또는 순회 중 실패 (순회 실패는 UncheckedIOException으로 온다)
 			Sanupcraft.LOGGER.warn("JEI: {} 레시피 폴더를 읽지 못함", kind.recipeName(), e);
 		}
 		return result;

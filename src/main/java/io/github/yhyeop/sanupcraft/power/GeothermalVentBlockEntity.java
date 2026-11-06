@@ -48,11 +48,13 @@ public class GeothermalVentBlockEntity extends BlockEntity {
 
 	/** 한 틱 일한다. {@code hot}이 거짓이면 아무것도 만들지 않는다 (시험은 오버월드에서 hot = true로 부른다). 만든 증기를 돌려준다. */
 	public int work(ServerLevel level, BlockPos pos, boolean hot) {
+		int before = steam;
 		lava = hot ? countLava(level, pos) : 0;
 		int made = Math.min(STEAM_CAPACITY - steam, lava * STEAM_PER_LAVA);
 		steam += made;
 		steam = outlet.distribute(level, pos, steam);
-		if (made > 0) {
+		// 만들었든 내보냈든 저장값이 달라졌으면 표시한다 (용암이 없어도 남은 증기는 나간다)
+		if (steam != before) {
 			setChanged();
 		}
 		return made;
