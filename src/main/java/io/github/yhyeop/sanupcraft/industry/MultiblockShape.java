@@ -159,6 +159,7 @@ public final class MultiblockShape {
 	/**
 	 * 모양이 풀렸다 (또는 제어기가 부서졌다). 모양이 선 이웃 제어기가 가진 외벽은 무늬를 남기고 그 이웃에 잇는다.
 	 * 나머지 외벽은 무늬를 끄고, 벽돌 링크는 나를 가리킬 때만 푼다. 이웃 갱신 없이, 안 불러온 청크는 건드리지 않는다.
+	 * 안 불러온 청크의 이웃 제어기는 못 보므로, 그 제어기가 가진 공유 외벽은 잠시 꺼졌다가 그 제어기의 다음 확인에서 다시 켜진다.
 	 */
 	public void unform(ServerLevel level, BlockPos controller, Direction facing) {
 		List<BlockPos> mine = casings(controller, facing);

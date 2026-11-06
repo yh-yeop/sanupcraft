@@ -166,6 +166,7 @@ public final class Downed {
 		SanupcraftConfig config = SanupcraftConfig.current();
 		ServerLevel level = player.level();
 		long now = now(level.getServer());
+		LAST_HIT.remove(player.getUUID());
 		player.setHealth(1.0F);
 		player.clearFire();
 		player.setAttached(DOWNED, now + config.downedBleedOutTicks);

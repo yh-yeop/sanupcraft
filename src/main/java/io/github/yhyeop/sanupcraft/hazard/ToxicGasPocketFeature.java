@@ -23,7 +23,7 @@ import io.github.yhyeop.sanupcraft.config.SanupcraftConfig;
 
 /**
  * 깊은 동굴 공기 칸(Y 0 아래)에 유독 가스 덩어리를 깐다. 시작 칸에서 이어진 공기 칸을 반경 3 안에서 최대 {@code max_blocks}칸 채운다.
- * 불 · 용암 · 횃불 옆 칸은 건너뛴다 (깔자마자 터지지 않게). 설정 {@code hazards.toxicGas}가 꺼져 있으면 아무것도 깔지 않는다.
+ * 불씨({@link ToxicGasBlock#isIgnitionSource}: 불 · 용암 · 횃불 · 켜진 모닥불) 옆 칸은 건너뛴다 (깔자마자 터지지 않게). 설정 {@code hazards.toxicGas}가 꺼져 있으면 아무것도 깔지 않는다.
  */
 public record ToxicGasPocketFeature(int maxBlocks, int maxY) implements Feature {
 	/** 월드 생성에서 쓰는 높이 한계 (이 높이 아래에만 놓는다). */

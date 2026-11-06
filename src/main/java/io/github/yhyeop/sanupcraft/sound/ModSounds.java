@@ -104,7 +104,7 @@ public final class ModSounds {
 		};
 	}
 
-	/** 일하는 기계가 매 틱 부른다. 종류에 맞는 소리를 40틱에 한 번쯤. */
+	/** 일하는 기계가 매 틱 부른다. 종류에 맞는 소리를 40틱(분쇄기 30틱)에 한 번쯤. */
 	public static void machine(ServerLevel level, BlockPos pos, MachineKind kind) {
 		working(level, pos, forMachine(kind), kind == MachineKind.CRUSHER ? 30 : 40, 0.35F);
 	}

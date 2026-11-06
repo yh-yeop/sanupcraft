@@ -46,6 +46,7 @@ import io.github.yhyeop.sanupcraft.gear.SteamChargedItem;
  * 우클릭을 누르고 있는 동안 2틱마다 앞 6칸 원뿔(반각 30도)에 불을 뿜는다: 맞은 생물은 4초 불 · 피해 2.
  * 한 번 뿜을 때 증기 4, 연료 2틱. 넣어 둔 연료가 다 타면 다음 가루를 하나 넣는다. 창작 모드는 증기 · 연료가 들지 않는다.
  * 블록에 불을 붙이는 것은 설정({@code flamethrower.lightsBlocks}, 기본 끔).
+ * 물속에서는 증기 · 연료를 쓰고 거품만 난다 (불이 안 붙는다).
  */
 public class FlamethrowerItem extends SteamChargedItem {
 	/** 기본값. 실제로 쓰는 값은 config/sanupcraft.json. */
