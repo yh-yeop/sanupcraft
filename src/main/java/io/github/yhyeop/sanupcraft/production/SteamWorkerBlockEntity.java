@@ -167,7 +167,7 @@ public abstract class SteamWorkerBlockEntity extends BaseContainerBlockEntity im
 	public void preRemoveSideEffects(BlockPos pos, BlockState state) {
 		super.preRemoveSideEffects(pos, state);
 		if (level instanceof ServerLevel serverLevel) {
-			Containers.dropContents(serverLevel, pos, this);
+			// 칸 내용물은 super(바닐라)가 떨군다
 			for (ItemStack stack : pending) {
 				Containers.dropItemStack(serverLevel, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stack);
 			}

@@ -226,7 +226,18 @@ public class GoalBoardBlockEntity extends BlockEntity implements Container {
 
 	@Override
 	public void setItem(int slot, ItemStack stack) {
-		insert(null, stack);
+		// 깔때기 · 벨트 · 일꾼은 스택째 넘긴다 (26.3 tryMoveInItem): 남는 몫은 판 위에 떨군다
+		int accepted = insert(null, stack);
+		int rest = stack.getCount() - accepted;
+		if (rest > 0 && accepted > 0 && isGoalItem(stack) && progress < goalCount) {
+			// 한 목표를 채우고 같은 아이템의 다음 목표(/goal set 연속 지정)로 넘어간 경우
+			int more = insert(null, stack.copyWithCount(rest));
+			rest -= more;
+		}
+		if (rest > 0 && level != null) {
+			Containers.dropItemStack(level, worldPosition.getX() + 0.5, worldPosition.getY() + 1.0, worldPosition.getZ() + 0.5,
+					stack.copyWithCount(rest));
+		}
 	}
 
 	@Override

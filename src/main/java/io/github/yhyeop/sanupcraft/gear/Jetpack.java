@@ -75,7 +75,7 @@ public final class Jetpack {
 
 	/**
 	 * 서버가 패킷 한 개를 처리한다. 떴으면 true. 시험이 직접 부른다.
-	 * 창작 모드는 증기를 안 쓴다.
+	 * 창작 모드는 증기를 덜지 않는다 (그래도 1 이상 들어 있어야 뜬다).
 	 */
 	public static boolean thrust(ServerPlayer player) {
 		ItemStack pack = worn(player);

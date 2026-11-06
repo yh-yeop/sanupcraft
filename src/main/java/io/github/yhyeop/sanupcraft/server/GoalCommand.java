@@ -1,6 +1,5 @@
 package io.github.yhyeop.sanupcraft.server;
 
-import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
@@ -33,10 +32,6 @@ final class GoalCommand {
 						.then(Commands.argument("item", ItemArgument.item(context))
 								.then(Commands.argument("count", IntegerArgumentType.integer(1, 1_000_000))
 										.executes(GoalCommand::set))));
-	}
-
-	static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext context) {
-		dispatcher.register(Commands.literal("sanupcraft").then(node(context)));
 	}
 
 	private static int set(CommandContext<CommandSourceStack> c) throws CommandSyntaxException {

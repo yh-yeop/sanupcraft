@@ -96,7 +96,7 @@ public final class PlaytestCommand {
 		}
 
 		public String id() {
-			return name().toLowerCase();
+			return name().toLowerCase(java.util.Locale.ROOT);
 		}
 	}
 

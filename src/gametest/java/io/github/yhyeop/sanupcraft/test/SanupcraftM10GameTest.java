@@ -341,6 +341,27 @@ public class SanupcraftM10GameTest {
 		});
 	}
 
+	/** 깔때기 · 벨트가 스택째 넘겨도(26.3 tryMoveInItem) 남는 몫은 사라지지 않고 판 위에 떨어진다. */
+	@GameTest
+	public void goalBoardDropsOverflow(GameTestHelper helper) {
+		BlockPos pos = new BlockPos(3, 1, 3);
+		helper.setBlock(pos, ModServer.GOAL_BOARD);
+		GoalBoardBlockEntity board = helper.getBlockEntity(pos, GoalBoardBlockEntity.class);
+		board.setGoal(Sanupcraft.id("steel_ingot"), 10);
+		HopperBlockEntity.addItem(null, board, new ItemStack(ModItems.STEEL_INGOT, 64), Direction.UP);
+		helper.assertValueEqual(board.completedGoals(), 1, "남은 목표만큼 채워 완료");
+		int dropped = 0;
+		BlockPos abs = helper.absolutePos(pos);
+		for (net.minecraft.world.entity.item.ItemEntity entity : helper.getLevel().getEntitiesOfClass(net.minecraft.world.entity.item.ItemEntity.class,
+				new net.minecraft.world.phys.AABB(abs).inflate(3.0))) {
+			if (entity.getItem().is(ModItems.STEEL_INGOT)) {
+				dropped += entity.getItem().getCount();
+			}
+		}
+		helper.assertValueEqual(dropped, 54, "초과분이 판 둘레에 떨어짐");
+		helper.succeed();
+	}
+
 	/** 저장했다 다시 읽어도 목표 · 진행도 · 기여자가 그대로. */
 	@GameTest
 	public void goalBoardKeepsProgressAcrossSave(GameTestHelper helper) {

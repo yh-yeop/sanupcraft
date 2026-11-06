@@ -46,7 +46,6 @@ public class TreeFellerBlockEntity extends SteamWorkerBlockEntity {
 	private final ArrayDeque<BlockPos> queue = new ArrayDeque<>();
 	private @Nullable BlockPos replantAt;
 	private @Nullable Block replantLog;
-	private int felled;
 
 	public TreeFellerBlockEntity(BlockPos pos, BlockState state) {
 		super(ModProduction.TREE_FELLER_BLOCK_ENTITY, pos, state);
@@ -122,7 +121,6 @@ public class TreeFellerBlockEntity extends SteamWorkerBlockEntity {
 			}
 			level.levelEvent(LevelEvent.PARTICLES_DESTROY_BLOCK, target, Block.getId(state));
 			level.removeBlock(target, false);
-			felled++;
 			setChanged();
 			return true;
 		}
@@ -169,16 +167,6 @@ public class TreeFellerBlockEntity extends SteamWorkerBlockEntity {
 		return stack.is(ItemTags.SAPLINGS);
 	}
 
-	/** 벤 블록 수 (저장). */
-	public int felled() {
-		return felled;
-	}
-
-	/** 아직 안 벤 블록 수. */
-	public int queued() {
-		return queue.size();
-	}
-
 	@Override
 	public int steamCapacity() {
 		return STEAM_CAPACITY;
@@ -197,12 +185,18 @@ public class TreeFellerBlockEntity extends SteamWorkerBlockEntity {
 	@Override
 	protected void loadAdditional(net.minecraft.world.level.storage.ValueInput input) {
 		super.loadAdditional(input);
-		felled = input.getIntOr("felled", 0);
+		// 심을 자리 · 원목 종류: 원목을 다 벤 뒤 다시 불러와도 묘목을 심는다
+		replantAt = input.read("replant_at", BlockPos.CODEC).orElse(null);
+		replantLog = input.read("replant_log", Identifier.CODEC)
+				.flatMap(BuiltInRegistries.BLOCK::getOptional).orElse(null);
 	}
 
 	@Override
 	protected void saveAdditional(net.minecraft.world.level.storage.ValueOutput output) {
 		super.saveAdditional(output);
-		output.putInt("felled", felled);
+		output.storeNullable("replant_at", BlockPos.CODEC, replantAt);
+		if (replantLog != null) {
+			output.store("replant_log", Identifier.CODEC, BuiltInRegistries.BLOCK.getKey(replantLog));
+		}
 	}
 }

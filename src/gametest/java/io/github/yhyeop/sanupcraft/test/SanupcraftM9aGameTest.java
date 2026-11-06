@@ -246,6 +246,26 @@ public class SanupcraftM9aGameTest {
 		});
 	}
 
+	/** 베기 시작한 뒤 저장했다 다시 읽어도 묘목을 심을 자리 · 원목 종류가 남는다 (원목을 다 벤 뒤 불러와도 심는다). */
+	@GameTest
+	public void treeFellerKeepsReplantSpot(GameTestHelper helper) {
+		buildTree(helper, 4, 3);
+		BlockPos pos = new BlockPos(2, 1, 3);
+		helper.setBlock(pos, ModProduction.TREE_FELLER.defaultBlockState().setValue(ProductionBlock.FACING, Direction.EAST));
+		TreeFellerBlockEntity feller = helper.getBlockEntity(pos, TreeFellerBlockEntity.class);
+		helper.assertTrue(feller.startFelling(helper.getLevel(), helper.absolutePos(pos)), "나무를 못 찾음");
+		net.minecraft.nbt.CompoundTag tag = feller.saveWithFullMetadata(helper.getLevel().registryAccess());
+		helper.assertTrue(tag.contains("replant_at"), "심을 자리를 저장 안 함");
+		helper.assertTrue(tag.contains("replant_log"), "원목 종류를 저장 안 함");
+		net.minecraft.world.level.block.entity.BlockEntity loaded = net.minecraft.world.level.block.entity.BlockEntity.loadStatic(
+				helper.absolutePos(pos), feller.getBlockState(), tag, helper.getLevel().registryAccess());
+		helper.assertTrue(loaded instanceof TreeFellerBlockEntity, "다시 읽은 블록 엔티티 종류");
+		net.minecraft.nbt.CompoundTag again = loaded.saveWithFullMetadata(helper.getLevel().registryAccess());
+		helper.assertValueEqual(again.get("replant_at"), tag.get("replant_at"), "읽은 심을 자리");
+		helper.assertValueEqual(again.get("replant_log"), tag.get("replant_log"), "읽은 원목 종류");
+		helper.succeed();
+	}
+
 	/** 자연 잎이 안 붙은 원목 더미(통나무집 같은)는 나무가 아니라서 베지 않는다. */
 	@GameTest
 	public void treeFellerIgnoresLogPiles(GameTestHelper helper) {
@@ -273,7 +293,7 @@ public class SanupcraftM9aGameTest {
 		helper.assertTrue(tree.isTree(), "나무로 못 봄");
 		helper.assertValueEqual(tree.logs().size(), 4, "원목 수 (대각선 가지 포함)");
 		helper.assertTrue(tree.leaves().size() >= 10, "잎이 모자람: " + tree.leaves().size());
-		helper.assertTrue(tree.size() <= TreeFelling.MAX_BLOCKS, "한도 초과");
+		helper.assertTrue(tree.logs().size() + tree.leaves().size() <= TreeFelling.MAX_BLOCKS, "한도 초과");
 		helper.assertTrue(tree.fellOrder().get(0).getY() >= tree.fellOrder().get(1).getY(), "위쪽 원목부터가 아님");
 		helper.assertValueEqual(tree.base(helper.absolutePos(base)).getY(), helper.absolutePos(base).getY(), "맨 아래 원목");
 		helper.succeed();
