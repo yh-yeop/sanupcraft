@@ -97,7 +97,9 @@ public final class PlaytestCommand {
 		// 확장 3 C2 새 몹 · 정예
 		MOBS("새 몹 · 정예: 녹슨 자동인형 · 잿불 정령 · 공허 그림자 (생성 알 · 정예 알 · 막는 장비)", null, PlaytestCommand::kitMobs),
 		// 확장 3 C4 보스 2페이즈 · 전용 장비
-		BOSSGEAR("보스 전용 장비 · 2페이즈: 녹슨 망치 · 화구 방패 · 공허 지팡이 · 소환석 셋 · 제단", null, PlaytestCommand::kitBossGear);
+		BOSSGEAR("보스 전용 장비 · 2페이즈: 녹슨 망치 · 화구 방패 · 공허 지팡이 · 소환석 셋 · 제단", null, PlaytestCommand::kitBossGear),
+		// 확장 3 G3 · G4 장비 모듈 · 수리 · 계승
+		MODULES("장비 모듈 · 수리: 장비 작업대 · 모듈 16종 · 증기 수리대 · 계승 (모듈 낀 강철 투구 → 내열)", null, PlaytestCommand::kitModules);
 
 		final String description;
 		final ResourceKey<Level> dimension;
@@ -794,6 +796,53 @@ public final class PlaytestCommand {
 		give(p, ModBoss.WARDEN_SUMMONER, 2);
 		give(p, io.github.yhyeop.sanupcraft.end.ModEnd.COLOSSUS_SUMMONER, 2);
 		give(p, ModBoss.GUARDIAN_ALTAR.asItem(), 2);
+		food(p);
+	}
+
+	/**
+	 * 확장 3 G3 · G4: 장비 작업대 · 증기 수리대(보일러 설비째), 모듈 전부 하나씩, 칸 수가 다른 장비(청동 0 · 강철 1 · 크롬강 2 · 네더라이트 3),
+	 * 리벳총 · 리벳 · 증기 통, 닳은 마법 부여 강철 검 + 강철 주괴, 계승 시험용 모듈 · 마법 부여 · 이름 붙은 강철 투구 + 내열 재료, 철광석 · 좀비 알.
+	 */
+	private static void kitModules(ServerPlayer p) {
+		give(p, io.github.yhyeop.sanupcraft.module.ModModules.GEAR_WORKBENCH.asItem(), 1);
+		give(p, io.github.yhyeop.sanupcraft.module.ModModules.STEAM_REPAIR_STATION.asItem(), 1);
+		give(p, ModPower.BOILER.asItem(), 1);
+		give(p, ModPower.STEAM_PIPE.asItem(), 8);
+		give(p, ModPower.STEAM_GAUGE.asItem(), 1);
+		give(p, Items.WATER_BUCKET, 2);
+		give(p, Items.COAL, 32);
+		give(p, io.github.yhyeop.sanupcraft.module.ModModules.MODULE_FRAME, 4);
+		for (io.github.yhyeop.sanupcraft.module.GearModule module : io.github.yhyeop.sanupcraft.module.GearModule.values()) {
+			give(p, module.item(), 1);
+		}
+		give(p, io.github.yhyeop.sanupcraft.gear.BronzeGear.BRONZE_PICKAXE, 1);
+		give(p, Items.DIAMOND_PICKAXE, 1);
+		give(p, Items.NETHERITE_PICKAXE, 1);
+		give(p, io.github.yhyeop.sanupcraft.gear.ChromeSteelGear.CHROME_STEEL_SWORD, 1);
+		give(p, io.github.yhyeop.sanupcraft.gear.ChromeSteelGear.CHROME_STEEL_CHESTPLATE, 1);
+		give(p, SteamGear.RIVET_GUN, 1);
+		give(p, SteamGear.RIVET, 64);
+		give(p, charged(SteamGear.STEAM_CANISTER));
+		// 수리 시험: 반쯤 닳은 날카로움 III 강철 검 + 수리 재료
+		ItemStack sword = new ItemStack(SteelGear.STEEL_SWORD);
+		sword.enchant(p.level().registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT)
+				.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.SHARPNESS), 3);
+		sword.setDamageValue(sword.getMaxDamage() / 2);
+		give(p, sword);
+		give(p, ModItems.STEEL_INGOT, 8);
+		// 계승 시험: 녹 방지 모듈 · 보호 II · 이름이 붙은 강철 투구 → 기계 부품 4 + 핵 조각 1로 내열 투구
+		ItemStack helmet = new ItemStack(SteelGear.STEEL_HELMET);
+		helmet.enchant(p.level().registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT)
+				.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.PROTECTION), 2);
+		helmet.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, Component.literal("모듈 시험 투구"));
+		io.github.yhyeop.sanupcraft.module.GearModules.install(helmet, io.github.yhyeop.sanupcraft.module.GearModule.RUST_PROOF);
+		give(p, helmet);
+		give(p, ModItems.GEAR_PART, 8);
+		give(p, ModItems.CORE_SHARD, 2);
+		give(p, Items.CRAFTING_TABLE, 1);
+		give(p, Items.IRON_ORE, 16);
+		give(p, Items.STONE, 64);
+		give(p, Items.ZOMBIE_SPAWN_EGG, 4);
 		food(p);
 	}
 }

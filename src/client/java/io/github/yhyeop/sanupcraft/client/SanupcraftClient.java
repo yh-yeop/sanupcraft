@@ -47,6 +47,7 @@ public class SanupcraftClient implements ClientModInitializer {
 		io.github.yhyeop.sanupcraft.client.machine.MachineLookClient.init(); // 확장 M15 R4: 기계 움직이는 부품
 		io.github.yhyeop.sanupcraft.client.mob.MobModelLayers.init(); // 확장 3 C2 · R7 새 몹 전용 모델
 		io.github.yhyeop.sanupcraft.client.bossgear.C4Client.init(); // 확장 3 C4 보스 2페이즈 · 전용 장비
+		io.github.yhyeop.sanupcraft.client.module.ModuleClient.init(); // 확장 3 G3 장비 작업대 화면 · 모듈 툴팁
 	}
 
 	/**

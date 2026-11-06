@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "P": "sanupcraft:steel_plate",
+    "R": "minecraft:redstone",
+    "G": "sanupcraft:gear_part"
+  },
+  "pattern": [
+    "PRP",
+    "RGR",
+    "PRP"
+  ],
+  "result": {
+    "id": "sanupcraft:module_frame",
+    "count": 2
+  }
+}

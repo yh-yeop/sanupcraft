@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "sanupcraft:module_frame",
+    "sanupcraft:rivet",
+    "sanupcraft:rivet",
+    "sanupcraft:rivet",
+    "minecraft:gunpowder"
+  ],
+  "result": {
+    "id": "sanupcraft:module_scatter"
+  }
+}

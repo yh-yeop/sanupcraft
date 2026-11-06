@@ -48,7 +48,13 @@ public final class AreaMining {
 		});
 	}
 
+	/** 3x3으로 캐는가: 해머 · 굴삭 삽, 또는 범위 모듈(확장 3 G3)을 끼운 곡괭이 · 삽 · 도끼. */
 	public static boolean isAreaTool(ItemStack stack) {
+		return isAreaToolItem(stack) || io.github.yhyeop.sanupcraft.module.GearModules.has(stack, io.github.yhyeop.sanupcraft.module.GearModule.AREA);
+	}
+
+	/** 원래 3x3인 도구 (해머 · 굴삭 삽). */
+	public static boolean isAreaToolItem(ItemStack stack) {
 		return stack.is(SteelGear.STEEL_HAMMER) || stack.is(SteelGear.STEEL_EXCAVATOR)
 				|| stack.is(ChromeSteelGear.CHROME_STEEL_HAMMER) || stack.is(ChromeSteelGear.CHROME_STEEL_EXCAVATOR); // 확장 3 G2
 	}

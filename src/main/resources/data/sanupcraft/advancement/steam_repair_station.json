@@ -1,0 +1,32 @@
+{
+  "parent": "sanupcraft:gear_workbench",
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:steam_repair_station"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:steam_repair_station"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.steam_repair_station.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.steam_repair_station.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ]
+}

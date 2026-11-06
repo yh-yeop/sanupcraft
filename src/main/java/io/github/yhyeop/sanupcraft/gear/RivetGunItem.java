@@ -25,6 +25,8 @@ public class RivetGunItem extends Item {
 	public static final int STEAM_COST = 20;
 	public static final float DAMAGE = 6.0F;
 	public static final int COOLDOWN_TICKS = 10;
+	/** 산탄 모듈: 발 사이 각도 (도). */
+	public static final float SCATTER_SPREAD = 8.0F;
 
 	/** 쏴 본 결과. */
 	public enum Result {
@@ -68,15 +70,39 @@ public class RivetGunItem extends Item {
 			SteamCharge.drain(player, config.rivetGunSteam);
 			rivet.shrink(1);
 		}
-		RivetProjectile projectile = new RivetProjectile(level, player);
-		projectile.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, RivetProjectile.SPEED, 0.4F);
-		level.addFreshEntity(projectile);
+		// 확장 3 G3 산탄 모듈: 리벳 1개로 여러 발을 부채꼴로 (한 발 피해는 줄고, 한 몹에 여러 발이 다 들어간다)
+		int pellets = pellets(gun);
+		float damage = (float) config.rivetGunDamage * (pellets > 1 ? config.moduleScatterDamagePercent / 100.0F : 1.0F);
+		for (int i = 0; i < pellets; i++) {
+			RivetProjectile projectile = new RivetProjectile(level, player);
+			float yaw = player.getYRot() + (i - (pellets - 1) / 2.0F) * SCATTER_SPREAD;
+			projectile.shootFromRotation(player, player.getXRot(), yaw, 0.0F, RivetProjectile.SPEED, 0.4F);
+			if (pellets > 1) {
+				projectile.setPellet(damage);
+			}
+			level.addFreshEntity(projectile);
+		}
 		Vec3 muzzle = player.getEyePosition().add(player.getLookAngle().scale(0.8));
 		level.sendParticles(ParticleTypes.CLOUD, muzzle.x, muzzle.y - 0.1, muzzle.z, 3, 0.05, 0.05, 0.05, 0.02);
 		level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.CROSSBOW_SHOOT, SoundSource.PLAYERS, 0.8F, 1.6F);
 		level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 0.4F, 1.8F);
-		player.getCooldowns().addCooldown(gun, config.rivetGunCooldown);
+		player.getCooldowns().addCooldown(gun, cooldownTicks(gun));
 		return Result.FIRED;
+	}
+
+	/** 한 발 쏜 뒤 쿨다운 (틱). 연발 모듈(G3)이면 설정 비율만큼 (기본 반). */
+	public static int cooldownTicks(ItemStack gun) {
+		SanupcraftConfig config = SanupcraftConfig.current();
+		if (io.github.yhyeop.sanupcraft.module.GearModules.has(gun, io.github.yhyeop.sanupcraft.module.GearModule.RAPID_FIRE)) {
+			return Math.max(1, config.rivetGunCooldown * config.moduleRapidCooldownPercent / 100);
+		}
+		return config.rivetGunCooldown;
+	}
+
+	/** 한 번에 나가는 리벳 수. 산탄 모듈(G3)이면 설정 값 (기본 3). */
+	public static int pellets(ItemStack gun) {
+		return io.github.yhyeop.sanupcraft.module.GearModules.has(gun, io.github.yhyeop.sanupcraft.module.GearModule.SCATTER)
+				? SanupcraftConfig.current().moduleScatterPellets : 1;
 	}
 
 	/** 인벤토리의 첫 리벳 묶음. 없으면 빈 아이템. */

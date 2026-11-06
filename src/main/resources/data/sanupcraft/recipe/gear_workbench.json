@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "P": "sanupcraft:steel_plate",
+    "G": "sanupcraft:gear_part",
+    "C": "minecraft:crafting_table",
+    "I": "sanupcraft:steel_ingot"
+  },
+  "pattern": [
+    "PPP",
+    "GCG",
+    "I I"
+  ],
+  "result": {
+    "id": "sanupcraft:gear_workbench"
+  }
+}

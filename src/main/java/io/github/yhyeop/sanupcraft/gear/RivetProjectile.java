@@ -24,12 +24,24 @@ public class RivetProjectile extends ThrowableItemProjectile {
 	/** 쏘는 속도 (틱당 칸). 화살(최대 3)보다 조금 빠르다. */
 	public static final float SPEED = 3.5F;
 
+	/** 산탄 한 발의 피해 (확장 3 G3 산탄 모듈). 0보다 작으면 보통 리벳 (설정 값). */
+	private float pelletDamage = -1.0F;
+
 	public RivetProjectile(EntityType<? extends RivetProjectile> type, Level level) {
 		super(type, level);
 	}
 
 	public RivetProjectile(Level level, LivingEntity owner) {
 		super(SteamGear.RIVET_ENTITY, owner, level, new ItemStack(SteamGear.RIVET));
+	}
+
+	/** 산탄 한 발로: 피해를 정하고, 맞을 때 무적 시간을 무시해 같은 몹에 여러 발이 다 들어가게. */
+	public void setPellet(float damage) {
+		pelletDamage = damage;
+	}
+
+	public float damage() {
+		return pelletDamage >= 0.0F ? pelletDamage : (float) SanupcraftConfig.current().rivetGunDamage;
 	}
 
 	@Override
@@ -55,7 +67,13 @@ public class RivetProjectile extends ThrowableItemProjectile {
 		super.onHitEntity(hitResult);
 		Entity target = hitResult.getEntity();
 		if (level() instanceof ServerLevel serverLevel) {
-			target.hurtServer(serverLevel, damageSources().thrown(this, getOwner()), (float) SanupcraftConfig.current().rivetGunDamage);
+			if (pelletDamage >= 0.0F) {
+				target.setInvulnerableTime(0);
+				if (target instanceof LivingEntity living) {
+					living.damageCooldownTime = 0;
+				}
+			}
+			target.hurtServer(serverLevel, damageSources().thrown(this, getOwner()), damage());
 		}
 	}
 

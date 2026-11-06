@@ -1,0 +1,10 @@
+{
+  "type": "sanupcraft:precision",
+  "ingredient": "sanupcraft:module_frame",
+  "ingredient2": "sanupcraft:core_shard",
+  "count2": 2,
+  "result": {
+    "id": "sanupcraft:module_heat_proof"
+  },
+  "time": 400
+}

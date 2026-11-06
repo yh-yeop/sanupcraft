@@ -42,7 +42,7 @@ import io.github.yhyeop.sanupcraft.gear.SteelGear;
 public final class ModBossGear {
 	/**
 	 * 보스 장비의 모듈 칸 수 (설계 C4: 셋 다 2).
-	 * TODO(G3): 장비 모듈 시스템이 생기면 이 값을 모듈 칸으로 읽는다 ({@link #moduleSlots}). 지금은 칸만 정해 두고 끼우는 곳은 없다.
+	 * 장비 모듈(G3) 칸으로 {@code init}에서 {@link io.github.yhyeop.sanupcraft.module.ModuleSlots}에 올린다.
 	 */
 	public static final int MODULE_SLOTS = 2;
 
@@ -101,6 +101,10 @@ public final class ModBossGear {
 	}
 
 	public static void init() {
+		// 장비 모듈(G3): 셋 다 칸 2. 망치 · 지팡이는 무기, 방패는 무기 모듈(넉백)
+		io.github.yhyeop.sanupcraft.module.ModuleSlots.register(RUSTY_HAMMER, MODULE_SLOTS, io.github.yhyeop.sanupcraft.module.GearModule.Kind.WEAPON);
+		io.github.yhyeop.sanupcraft.module.ModuleSlots.register(FURNACE_SHIELD, MODULE_SLOTS, io.github.yhyeop.sanupcraft.module.GearModule.Kind.WEAPON);
+		io.github.yhyeop.sanupcraft.module.ModuleSlots.register(VOID_STAFF, MODULE_SLOTS, io.github.yhyeop.sanupcraft.module.GearModule.Kind.WEAPON);
 		ServerLivingEntityEvents.AFTER_DAMAGE.register(FurnaceShieldItem::afterDamage);
 	}
 
@@ -109,7 +113,7 @@ public final class ModBossGear {
 		return stack.is(RUSTY_HAMMER) || stack.is(FURNACE_SHIELD) || stack.is(VOID_STAFF);
 	}
 
-	/** 이 장비의 모듈 칸 (보스 장비 = {@link #MODULE_SLOTS}, 아니면 0). TODO(G3): 모듈 시스템이 다른 장비 칸과 함께 읽는다. */
+	/** 이 장비의 모듈 칸 (보스 장비 = {@link #MODULE_SLOTS}, 아니면 0). 모듈 시스템(G3)은 ModuleSlots 표를 본다. */
 	public static int moduleSlots(ItemStack stack) {
 		return isBossGear(stack) ? MODULE_SLOTS : 0;
 	}

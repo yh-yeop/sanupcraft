@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "sanupcraft:module_frame",
+    "minecraft:piston",
+    "sanupcraft:steam_pipe",
+    "minecraft:slime_ball"
+  ],
+  "result": {
+    "id": "sanupcraft:module_steam_jump"
+  }
+}

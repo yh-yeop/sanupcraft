@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "sanupcraft:module_frame",
+    "minecraft:golden_carrot",
+    "minecraft:glass"
+  ],
+  "result": {
+    "id": "sanupcraft:module_night_vision"
+  }
+}

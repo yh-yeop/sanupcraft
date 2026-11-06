@@ -5274,6 +5274,134 @@ def main_c4(made):
     made.append(save(c4_shield(), "item/furnace_shield.png"))
 
 
+# ---------- 확장 3 G3 · G4: 모듈 아이콘 · 장비 작업대 · 증기 수리대 ----------
+# 모듈 칩: 종류마다 테 색 (갑옷 파랑 · 도구 주황 · 무기 빨강 · 리벳총 놋쇠), 가운데 5x5 그림
+G3_KIND = {"armor": ("#2f5f9a", "#6aa6e8"), "tool": ("#a8561e", "#f0a050"), "weapon": ("#8a1f22", "#e05050"), "gun": ("#7a5a20", "#e0b860"),
+           "frame": ("#3a4048", "#8f99a5")}
+G3_GLYPH = {
+    "magnet": ("#d23c3c", ["X...X", "X...X", "X...X", "X...X", ".XXX."]),
+    "night_vision": ("#7ef07a", [".XXX.", "X.X.X", "XXXXX", "X.X.X", ".XXX."]),
+    "gas_filter": ("#c8d860", ["XXXXX", "X.X.X", "XXXXX", "X.X.X", "XXXXX"]),
+    "rust_proof": ("#d8e8ff", [".XXX.", "XX.XX", "X...X", "XX.XX", ".XXX."]),
+    "heat_proof": ("#ff8a2a", ["..X..", ".XX..", ".XXX.", "XXXXX", ".XXX."]),
+    "void_proof": ("#d23cf0", [".XXX.", "X...X", "X.X.X", "X...X", ".XXX."]),
+    "steam_jump": ("#e8f4ff", ["..X..", ".XXX.", "X.X.X", "..X..", "..X.."]),
+    "area": ("#e8e8e8", ["XXXXX", "X.X.X", "XXXXX", "X.X.X", "XXXXX"]),
+    "efficiency": ("#ffe060", ["...XX", "..XX.", ".XXX.", ".XX..", "XX..."]),
+    "auto_smelt": ("#ff6a20", ["X.X.X", ".X.X.", "XXXXX", "X...X", "XXXXX"]),
+    "luck": ("#60f0a0", [".X.X.", "XXXXX", ".XXX.", "..X..", "..X.."]),
+    "silk_touch": ("#f0e8ff", ["XXXXX", "X...X", "X.X.X", "X...X", "XXXXX"]),
+    "knockback": ("#ffd0a0", ["X....", "XX...", "XXXXX", "XX...", "X...."]),
+    "rapid_fire": ("#ffe8a0", ["X.X..", ".X.X.", "..X.X", ".X.X.", "X.X.."]),
+    "scatter": ("#ffe8a0", ["X...X", ".X.X.", "..X..", ".X.X.", "X...X"]),
+}
+G3_KIND_OF = {"magnet": "armor", "night_vision": "armor", "gas_filter": "armor", "rust_proof": "armor", "heat_proof": "armor",
+              "void_proof": "armor", "steam_jump": "armor", "area": "tool", "efficiency": "tool", "auto_smelt": "tool", "luck": "tool",
+              "silk_touch": "tool", "knockback": "weapon", "rapid_fire": "gun", "scatter": "gun"}
+
+
+def g3_chip(kind, glyph=None):
+    im = Image.new("RGBA", (16, 16))
+    dark, light = G3_KIND[kind]
+    # 칩 몸통 (강철) + 테
+    for y in range(3, 13):
+        for x in range(2, 14):
+            edge = x in (2, 13) or y in (3, 12)
+            _put(im, [(x, y)], dark if edge else ("c" if (x + y) % 5 else "b"))
+    for x in range(3, 13):
+        _put(im, [(x, 4)], light)
+    # 다리 (위아래 핀)
+    for x in (4, 6, 9, 11):
+        _put(im, [(x, 2), (x, 13)], "#b8893a")
+    # 가운데 창
+    for y in range(5, 12):
+        for x in range(5, 12):
+            _put(im, [(x, y)], "a")
+    if glyph:
+        color, rows = glyph
+        for j, row in enumerate(rows):
+            for i, ch in enumerate(row):
+                if ch == "X":
+                    _put(im, [(6 + i, 6 + j)], color)
+    else:
+        for y in range(6, 11):
+            for x in range(6, 11):
+                _put(im, [(x, y)], "m" if (x + y) % 2 else "n")
+    return im
+
+
+def g3_workbench(part):
+    im = panel(seed={"top": 61, "side": 62, "bottom": 63}[part])
+    if part == "top":
+        # 작업판 (나무) + 가운데 장비 자리 + 모듈 칸 셋
+        for y in range(2, 14):
+            for x in range(2, 14):
+                _put(im, [(x, y)], "x" if (x + y) % 4 else "w")
+        for y in range(4, 9):
+            for x in range(4, 9):
+                _put(im, [(x, y)], "a")
+        _put(im, [(5, 5), (6, 6), (7, 7)], "d")
+        for i, x in enumerate((4, 7, 10)):
+            for dy in range(10, 13):
+                for dx in range(x, x + 2):
+                    _put(im, [(dx, dy)], ["#6aa6e8", "#f0a050", "#e05050"][i])
+    elif part == "side":
+        for x in range(1, 15):
+            _put(im, [(x, 3)], "#b8893a")
+            _put(im, [(x, 4)], "w")
+        # 서랍 둘
+        for x0 in (2, 9):
+            for y in range(7, 12):
+                for x in range(x0, x0 + 5):
+                    _put(im, [(x, y)], "b" if y in (7, 11) or x in (x0, x0 + 4) else "c")
+            _put(im, [(x0 + 2, 9)], "#e8c46e")
+    else:
+        for x in range(4, 12):
+            _put(im, [(x, 7), (x, 8)], "a")
+    return im
+
+
+def g3_repair_station(part):
+    im = panel(seed={"top": 64, "side": 65, "bottom": 66}[part])
+    if part == "top":
+        # 모루 모양 받침 + 증기 구멍
+        for y in range(4, 8):
+            for x in range(2, 14):
+                _put(im, [(x, y)], "m" if y == 4 else "n")
+        for y in range(8, 12):
+            for x in range(5, 11):
+                _put(im, [(x, y)], "m")
+        _put(im, [(3, 5), (12, 5)], "o")
+        for x in (3, 7, 11):
+            _put(im, [(x, 13)], "#a9cff2")
+            _put(im, [(x, 12)], "#eef7ff")
+    elif part == "side":
+        # 구리 관 · 압력계
+        for x in range(1, 15):
+            _put(im, [(x, 10)], "s")
+            _put(im, [(x, 11)], "t")
+        for y in range(3, 8):
+            for x in range(5, 10):
+                d = (x - 7) ** 2 + (y - 5) ** 2
+                if d <= 5:
+                    _put(im, [(x, y)], "e" if d <= 2 else "#b8893a")
+        _put(im, [(7, 5), (8, 4)], "R")
+    else:
+        for x in range(4, 12):
+            _put(im, [(x, 7), (x, 8)], "s")
+    return im
+
+
+def main_g3(made):
+    """확장 3 G3 · G4: 모듈 15종 + 모듈 틀, 장비 작업대 · 증기 수리대."""
+    made.append(save(g3_chip("frame"), "item/module_frame.png"))
+    for name, glyph in G3_GLYPH.items():
+        made.append(save(g3_chip(G3_KIND_OF[name], glyph), f"item/module_{name}.png"))
+    for part in ("top", "side", "bottom"):
+        made.append(save(g3_workbench(part), f"block/gear_workbench_{part}.png"))
+        made.append(save(g3_repair_station(part), f"block/steam_repair_station_{part}.png"))
+
+
 def save(im, rel, scale=1):
     path = os.path.join(OUT, *rel.split("/"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -5328,6 +5456,7 @@ def main():
     main_b1(made)  # 확장 3 G1 · G2 · R1 합금 장비 · 갑옷 착용 모습
     main_ex3_c2(made)
     main_c4(made)  # 확장 3 C4 보스 2페이즈 · 전용 장비
+    main_g3(made)  # 확장 3 G3 · G4 장비 모듈 · 작업대 · 수리대
 
     if "--sheet" in sys.argv:
         tiles = [Image.open(p) for p in made]

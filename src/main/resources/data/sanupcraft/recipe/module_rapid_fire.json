@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "sanupcraft:module_frame",
+    "sanupcraft:gear_part",
+    "sanupcraft:gear_part",
+    "minecraft:redstone"
+  ],
+  "result": {
+    "id": "sanupcraft:module_rapid_fire"
+  }
+}

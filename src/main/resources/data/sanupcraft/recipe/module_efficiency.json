@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "sanupcraft:module_frame",
+    "minecraft:redstone",
+    "minecraft:redstone",
+    "minecraft:gold_ingot"
+  ],
+  "result": {
+    "id": "sanupcraft:module_efficiency"
+  }
+}
