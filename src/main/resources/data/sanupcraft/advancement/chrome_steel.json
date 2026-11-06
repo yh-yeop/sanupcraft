@@ -1,0 +1,32 @@
+{
+  "parent": "sanupcraft:steel",
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:chrome_steel_ingot"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:chrome_steel_chestplate"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.chrome_steel.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.chrome_steel.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ]
+}

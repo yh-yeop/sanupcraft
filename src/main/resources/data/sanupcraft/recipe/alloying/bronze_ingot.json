@@ -1,0 +1,11 @@
+{
+  "type": "sanupcraft:alloying",
+  "ingredient": "minecraft:copper_ingot",
+  "count": 3,
+  "ingredient2": "sanupcraft:aluminium_ingot",
+  "result": {
+    "id": "sanupcraft:bronze_ingot",
+    "count": 4
+  },
+  "time": 200
+}

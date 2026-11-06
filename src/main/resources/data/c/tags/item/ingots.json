@@ -1,6 +1,8 @@
 {
   "values": [
     "#c:ingots/chromium",
-    "#c:ingots/aluminum"
+    "#c:ingots/aluminum",
+    "#c:ingots/bronze",
+    "#c:ingots/chrome_steel"
   ]
 }

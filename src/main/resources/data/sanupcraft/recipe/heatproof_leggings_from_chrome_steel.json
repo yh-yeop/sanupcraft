@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "G": "sanupcraft:gear_part",
+    "S": "sanupcraft:core_shard",
+    "H": "sanupcraft:chrome_steel_leggings"
+  },
+  "pattern": [
+    "GSG",
+    "GHG",
+    "G G"
+  ],
+  "result": {
+    "id": "sanupcraft:heatproof_leggings"
+  }
+}

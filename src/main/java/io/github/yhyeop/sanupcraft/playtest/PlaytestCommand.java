@@ -85,7 +85,9 @@ public final class PlaytestCommand {
 		// M8 I4
 		WRENCH("렌치 · 면 설정: 돌리기 · 내용물째 집기 · 기계 면마다 넣기 / 빼기 / 막기", null, PlaytestCommand::kitWrench),
 		// 확장 3 D1 새 광석
-		ORES("새 광석: 크롬철석 · 보크사이트 · 원석 · 블록 · 가공 기계", null, PlaytestCommand::kitOres);
+		ORES("새 광석: 크롬철석 · 보크사이트 · 원석 · 블록 · 가공 기계", null, PlaytestCommand::kitOres),
+		// 확장 3 G1 · G2 합금 장비
+		ALLOYS("합금 장비: 청동 · 크롬강 주괴 (합금로 · 제작대), 청동 · 크롬강 장비, 강철 장비 올리기", null, PlaytestCommand::kitAlloys);
 
 		final String description;
 		final ResourceKey<Level> dimension;
@@ -647,6 +649,42 @@ public final class PlaytestCommand {
 		give(p, io.github.yhyeop.sanupcraft.logistics.ModLogistics.ORE_MARKER, 1);
 		give(p, Items.HOPPER, 4);
 		give(p, Items.CHEST, 2);
+		food(p);
+	}
+
+	/** 확장 3 G1 · G2: 합금 재료 · 합금로와 증기 설비, 청동 · 크롬강 한 벌씩, 올려 볼 마법 부여 강철 검 · 이름 붙은 강철 투구. */
+	private static void kitAlloys(ServerPlayer p) {
+		give(p, Items.COPPER_INGOT, 64);
+		give(p, io.github.yhyeop.sanupcraft.resource.ModResources.ALUMINIUM_INGOT, 24);
+		give(p, io.github.yhyeop.sanupcraft.resource.ModResources.CHROMIUM_INGOT, 64);
+		give(p, ModItems.STEEL_INGOT, 32);
+		give(p, ModMachines.ALLOY_SMELTER.asItem(), 1);
+		give(p, ModPower.BOILER.asItem(), 1);
+		give(p, ModPower.STEAM_PIPE.asItem(), 8);
+		give(p, Items.WATER_BUCKET, 2);
+		give(p, Items.COAL, 32);
+		give(p, Items.CRAFTING_TABLE, 1);
+		give(p, Items.STICK, 16);
+		for (Item item : new Item[] {io.github.yhyeop.sanupcraft.gear.BronzeGear.BRONZE_HELMET, io.github.yhyeop.sanupcraft.gear.BronzeGear.BRONZE_CHESTPLATE,
+				io.github.yhyeop.sanupcraft.gear.BronzeGear.BRONZE_LEGGINGS, io.github.yhyeop.sanupcraft.gear.BronzeGear.BRONZE_BOOTS,
+				io.github.yhyeop.sanupcraft.gear.BronzeGear.BRONZE_SWORD, io.github.yhyeop.sanupcraft.gear.BronzeGear.BRONZE_PICKAXE,
+				io.github.yhyeop.sanupcraft.gear.BronzeGear.BRONZE_AXE, io.github.yhyeop.sanupcraft.gear.BronzeGear.BRONZE_SHOVEL,
+				io.github.yhyeop.sanupcraft.gear.ChromeSteelGear.CHROME_STEEL_HELMET, io.github.yhyeop.sanupcraft.gear.ChromeSteelGear.CHROME_STEEL_CHESTPLATE,
+				io.github.yhyeop.sanupcraft.gear.ChromeSteelGear.CHROME_STEEL_LEGGINGS, io.github.yhyeop.sanupcraft.gear.ChromeSteelGear.CHROME_STEEL_BOOTS,
+				io.github.yhyeop.sanupcraft.gear.ChromeSteelGear.CHROME_STEEL_SWORD, io.github.yhyeop.sanupcraft.gear.ChromeSteelGear.CHROME_STEEL_HAMMER,
+				io.github.yhyeop.sanupcraft.gear.ChromeSteelGear.CHROME_STEEL_EXCAVATOR}) {
+			give(p, item, 1);
+		}
+		// 올리기 시험용: 날카로움 III 강철 검, 이름 붙은 강철 투구
+		ItemStack sword = new ItemStack(SteelGear.STEEL_SWORD);
+		sword.enchant(p.level().registryAccess().lookupOrThrow(net.minecraft.core.registries.Registries.ENCHANTMENT)
+				.getOrThrow(net.minecraft.world.item.enchantment.Enchantments.SHARPNESS), 3);
+		give(p, sword);
+		ItemStack helmet = new ItemStack(SteelGear.STEEL_HELMET);
+		helmet.set(net.minecraft.core.component.DataComponents.CUSTOM_NAME, Component.literal("아끼는 투구"));
+		give(p, helmet);
+		give(p, SteelGear.STEEL_HAMMER, 1);
+		give(p, Items.STONE, 64);
 		food(p);
 	}
 }

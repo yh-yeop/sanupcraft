@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:crafting_transmute",
+  "category": "equipment",
+  "input": "sanupcraft:steel_hammer",
+  "material": "sanupcraft:chromium_ingot",
+  "material_count": 6,
+  "result": {
+    "id": "sanupcraft:chrome_steel_hammer"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "G": "sanupcraft:gear_part",
+    "S": "sanupcraft:core_shard",
+    "H": "sanupcraft:chrome_steel_helmet"
+  },
+  "pattern": [
+    "GSG",
+    "GHG"
+  ],
+  "result": {
+    "id": "sanupcraft:heatproof_helmet"
+  }
+}

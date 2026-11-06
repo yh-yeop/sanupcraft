@@ -1,6 +1,8 @@
 {
   "values": [
     "sanupcraft:steel_chestplate",
-    "sanupcraft:heatproof_chestplate"
+    "sanupcraft:heatproof_chestplate",
+    "sanupcraft:bronze_chestplate",
+    "sanupcraft:chrome_steel_chestplate"
   ]
 }

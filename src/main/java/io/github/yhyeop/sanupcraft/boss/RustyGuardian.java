@@ -391,7 +391,8 @@ public class RustyGuardian extends PartyBossMonster {
 			return false;
 		}
 		if (source.getEntity() instanceof LivingEntity attacker && source.getDirectEntity() == attacker
-				&& (attacker.getMainHandItem().is(SteelGear.STEEL_SWORD) || attacker.getMainHandItem().is(HeatproofGear.HEATPROOF_SWORD))) {
+				&& (attacker.getMainHandItem().is(SteelGear.STEEL_SWORD) || attacker.getMainHandItem().is(HeatproofGear.HEATPROOF_SWORD)
+						|| attacker.getMainHandItem().is(io.github.yhyeop.sanupcraft.gear.ChromeSteelGear.CHROME_STEEL_SWORD))) {
 			damage *= STEEL_SWORD_MULTIPLIER;
 		}
 		boolean hurt = super.hurtServer(level, source, damage);
