@@ -5402,6 +5402,1001 @@ def main_g3(made):
         made.append(save(g3_repair_station(part), f"block/steam_repair_station_{part}.png"))
 
 
+# ---------- 확장 3 R2: 아이콘 다시 그리기 (갑옷 · 도구 · 무기, 세트별 색 · 무늬 통일) ----------
+# 모든 아이콘이 같은 붓으로: 바깥 1px 어두운 테, 빛은 왼쪽 위, 명암 5단 (o 테 · s 그늘 · b 바탕 · l 밝음 · h 반짝임).
+# 그림 글자: '.' 빈칸
+#   자동 명암(같은 글자끼리 한 덩어리, 위 · 왼쪽 가장자리 밝게, 아래 · 오른쪽 어둡게):
+#     '#' 세트 금속, '=' 세트 장식, '$' 놋쇠, '&' 구리, '~' 강철, '%' 녹, '@' 무쇠(어두운 쇠), '*' 흑요석
+#   그대로 칠하는 글자: 세트 팔레트 o s b l h t T g G r, v (속 그늘 = 세트 테 색), 아래 R2_FIXED
+#   손잡이 나무 w x y · 가죽 k K 는 테를 두르지 않는다 (가는 자루가 굵어 보이지 않게).
+# 세트 색: 청동 = 따뜻한 주황 갈색, 강철 = 차가운 회색, 크롬강 = 밝은 은청색 + 흰 반사 줄, 내열 = 어두운 쇠 + 주황 이음매, 공허 = 흑요석 보라 + 자홍 줄.
+R2_SETS = {
+    "bronze": dict(B1_SETS["bronze"], g="#e0a040", G="#ffe0a0"),
+    "steel": dict(B1_SETS["steel"]),
+    "chrome_steel": dict(B1_SETS["chrome_steel"]),
+    "heatproof": dict(B1_SETS["heatproof"], o="#0e0908", s="#2a211d", b="#3e342f", l="#574941", h="#76665a"),
+    "void": dict(B1_SETS["void"], o="#0a0612", s="#22153a", b="#36245a", l="#503882", h="#7458ad", t="#1a0f2c", T="#4a2a70"),
+}
+R2_RAMPS = {
+    "$": ["#3a2408", "#7a5418", "#b8862c", "#e2b84e", "#fff0a0"],   # 놋쇠
+    "&": ["#3a160a", "#7a361a", "#b65a32", "#e0864e", "#ffc08a"],   # 구리
+    "~": ["#20252c", "#48515b", "#717c88", "#9aa5b1", "#c9d2db"],   # 강철
+    "%": ["#2a1006", "#5e2810", "#8a3e1a", "#b85a24", "#dc7c3a"],   # 녹
+    "@": ["#121418", "#2a2e35", "#3c414a", "#545a64", "#727a85"],   # 무쇠
+    "*": ["#0a0612", "#1e1430", "#2e2048", "#45316a", "#6a52a0"],   # 흑요석
+}
+R2_FIXED = {
+    "w": "#3b2410", "x": "#7a5230", "y": "#a87a48",          # 나무 자루
+    "k": "#3a2418", "K": "#6b4a30",                          # 가죽
+    "R": "#8e1c20", "Q": "#e04848", "W": "#f2f2ea", "D": "#9a9a92",  # 빨강 · 흰 판
+    "B": "#2f86c4", "C": "#bdeeff", "c": "#6cc4f0",          # 증기 · 유리
+    "F": "#ff7a1a", "f": "#c8400c", "Y": "#ffd27a",          # 불꽃
+    "M": "#d23cf0", "m": "#7a1fa0", "P": "#ff9cff",          # 자홍 (공허)
+    "n": "#e2b84e", "N": "#7a5418",                          # 놋쇠 점
+}
+R2_NO_LINE = set("wxykKFfYCD")
+
+
+def r2_icon(rows, set_name="steel", streak=None, extra=None):
+    """글자 그림 → 16x16 아이콘. streak = 크롬 반사 줄 위치 (x + y 값), extra = 이 그림만 쓰는 색."""
+    assert len(rows) == 16 and all(len(r) == 16 for r in rows), [len(r) for r in rows]
+    pal = R2_SETS[set_name]
+    ramps = dict(R2_RAMPS)
+    ramps["#"] = [pal["o"], pal["s"], pal["b"], pal["l"], pal["h"]]
+    ramps["="] = [pal["o"], pal["t"], pal["t"], pal["T"], pal["T"]]
+    fixed = dict(R2_FIXED)
+    fixed.update({k: pal[k] for k in "osblhtTgGr"})
+    fixed["v"] = pal["o"]
+    if extra:
+        fixed.update(extra)
+    grid = [list(r) for r in rows]
+
+    def at(x, y):
+        return grid[y][x] if 0 <= x < 16 and 0 <= y < 16 else "."
+
+    im = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        for x in range(16):
+            ch = grid[y][x]
+            if ch == ".":
+                continue
+            if ch in ramps:
+                ramp = ramps[ch]
+                edge = lambda c: c != ch and (c == "." or c in ramps)
+                up, left, down, right = edge(at(x, y - 1)), edge(at(x - 1, y)), edge(at(x, y + 1)), edge(at(x + 1, y))
+                if up and left:
+                    lv = 4
+                elif up or left:
+                    lv = 3
+                elif down or right:
+                    lv = 1
+                else:
+                    lv = 2
+                if streak is not None and ch == "#" and lv <= 2:
+                    k = x + y - streak
+                    lv = 4 if k == 0 else (3 if k == 1 else lv)
+                im.putpixel((x, y), hex_px(ramp[lv]))
+            else:
+                im.putpixel((x, y), hex_px(fixed[ch]))
+    # 바깥 테: 빈칸 중 칠한 칸(나무 · 가죽 제외)과 맞닿은 곳
+    out = im.copy()
+    for y in range(16):
+        for x in range(16):
+            if grid[y][x] != ".":
+                continue
+            for nx, ny in ((x, y - 1), (x - 1, y), (x + 1, y), (x, y + 1)):
+                ch = at(nx, ny)
+                if ch == "." or ch in R2_NO_LINE:
+                    continue
+                line = ramps[ch][0] if ch in ramps else pal["o"]
+                out.putpixel((x, y), hex_px(line))
+                break
+    return out
+
+
+# ---- 갑옷 (투구 모양은 세트마다 다르게: R1 착용 모습과 같은 생김새) ----
+R2_HELMET = {
+    "bronze": [  # 코린트식: 붉은 깃 · T자 틈
+        "................",
+        "................",
+        "......QQQQ......",
+        ".....RQQQQR.....",
+        "....##RRRR##....",
+        "...##########...",
+        "..############..",
+        "..##vvv##vvv##..",
+        "..###vv##vv###..",
+        "..#####vv#####..",
+        "..#####vv#####..",
+        "..####....####..",
+        "...###....###...",
+        "................",
+        "................",
+        "................",
+    ],
+    "steel": [  # 닫힌 투구: 눈 틈 · 숨구멍 · 리벳
+        "................",
+        "................",
+        ".....######.....",
+        "....###ll###....",
+        "...####ll####...",
+        "..r####ll####r..",
+        "..############..",
+        "..#vvvvvvvvvv#..",
+        "..############..",
+        "..##v#v##v#v##..",
+        "..############..",
+        "...r########r...",
+        "................",
+        "................",
+        "................",
+        "................",
+    ],
+    "chrome_steel": [  # 얼굴이 트인 투구: 파란 이마 띠
+        "................",
+        "................",
+        ".....######.....",
+        "....########....",
+        "...##########...",
+        "..############..",
+        "..============..",
+        "..###vvvvvv###..",
+        "..###......###..",
+        "..###......###..",
+        "..###......###..",
+        "...##......##...",
+        "................",
+        "................",
+        "................",
+        "................",
+    ],
+    "heatproof": [  # 용접 가면: 달아오른 눈 창 · 가운데 이음매
+        "................",
+        "................",
+        ".....###g##.....",
+        "....####g###....",
+        "...#####g####...",
+        "..############..",
+        "..#gGGGGGGGGg#..",
+        "..#gggggggggg#..",
+        "..############..",
+        "..##v#v##v#v##..",
+        "..############..",
+        "...##########...",
+        "................",
+        "................",
+        "................",
+        "................",
+    ],
+    "void": [  # 뿔 · 자홍 눈빛 · 가운데 줄
+        "................",
+        "..#..........#..",
+        "..##........##..",
+        "...##.####.##...",
+        "...####MM####...",
+        "..######M#####..",
+        "..############..",
+        "..##PM####MP##..",
+        "..###mm##mm###..",
+        "..#####MM#####..",
+        "..####....####..",
+        "..###......###..",
+        "...#........#...",
+        "................",
+        "................",
+        "................",
+    ],
+}
+
+R2_CHEST = {
+    "bronze": [  # 근육 갑옷: 가슴 · 배 근육 선, 붉은 허리띠
+        "................",
+        "................",
+        "..####....####..",
+        ".######..######.",
+        ".##############.",
+        ".###ss####ss###.",
+        "..####s##s####..",
+        "...#####s####...",
+        "...###s##s###...",
+        "...##########...",
+        "...###s##s###...",
+        "...RRRRRRRRRR...",
+        "...##########...",
+        "................",
+        "................",
+        "................",
+    ],
+    "steel": [  # 판 · 리벳 · 가죽 띠
+        "................",
+        "................",
+        "..tT##....##Tt..",
+        ".#tT##r..r##Tt#.",
+        ".##tT######Tt##.",
+        ".###tT####Tt###.",
+        "..###tTTTTt###..",
+        "...##########...",
+        "...ssssssssss...",
+        "...r########r...",
+        "...##########...",
+        "...ssssssssss...",
+        "...r########r...",
+        "................",
+        "................",
+        "................",
+    ],
+    "chrome_steel": [  # 파란 띠 · 흰 반사 줄
+        "................",
+        "................",
+        "..####....####..",
+        ".######..######.",
+        ".##############.",
+        ".##############.",
+        "..############..",
+        "...==========...",
+        "...##########...",
+        "...##########...",
+        "...##########...",
+        "...==========...",
+        "...##########...",
+        "................",
+        "................",
+        "................",
+    ],
+    "heatproof": [  # 주황 이음매 · 가슴 화구
+        "................",
+        "................",
+        "..####....####..",
+        ".######..######.",
+        ".######gg######.",
+        ".#####gGGg#####.",
+        "..####gGGg####..",
+        "...####gg####...",
+        "...#####g####...",
+        "...#####g####...",
+        "...gggggggggg...",
+        "...##########...",
+        "...##########...",
+        "................",
+        "................",
+        "................",
+    ],
+    "void": [  # 자홍 V 줄
+        "................",
+        "................",
+        "..####....####..",
+        ".######..######.",
+        ".#M##########M#.",
+        ".##M########M##.",
+        "..##M######M##..",
+        "...##M####M##...",
+        "...###M##M###...",
+        "...####PP####...",
+        "...####mm####...",
+        "...##########...",
+        "...#mmmmmmmm#...",
+        "................",
+        "................",
+        "................",
+    ],
+}
+
+R2_LEGS = {
+    "bronze": [
+        "................",
+        "................",
+        "...RRRRRRRRRR...",
+        "...##########...",
+        "...####..####...",
+        "...####..####...",
+        "...#s##..##s#...",
+        "...####..####...",
+        "...####..####...",
+        "...#s##..##s#...",
+        "...####..####...",
+        "...####..####...",
+        "...####..####...",
+        "................",
+        "................",
+        "................",
+    ],
+    "steel": [
+        "................",
+        "................",
+        "...tTTTTTTTTt...",
+        "...##r####r##...",
+        "...####..####...",
+        "...####..####...",
+        "...ssss..ssss...",
+        "...####..####...",
+        "...#r##..##r#...",
+        "...####..####...",
+        "...ssss..ssss...",
+        "...####..####...",
+        "...####..####...",
+        "................",
+        "................",
+        "................",
+    ],
+    "chrome_steel": [
+        "................",
+        "................",
+        "...==========...",
+        "...##########...",
+        "...####..####...",
+        "...####..####...",
+        "...####..####...",
+        "...====..====...",
+        "...####..####...",
+        "...####..####...",
+        "...####..####...",
+        "...####..####...",
+        "...####..####...",
+        "................",
+        "................",
+        "................",
+    ],
+    "heatproof": [
+        "................",
+        "................",
+        "...gggggggggg...",
+        "...##########...",
+        "...####..####...",
+        "...####..####...",
+        "...##g#..#g##...",
+        "...##g#..#g##...",
+        "...##g#..#g##...",
+        "...####..####...",
+        "...####..####...",
+        "...####..####...",
+        "...####..####...",
+        "................",
+        "................",
+        "................",
+    ],
+    "void": [
+        "................",
+        "................",
+        "...mmmmmmmmmm...",
+        "...##########...",
+        "...####..####...",
+        "...#M##..##M#...",
+        "...#M##..##M#...",
+        "...##M#..#M##...",
+        "...##M#..#M##...",
+        "...##P#..#P##...",
+        "...####..####...",
+        "...####..####...",
+        "...####..####...",
+        "................",
+        "................",
+        "................",
+    ],
+}
+
+R2_BOOTS = {
+    "bronze": [
+        "................",
+        "................",
+        "................",
+        "................",
+        "...RRRR..RRRR...",
+        "...####..####...",
+        "...#s##..##s#...",
+        "...####..####...",
+        "...####..####...",
+        "..#####.#####...",
+        ".######.#####...",
+        ".######.######..",
+        "................",
+        "................",
+        "................",
+        "................",
+    ],
+    "steel": [
+        "................",
+        "................",
+        "................",
+        "................",
+        "...tTTt..tTTt...",
+        "...####..####...",
+        "...#r##..#r##...",
+        "...####..####...",
+        "...ssss..ssss...",
+        "..#####.#####...",
+        ".######.######..",
+        ".ssssss.ssssss..",
+        "................",
+        "................",
+        "................",
+        "................",
+    ],
+    "chrome_steel": [
+        "................",
+        "................",
+        "................",
+        "................",
+        "...====..====...",
+        "...####..####...",
+        "...####..####...",
+        "...####..####...",
+        "...####..####...",
+        "..#####.#####...",
+        ".######.######..",
+        ".======.======..",
+        "................",
+        "................",
+        "................",
+        "................",
+    ],
+    "heatproof": [
+        "................",
+        "................",
+        "................",
+        "................",
+        "...gggg..gggg...",
+        "...####..####...",
+        "...####..####...",
+        "...####..####...",
+        "...####..####...",
+        "..#####.#####...",
+        ".######.######..",
+        ".gggggg.gggggg..",
+        "................",
+        "................",
+        "................",
+        "................",
+    ],
+    "void": [
+        "................",
+        "................",
+        "................",
+        "................",
+        "...mmmm..mmmm...",
+        "...####..####...",
+        "...#M##..#M##...",
+        "...##M#..##M#...",
+        "...####..####...",
+        "..#####.#####...",
+        ".######.######..",
+        ".#MPPM#.#MPPM#..",
+        "................",
+        "................",
+        "................",
+        "................",
+    ],
+}
+R2_STREAK = {"chrome_steel": 9}
+
+
+
+
+# ---- 대각선 도구 · 무기: u = x + y (자루와 직각 방향), v = x - y (자루 방향, 클수록 오른쪽 위) ----
+def r2_grid():
+    return [["."] * 16 for _ in range(16)]
+
+
+def r2_diag(g, u0, u1, v0, v1, ch):
+    """u0..u1, v0..v1 안의 칸을 칠한다. ch는 글자 또는 (u, v) → 글자 함수 (None이면 건너뜀)."""
+    for y in range(16):
+        for x in range(16):
+            u, v = x + y, x - y
+            if u0 <= u <= u1 and v0 <= v <= v1:
+                c = ch(u, v) if callable(ch) else ch
+                if c:
+                    g[y][x] = c
+
+
+def r2_rows(g):
+    return ["".join(r) for r in g]
+
+
+def r2_sword(set_name):
+    """검: 날 네 줄 (u 13 반짝임 · 14 밝음 · 15 바탕 · 16 그늘), 세트마다 날 무늬 · 가드 · 손잡이가 다르다."""
+    g = r2_grid()
+    shade = {12: "h", 13: "h", 14: "l", 15: "b", 16: "s"}
+    leaf = False
+
+    def blade(u, v):
+        if v >= 11 and not 14 <= u <= 15:
+            return None
+        if v >= 13 and u != 15:
+            return None
+        if u == 12 and not (leaf and 1 <= v <= 7):
+            return None
+        if leaf and 1 <= v <= 7 and u == 13:
+            return "l"
+        return shade[u]
+    r2_diag(g, 12, 16, -4, 13, blade)
+    mid = {"chrome_steel": "T", "void": "M"}.get(set_name)
+    if mid:
+        r2_diag(g, 15, 15, -2, 10, mid)
+    if set_name == "heatproof":  # 달아오른 날 끝
+        r2_diag(g, 16, 16, -4, 12, "g")
+        r2_diag(g, 15, 15, 9, 13, "G")
+    guard, grip, pommel = {
+        "bronze": ("=", "R", "g"),
+        "steel": ("#", "t", "r"),
+        "chrome_steel": ("=", "B", "h"),
+        "heatproof": ("#", "t", "g"),
+        "void": ("*", "m", "P"),
+    }[set_name]
+    r2_diag(g, 11, 19, -6, -5, guard)
+    if set_name == "void":  # 가시 가드
+        r2_diag(g, 9, 10, -5, -4, "*")
+        r2_diag(g, 20, 21, -7, -6, "*")
+    r2_diag(g, 15, 16, -10, -7, grip)
+    r2_diag(g, 14, 17, -12, -11, pommel)
+    return r2_icon(r2_rows(g), set_name)
+
+
+def r2_wood_handle(g, v0, v1, u=15):
+    r2_diag(g, u, u + 1, v0, v1, lambda uu, v: "x" if uu == u else "w")
+
+
+def r2_pickaxe():
+    """곡괭이: 자루 끝 (2, 13)을 중심으로 한 두께 2 사분원, 끝은 가늘게."""
+    g = r2_grid()
+    r2_wood_handle(g, -11, 4)
+    for y in range(16):
+        for x in range(16):
+            dx, dy = x - 2, 13 - y
+            d = math.hypot(dx, dy)
+            ang = math.degrees(math.atan2(dy, dx))
+            if not 4 <= ang <= 86:
+                continue
+            tip = min(ang - 4, 86 - ang)
+            r0, r1 = (10.6, 12.7) if tip > 12 else (11.1, 12.4)
+            if r0 <= d <= r1:
+                g[y][x] = "#"
+    return r2_icon(r2_rows(g), "bronze")
+
+
+def r2_axe():
+    """도끼: 자루 위쪽에서 왼쪽 위로 뻗은 날, 날 끝은 반짝임."""
+    g = r2_grid()
+    r2_wood_handle(g, -11, 9)
+
+    def head(u, v):
+        half = {14: 2, 13: 2, 12: 3, 11: 3, 10: 3, 9: 4, 8: 4, 7: 3}[u]
+        if abs(v - 6) > half:
+            return None
+        return "h" if u == 7 or (u == 8 and abs(v - 6) == 4) else "#"
+    r2_diag(g, 7, 14, 1, 11, head)
+    r2_diag(g, 17, 18, 5, 7, "#")
+    return r2_icon(r2_rows(g), "bronze")
+
+
+def r2_shovel(set_name, big=False):
+    g = r2_grid()
+    r2_wood_handle(g, -12, 3)
+    if big:  # 굴착 삽: 넓은 날 + 장식 고리
+        r2_diag(g, 11, 19, 3, 12, lambda u, v: None if (v >= 11 and u in (11, 19)) else "#")
+        r2_diag(g, 12, 18, 3, 4, "=" if set_name == "chrome_steel" else "s")
+        r2_diag(g, 14, 16, -1, 0, "=" if set_name == "chrome_steel" else "r")
+    else:
+        r2_diag(g, 12, 18, 4, 11, lambda u, v: None if (v >= 10 and u in (12, 18)) else "#")
+        r2_diag(g, 14, 16, 2, 3, "#")
+    return r2_icon(r2_rows(g), set_name, R2_STREAK.get(set_name))
+
+
+def r2_hammer(set_name):
+    g = r2_grid()
+    r2_wood_handle(g, -12, 3)
+    r2_diag(g, 14, 17, -1, 0, "=" if set_name == "chrome_steel" else "s")  # 자루 쇠고리
+    r2_diag(g, 9, 21, 4, 10, lambda u, v: None if (u in (9, 21) and v in (4, 10)) else "#")
+    band = "=" if set_name == "chrome_steel" else "s"
+    r2_diag(g, 11, 11, 4, 10, band)
+    r2_diag(g, 19, 19, 4, 10, band)
+    if set_name == "steel":
+        r2_diag(g, 15, 15, 6, 8, lambda u, v: "r" if v == 7 else None)
+    return r2_icon(r2_rows(g), set_name, R2_STREAK.get(set_name))
+
+
+def r2_spear():
+    g = r2_grid()
+    r2_wood_handle(g, -13, 2)
+    r2_diag(g, 14, 17, 3, 4, "t")  # 묶은 가죽
+    shade = {13: "h", 14: "l", 15: "b", 16: "s", 17: "s"}
+
+    def head(u, v):
+        half = 2 if v <= 8 else (1 if v <= 11 else 0)
+        if abs(u - 15) > half:
+            return None
+        return shade[u]
+    r2_diag(g, 13, 17, 5, 13, head)
+    return r2_icon(r2_rows(g), "steel")
+
+
+# ---- 증기 장비: 놋쇠 몸통 + 구리 관 + 강철 부품 + 계기 (모두 같은 재질 글자) ----
+def r2_steam_drill(heat=False):
+    g = r2_grid()
+    body = "#" if heat else "$"
+    r2_diag(g, 12, 18, -10, -2, lambda u, v: None if (u in (12, 18) and v in (-10, -2)) else body)
+    r2_diag(g, 12, 18, -3, -3, "g" if heat else "~")
+    r2_diag(g, 12, 18, -9, -9, "g" if heat else "~")
+    if not heat:
+        r2_diag(g, 14, 16, -7, -5, lambda u, v: "R" if (u, v) == (15, -6) else "W")
+    else:
+        r2_diag(g, 15, 15, -8, -4, "G")
+    r2_diag(g, 19, 22, -6, -5, "t")  # 손잡이 (아래로)
+
+    def bit(u, v):
+        half = round(3 * (12 - v) / 13)
+        if abs(u - 15) > half:
+            return None
+        k = (v + (u - 15)) // 2
+        if heat:
+            return "g" if k % 3 == 0 else "@"
+        return "l" if k % 2 == 0 else "s"
+    r2_diag(g, 12, 18, -1, 12, bit)
+    return r2_icon(r2_rows(g), "heatproof" if heat else "steel")
+
+
+def r2_chainsaw():
+    g = r2_grid()
+
+    def bar(u, v):
+        if v >= 12 and u in (13, 17):
+            return None
+        if u in (13, 17):
+            return "D" if v % 2 == 0 else None
+        return "~" if u == 14 else "@"
+    r2_diag(g, 13, 17, -1, 13, bar)
+    r2_diag(g, 11, 19, -10, -2, lambda u, v: None if (u in (11, 19) and v in (-10, -2)) else ("&" if u <= 12 else "$"))
+    r2_diag(g, 14, 16, -7, -5, lambda u, v: "R" if (u, v) == (15, -6) else "W")
+    r2_diag(g, 8, 9, -9, -3, "t")       # 위 손잡이
+    r2_diag(g, 10, 10, -9, -8, "t")
+    r2_diag(g, 10, 10, -4, -3, "t")
+    r2_diag(g, 14, 16, -13, -11, "t")   # 뒤 손잡이
+    return r2_icon(r2_rows(g), "steel")
+
+
+def r2_wrench():
+    g = r2_grid()
+    r2_diag(g, 15, 16, -10, 6, "~")
+    r2_diag(g, 14, 17, -2, -1, "$")  # 놋쇠 조절 나사
+    r2_diag(g, 11, 20, 6, 12, lambda u, v: None if ((14 <= u <= 17 and v >= 9) or (u in (11, 20) and v == 12)) else "~")
+    r2_diag(g, 13, 18, -14, -10, lambda u, v: None if (15 <= u <= 16 and -13 <= v <= -11) else "~")
+    return r2_icon(r2_rows(g), "steel")
+
+
+def r2_steam_hammer():
+    g = r2_grid()
+    r2_diag(g, 15, 16, -13, 2, "~")
+    r2_diag(g, 15, 16, -13, -8, lambda u, v: "K" if u == 15 else "k")
+    r2_diag(g, 8, 22, 3, 11, lambda u, v: None if (u in (8, 22) and v in (3, 11)) else ("~" if u <= 10 or u >= 20 else "$"))
+    r2_diag(g, 13, 17, 5, 9, lambda u, v: "R" if (u, v) == (15, 7) else ("W" if abs(u - 15) + abs(v - 7) <= 2 else None))
+    r2_diag(g, 11, 11, 3, 11, "&")
+    r2_diag(g, 19, 19, 3, 11, "&")
+    return r2_icon(r2_rows(g), "steel")
+
+
+def r2_rusty_hammer():
+    g = r2_grid()
+    r2_wood_handle(g, -12, 3)
+    r2_diag(g, 14, 17, -4, -3, "@")
+    r2_diag(g, 14, 17, 1, 2, "@")
+    patches = {(10, 5), (12, 8), (13, 9), (18, 6), (19, 9), (17, 10), (11, 9), (20, 5)}
+    r2_diag(g, 9, 21, 3, 10, lambda u, v: None if (u in (9, 21) and v in (3, 10)) else ("@" if (u, v) in patches else "%"))
+    r2_diag(g, 14, 16, 5, 8, lambda u, v: "C" if (u, v) == (15, 7) else ("B" if abs(u - 15) + abs(v - 6.5) <= 1.5 else None))
+    return r2_icon(r2_rows(g), "steel")
+
+
+def r2_void_staff():
+    g = r2_grid()
+    r2_diag(g, 15, 16, -13, 6, "*")
+    for v in (-9, -3, 3):
+        r2_diag(g, 15, 16, v, v, "m")
+    r2_diag(g, 12, 13, 5, 9, "*")
+    r2_diag(g, 18, 19, 5, 9, "*")
+    r2_diag(g, 13, 17, 7, 13, lambda u, v: ("P" if abs(u - 15) + abs(v - 10) <= 1 else "M") if abs(u - 15) + abs(v - 10) <= 3 else None)
+    return r2_icon(r2_rows(g), "void")
+
+
+R2_RIVET_GUN = [
+    "................",
+    "................",
+    "................",
+    "....$$$$$.......",
+    "...$$$$$$$.&&...",
+    "..~~~~~~~~~~~~~.",
+    "..~~~~~~~~~~~@@.",
+    "..~~~~~~~~~~~@@.",
+    "..~~@@@~~.......",
+    "...tTT.@........",
+    "...tTT.@........",
+    "..tTT.@@........",
+    "..tTT...........",
+    "..ttt...........",
+    "................",
+    "................",
+]
+R2_FLAMETHROWER = [
+    "................",
+    "................",
+    "..............Y.",
+    "............YFY.",
+    "..~~~~~~~~~@@FFf",
+    "..~~~~~~~~~@@Ff.",
+    "..~~~&~~~~~@@.f.",
+    "..$$$&$$$.......",
+    ".$&&&&&&$$......",
+    ".$$$$$$$$tT.....",
+    ".$$RR$$$$tT.....",
+    ".$$$$$$$$.tT....",
+    "..$$$$$$..tT....",
+    "................",
+    "................",
+    "................",
+]
+R2_CANISTER = [
+    "................",
+    "......~~~~......",
+    ".......@@.......",
+    ".....$$$$$$.....",
+    "....&&&&&&&&....",
+    "....$$$$$$$$....",
+    "....$$CcB$$$....",
+    "....$$ccB$$$....",
+    "....$$cBB$$$....",
+    "....$$BBB$$$....",
+    "....$$$$$$$$....",
+    "....&&&&&&&&....",
+    "....$$$$$$$$....",
+    ".....$$$$$$.....",
+    "................",
+    "................",
+]
+R2_PROSPECTOR = [
+    "................",
+    "........Q.......",
+    "........~.......",
+    ".....$$$$$$.....",
+    "....$@@@@@@$....",
+    "....$@BBBnB@$...",
+    "....$@BnBBB@$...",
+    "....$@BBBBF@$...",
+    "....$@@@@@@@$...",
+    "....$$Q$$W$$$...",
+    ".....$$$$$$$....",
+    "........~.......",
+    "........~.......",
+    "........@.......",
+    "................",
+    "................",
+]
+R2_SONAR = [
+    "................",
+    "................",
+    ".....$$$$$$.....",
+    "....$@@@@@@$....",
+    "...$@BBccBB@$...",
+    "...$@BcBBcB@$...",
+    "...$@cBCBBc@$...",
+    "...$@cBBBFc@$...",
+    "...$@BcBBcB@$...",
+    "...$@BBccBB@$...",
+    "....$@@@@@@$....",
+    ".....$$$$$$.....",
+    "......&..&......",
+    "......&..&......",
+    ".....~~..~~.....",
+    "................",
+]
+R2_STEAM_BOOTS = [
+    "................",
+    "................",
+    "................",
+    "................",
+    "...&&&&..&&&&...",
+    "...$$$$@.$$$$@..",
+    "...$$$$@.$$$$@..",
+    "...$$$$@.$$$$@..",
+    "...&&&&..&&&&...",
+    "..$$$$$.$$$$$...",
+    ".$$$$$$.$$$$$$..",
+    ".@@@@@@.@@@@@@..",
+    "....CC.....CC...",
+    "...C..C...C..C..",
+    "................",
+    "................",
+]
+R2_JETPACK = [
+    "................",
+    "................",
+    "...$$$...$$$....",
+    "..$$$$$.$$$$$...",
+    "..&&&&&~&&&&&...",
+    "..$$$$$~$$$$$...",
+    "..$$$$WWW$$$$...",
+    "..$$$$WRW$$$$...",
+    "..$$$$WWW$$$$...",
+    "..$$$$$~$$$$$...",
+    "..&&&&&~&&&&&...",
+    "..$$$$$.$$$$$...",
+    "...@@@...@@@....",
+    "...@@@...@@@....",
+    "...FYF...FYF....",
+    "....F.....F.....",
+]
+
+
+def r2_syringe():
+    g = r2_grid()
+
+    def barrel(u, v):
+        if v >= 3:
+            return {14: "C", 15: "c", 16: "B"}[u]
+        return {14: "C", 15: "W", 16: "D"}[u]
+    r2_diag(g, 14, 16, -4, 6, barrel)
+    r2_diag(g, 13, 17, 7, 7, "$")
+    r2_diag(g, 15, 15, 8, 13, "D")
+    r2_diag(g, 12, 18, -5, -5, "$")
+    r2_diag(g, 15, 15, -9, -6, "@")
+    r2_diag(g, 13, 17, -11, -10, "$")
+    return r2_icon(r2_rows(g), "steel")
+
+
+def r2_furnace_shield():
+    """화구 방패 모델 텍스처 32x32 (자리는 C4와 같음): 앞면 12x22 (0,0), 뒷면 (12,0), 테두리 (24,0) · (0,22), 손잡이 (26,0).
+    앞면 = 무쇠 판 (왼쪽 위 밝게) + 놋쇠 리벳 + 가운데 화구 (창살 사이 불빛, 가운데가 가장 밝다) + 아래 벽돌."""
+    iron = R2_RAMPS["@"]
+    brass = R2_RAMPS["$"]
+    im = Image.new("RGBA", (32, 32))
+    P = lambda x, y, c: im.putpixel((x, y), hex_px(c))
+    for x in range(12):
+        for y in range(22):
+            if x in (0, 11) or y in (0, 21):
+                c = iron[0]
+            elif x == 1 or y == 1:
+                c = iron[4] if (x, y) != (1, 20) else iron[2]
+            elif x == 10 or y == 20:
+                c = iron[1]
+            else:
+                c = iron[2] if (x * 7 + y * 3) % 11 else iron[3]
+            P(x, y, c)
+    # 화구: 테 (놋쇠) · 창살 (무쇠) · 불빛
+    glow = ["#7a1c06", "#c8400c", "#ff7a1a", "#ffb340", "#ffe9a0"]
+    for x in range(2, 10):
+        for y in range(4, 16):
+            if x in (2, 9) or y in (4, 15):
+                P(x, y, brass[3] if (x == 2 or y == 4) else brass[1])
+            elif y % 3 == 0:
+                P(x, y, iron[1])
+            else:
+                d = abs(x - 5.5) + abs(y - 10) * 0.6
+                P(x, y, glow[4] if d < 1.5 else glow[3] if d < 3 else glow[2] if d < 4.2 else glow[1])
+    # 벽돌 두 줄
+    brick = ["#5a2412", "#7d3519", "#9a4422"]
+    for x in range(2, 10):
+        for y in range(17, 20):
+            mortar = y == 18 or (y == 17 and x in (5,)) or (y == 19 and x in (3, 7))
+            P(x, y, "#3a2a22" if mortar else brick[2 if (x + y) % 3 == 0 else 1])
+    for (x, y) in ((1, 1), (10, 1), (1, 20), (10, 20), (1, 10), (10, 10)):
+        P(x, y, brass[3])
+        if x < 10:
+            P(x + 1, y + 1 if y < 20 else y, brass[1])
+    # 뒷면: 무쇠 판 + 가로 띠 둘
+    for x in range(12, 24):
+        for y in range(22):
+            if x in (12, 23) or y in (0, 21):
+                c = iron[0]
+            elif y in (5, 6, 15, 16):
+                c = brass[2] if y in (5, 15) else brass[1]
+            else:
+                c = iron[2] if (x * 5 + y * 3) % 9 else iron[1]
+            P(x, y, c)
+    for x in range(24, 26):
+        for y in range(22):
+            P(x, y, iron[1])
+    for x in range(0, 12):
+        for y in range(22, 24):
+            P(x, y, iron[1])
+    for x in range(26, 32):
+        for y in range(0, 6):
+            P(x, y, "#4a3420" if (x + y) % 2 else "#6b4a30")
+    return im
+
+
+def r3_held_atlas():
+    """R3 손에 든 3D 모델 텍스처 64x64 (tools/make_held_models.py의 REGIONS 자리와 같게).
+    재질 자리 16x16: 놋쇠 · 구리 · 강철 · 무쇠 / 가죽 · 빨강 · 크롬 · 나무, 그 아래 계기 · 드릴 날 · 사슬 · 불빛 · 유리 · 리벳."""
+    rnd = random.Random(7303)
+    im = Image.new("RGBA", (64, 64))
+
+    def fill(x0, y0, w, h, ramp, brushed=False):
+        for y in range(h):
+            for x in range(w):
+                roll = rnd.random()
+                lv = 2
+                if brushed:
+                    lv = 3 if (y + (x // 5)) % 4 == 0 else 2
+                    lv = 1 if roll < 0.08 else lv
+                else:
+                    lv = 3 if roll < 0.14 else (1 if roll > 0.9 else 2)
+                im.putpixel((x0 + x, y0 + y), hex_px(ramp[lv]))
+
+    fill(0, 0, 16, 16, R2_RAMPS["$"])
+    fill(16, 0, 16, 16, R2_RAMPS["&"])
+    fill(32, 0, 16, 16, R2_RAMPS["~"], brushed=True)
+    fill(48, 0, 16, 16, R2_RAMPS["@"])
+    fill(0, 16, 16, 16, ["#1e130b", "#3a2418", "#5a3a26", "#6b4a30", "#8a6444"])
+    fill(16, 16, 16, 16, ["#3a0a0c", "#6e1418", "#9a2024", "#c43a36", "#e86a5a"])
+    fill(32, 16, 16, 16, [R2_SETS["chrome_steel"][k] for k in "osblh"], brushed=True)
+    fill(48, 16, 16, 16, ["#2a1a0c", "#4a2f18", "#6a4526", "#7a5230", "#a87a48"])
+    # 계기 8x8: 놋쇠 테 + 흰 판 + 빨간 바늘
+    for y in range(8):
+        for x in range(8):
+            d = math.hypot(x - 3.5, y - 3.5)
+            c = None
+            if d <= 2.6:
+                c = "#f2f2ea"
+            elif d <= 3.9:
+                c = "#e2b84e" if x + y < 7 else "#7a5418"
+            else:
+                c = "#3c414a"
+            im.putpixel((x, 32 + y), hex_px(c))
+    for (x, y) in ((3, 3), (4, 2), (5, 1)):
+        im.putpixel((x, 32 + y), hex_px("#c42020"))
+    im.putpixel((3, 36), hex_px("#2a2e35"))
+    # 드릴 날 16x16: 비스듬한 홈 (돌면 줄이 흐른다)
+    ramp = R2_RAMPS["~"]
+    for y in range(16):
+        for x in range(16):
+            k = (x + y * 2) % 6
+            c = ramp[4] if k == 0 else ramp[3] if k == 1 else ramp[1] if k in (4, 5) else ramp[2]
+            im.putpixel((8 + x, 32 + y), hex_px(c))
+    # 사슬 16x8: 이 · 마디
+    for y in range(8):
+        for x in range(16):
+            c = R2_RAMPS["@"][1] if y in (0, 7) else (R2_RAMPS["~"][4] if x % 3 == 0 else R2_RAMPS["@"][3] if x % 3 == 1 else R2_RAMPS["@"][2])
+            im.putpixel((24 + x, 32 + y), hex_px(c))
+    # 불빛 8x8: 가운데가 가장 밝은 주황
+    glow = ["#c8400c", "#ff7a1a", "#ffb340", "#ffe9a0"]
+    for y in range(8):
+        for x in range(8):
+            d = math.hypot(x - 3.5, y - 3.5)
+            im.putpixel((40 + x, 32 + y), hex_px(glow[3] if d < 1.6 else glow[2] if d < 2.6 else glow[1] if d < 3.6 else glow[0]))
+    # 유리 (증기) 8x8
+    for y in range(8):
+        for x in range(8):
+            im.putpixel((48 + x, 32 + y), hex_px("#bdeeff" if x + y < 3 else "#6cc4f0" if (x + y) % 5 else "#2f86c4"))
+    # 리벳 8x8: 무쇠 바탕에 놋쇠 머리
+    for y in range(8):
+        for x in range(8):
+            d = math.hypot(x - 3.5, y - 3.5)
+            im.putpixel((56 + x, 32 + y), hex_px("#fff0a0" if d < 1.2 else "#e2b84e" if d < 2.4 else "#b8862c" if d < 3.2 else "#3c414a"))
+    return im
+
+
+def main_r2(made):
+    """확장 3 R2 · R3: 이미 있는 갑옷 · 도구 · 무기 · 증기 장비 아이콘을 같은 붓으로 다시 그려 덮어쓴다 (파일 이름 · 크기 그대로)."""
+    for s in ("bronze", "steel", "chrome_steel", "heatproof", "void"):
+        st = R2_STREAK.get(s)
+        made.append(save(r2_icon(R2_HELMET[s], s, st), f"item/{s}_helmet.png"))
+        made.append(save(r2_icon(R2_CHEST[s], s, st), f"item/{s}_chestplate.png"))
+        made.append(save(r2_icon(R2_LEGS[s], s, st), f"item/{s}_leggings.png"))
+        made.append(save(r2_icon(R2_BOOTS[s], s, st), f"item/{s}_boots.png"))
+        made.append(save(r2_sword(s), f"item/{s}_sword.png"))
+    icons = {
+        "bronze_pickaxe": r2_pickaxe(), "bronze_axe": r2_axe(), "bronze_shovel": r2_shovel("bronze"),
+        "steel_hammer": r2_hammer("steel"), "steel_excavator": r2_shovel("steel", True),
+        "chrome_steel_hammer": r2_hammer("chrome_steel"), "chrome_steel_excavator": r2_shovel("chrome_steel", True),
+        "steel_spear": r2_spear(), "steam_hammer": r2_steam_hammer(),
+        "rusty_hammer": r2_rusty_hammer(), "void_staff": r2_void_staff(), "heatproof_drill": r2_steam_drill(True),
+        "steam_drill": r2_steam_drill(), "chainsaw": r2_chainsaw(), "wrench": r2_wrench(), "steam_syringe": r2_syringe(),
+        "rivet_gun": r2_icon(R2_RIVET_GUN), "flamethrower": r2_icon(R2_FLAMETHROWER), "steam_canister": r2_icon(R2_CANISTER),
+        "vein_prospector": r2_icon(R2_PROSPECTOR), "debris_sonar": r2_icon(R2_SONAR),
+        "steam_boots": r2_icon(R2_STEAM_BOOTS), "steam_jetpack": r2_icon(R2_JETPACK),
+    }
+    for name, im in icons.items():
+        made.append(save(im, f"item/{name}.png"))
+    made.append(save(r2_furnace_shield(), "item/furnace_shield.png"))
+    # R3: 손에 든 3D 모델 텍스처 (모델은 tools/make_held_models.py)
+    made.append(save(r3_held_atlas(), "item/held/steam_tools.png"))
+
+
 def save(im, rel, scale=1):
     path = os.path.join(OUT, *rel.split("/"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -5457,6 +6452,7 @@ def main():
     main_ex3_c2(made)
     main_c4(made)  # 확장 3 C4 보스 2페이즈 · 전용 장비
     main_g3(made)  # 확장 3 G3 · G4 장비 모듈 · 작업대 · 수리대
+    main_r2(made)  # 확장 3 R2 아이콘 다시 그리기
 
     if "--sheet" in sys.argv:
         tiles = [Image.open(p) for p in made]
