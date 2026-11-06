@@ -36,7 +36,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
+import io.github.yhyeop.sanupcraft.config.SanupcraftConfig;
 import io.github.yhyeop.sanupcraft.core.ModItems;
+import io.github.yhyeop.sanupcraft.effect.ModEffects;
+import io.github.yhyeop.sanupcraft.effect.Resistances;
 import io.github.yhyeop.sanupcraft.gear.HeatproofGear;
 import io.github.yhyeop.sanupcraft.gear.SteelGear;
 import io.github.yhyeop.sanupcraft.sound.ModSounds;
@@ -48,7 +51,7 @@ import io.github.yhyeop.sanupcraft.sound.ModSounds;
  *   <li>내려찍기: 25틱 동안 판정 반경과 같은 경고 고리 → 피해 + 띄우기. 경고를 보고 벗어나면 된다.</li>
  *   <li>졸개 소환: 좀벌레 3마리.</li>
  * </ul>
- * 녹 공격: 강철(또는 내열) 갑옷 한 벌을 다 입지 않은 대상은 피해 1.5배 + 구속. 패턴 타격은 방패를 깨고 들어간다.
+ * 녹 공격: 강철(또는 내열) 갑옷 한 벌을 다 입지 않은 대상은 피해 1.5배 + 구속 + 녹 II(방어 −4, 5초, 확장 3 C3). 패턴 타격은 방패를 깨고 들어간다.
  * 강철 검 · 내열 검으로 때리면 피해 1.5배. 거미줄에 걸리지 않고 구속이 안 걸린다.
  * 체력이 절반 아래면 패턴 간격이 짧아진다. 여러 명이면 체력 · 졸개 수가 늘고, 기여자 각자 핵을 받는다 ({@link BossParty}).
  */
@@ -60,6 +63,9 @@ public class RustyGuardian extends PartyBossMonster {
 	public static final float SLAM_DAMAGE = 10.0F;
 	public static final double SLAM_RADIUS = 5.0;
 	public static final int MINIONS_PER_SUMMON = 3;
+	/** 녹 효과 기본값 (설정 {@code statusEffect.guardianRust*}). */
+	public static final int RUST_TICKS = 100;
+	public static final int RUST_LEVEL = 2;
 	private static final int MAX_MINIONS_NEARBY = 8;
 
 	private static final int CHARGE_LOCK = 12;
@@ -330,7 +336,7 @@ public class RustyGuardian extends PartyBossMonster {
 	}
 
 	/**
-	 * 녹 공격: 강철 갑옷 한 벌이 없으면 피해가 커지고 느려진다.
+	 * 녹 공격: 강철 갑옷 한 벌이 없으면 피해가 커지고 느려지고 녹이 슨다 (방어가 깎인다).
 	 * 패턴 타격(pattern)은 맞히기 직전에 대상의 방패를 깨고 그대로 들어간다.
 	 */
 	public boolean hitWithRust(ServerLevel level, LivingEntity target, float damage, boolean pattern) {
@@ -338,10 +344,12 @@ public class RustyGuardian extends PartyBossMonster {
 			BossCombat.breakShield(level, target);
 			damage *= (float) party().outgoingDamageScale(); // 강화 단계 (근접은 공격력 속성에 이미 들어 있다)
 		}
-		boolean rustproof = SteelGear.wearsFullSet(target);
+		boolean rustproof = Resistances.rustImmune(target);
 		boolean hurt = target.hurtServer(level, damageSources().mobAttack(this), rustproof ? damage : damage * RUST_MULTIPLIER);
 		if (hurt && !rustproof) {
 			target.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 60, 1), this);
+			SanupcraftConfig config = SanupcraftConfig.current();
+			ModEffects.inflict(target, ModEffects.RUST, config.guardianRustTicks, config.guardianRustLevel, this);
 			BossCombat.warn(level, target, rustWarning, "entity.sanupcraft.rusty_guardian.rust_warning"); // 세트 없이 맞은 플레이어에게 안내
 		}
 		return hurt;

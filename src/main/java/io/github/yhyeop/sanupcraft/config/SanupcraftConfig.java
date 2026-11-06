@@ -186,6 +186,19 @@ public final class SanupcraftConfig {
 	// M11 X2 효과음
 	/** 기계 작동음 크기 배율 (0 = 끔, 1 = 기본). 보스 소리는 그대로. */
 	public double machineSoundVolume = 1.0;
+	// 확장 3 C3 상태 이상 (단계는 1부터, 0이면 걸지 않음)
+	/** 녹슨 수호자: 녹 시간(틱). */
+	public int guardianRustTicks = io.github.yhyeop.sanupcraft.boss.RustyGuardian.RUST_TICKS;
+	/** 녹슨 수호자: 녹 단계 (2 = 방어 −4). */
+	public int guardianRustLevel = io.github.yhyeop.sanupcraft.boss.RustyGuardian.RUST_LEVEL;
+	/** 용광로 파수꾼: 과열 시간(틱). */
+	public int wardenOverheatTicks = io.github.yhyeop.sanupcraft.boss.FurnaceWarden.OVERHEAT_TICKS;
+	/** 용광로 파수꾼: 과열 단계 (1 = 1초마다 피해 1). */
+	public int wardenOverheatLevel = io.github.yhyeop.sanupcraft.boss.FurnaceWarden.OVERHEAT_LEVEL;
+	/** 공허 거상: 끌어당기기의 공허 침식 시간(틱). */
+	public int colossusErosionTicks = io.github.yhyeop.sanupcraft.boss.VoidColossus.EROSION_TICKS;
+	/** 공허 거상: 공허 침식 단계 (1 = 최대 체력 −2). */
+	public int colossusErosionLevel = io.github.yhyeop.sanupcraft.boss.VoidColossus.EROSION_LEVEL;
 
 	/** float 상수를 0.05F -> 0.05처럼 보이는 그대로의 double로 (파일에 0.0500000007...이 안 찍히게). */
 	private static double asDouble(float value) {
@@ -320,7 +333,20 @@ public final class SanupcraftConfig {
 					c -> c.voidGearRescueCooldownTicks, (c, v) -> c.voidGearRescueCooldownTicks = (int) v),
 			// M11 X2 효과음
 			new Option("sounds", "machineVolume", 1.0, 0.0, 2.0, false,
-					c -> c.machineSoundVolume, (c, v) -> c.machineSoundVolume = v));
+					c -> c.machineSoundVolume, (c, v) -> c.machineSoundVolume = v),
+			// 확장 3 C3 상태 이상
+			new Option("statusEffect", "guardianRustTicks", io.github.yhyeop.sanupcraft.boss.RustyGuardian.RUST_TICKS, 0, 12_000, true,
+					c -> c.guardianRustTicks, (c, v) -> c.guardianRustTicks = (int) v),
+			new Option("statusEffect", "guardianRustLevel", io.github.yhyeop.sanupcraft.boss.RustyGuardian.RUST_LEVEL, 0, 10, true,
+					c -> c.guardianRustLevel, (c, v) -> c.guardianRustLevel = (int) v),
+			new Option("statusEffect", "wardenOverheatTicks", io.github.yhyeop.sanupcraft.boss.FurnaceWarden.OVERHEAT_TICKS, 0, 12_000, true,
+					c -> c.wardenOverheatTicks, (c, v) -> c.wardenOverheatTicks = (int) v),
+			new Option("statusEffect", "wardenOverheatLevel", io.github.yhyeop.sanupcraft.boss.FurnaceWarden.OVERHEAT_LEVEL, 0, 10, true,
+					c -> c.wardenOverheatLevel, (c, v) -> c.wardenOverheatLevel = (int) v),
+			new Option("statusEffect", "colossusErosionTicks", io.github.yhyeop.sanupcraft.boss.VoidColossus.EROSION_TICKS, 0, 12_000, true,
+					c -> c.colossusErosionTicks, (c, v) -> c.colossusErosionTicks = (int) v),
+			new Option("statusEffect", "colossusErosionLevel", io.github.yhyeop.sanupcraft.boss.VoidColossus.EROSION_LEVEL, 0, 9, true,
+					c -> c.colossusErosionLevel, (c, v) -> c.colossusErosionLevel = (int) v));
 
 	/** 읽은 결과: 설정, 경고 문구, 파일에 빠진 키가 있었는지, 파일을 새로 썼는지. */
 	public record Loaded(SanupcraftConfig config, List<String> warnings, boolean missingKeys, boolean wroteFile) {

@@ -47,6 +47,8 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 
+import io.github.yhyeop.sanupcraft.config.SanupcraftConfig;
+import io.github.yhyeop.sanupcraft.effect.ModEffects;
 import io.github.yhyeop.sanupcraft.end.ModEnd;
 import io.github.yhyeop.sanupcraft.sound.ModSounds;
 
@@ -54,7 +56,8 @@ import io.github.yhyeop.sanupcraft.sound.ModSounds;
  * 공허 거상 (M6, 세 번째 보스). 엔드에서, 원점에서 가로로 {@link #MIN_DISTANCE}칸 이상 떨어진 제단에서만 깨어난다.
  * <ul>
  *   <li>셜커 탄 일제 사격: 32칸 안 플레이어마다 바닐라 셜커 탄 하나 (맞으면 공중 부양).</li>
- *   <li>공허 끌어당기기: 20틱 동안 둘레에 보라 입자 고리 + 소리로 예고 → 20틱 동안 16칸 안 플레이어를 거상 쪽으로 끌어당긴다.</li>
+ *   <li>공허 끌어당기기: 20틱 동안 둘레에 보라 입자 고리 + 소리로 예고 → 20틱 동안 16칸 안 플레이어를 거상 쪽으로 끌어당긴다.
+ *       끌려가는 플레이어는 공허 침식 I(최대 체력 −2, 10초, 확장 3 C3)에 걸린다. 공허 한 벌이면 안 걸린다.</li>
  *   <li>공허 수정: 처음 깨어날 때와 체력이 절반 아래로 내려갈 때 수정 {@link #CRYSTALS}개를 둘레에 띄운다.
  *       수정이 하나라도 살아 있으면 거상은 피해를 받지 않는다 (수정에서 거상으로 빛줄기). 수정은 리벳 · 화살 · 근접으로 부순다.</li>
  * </ul>
@@ -74,6 +77,9 @@ public class VoidColossus extends PartyBossMonster {
 	public static final double PULL_STRENGTH = 0.16;
 	/** 셜커 탄 피해 (바닐라 값). 강화 단계면 배율을 곱한다. */
 	public static final float BULLET_DAMAGE = 4.0F;
+	/** 끌어당기기의 공허 침식 기본값 (설정 {@code statusEffect.colossusErosion*}). */
+	public static final int EROSION_TICKS = 200;
+	public static final int EROSION_LEVEL = 1;
 	/** 클라이언트 동작용 상태 비트: 수정이 지키는 중 · 끌어당기기 예고 · 끌어당기는 중. */
 	public static final int FLAG_SHIELDED = 1;
 	public static final int FLAG_PULL_WINDUP = 2;
@@ -368,10 +374,14 @@ public class VoidColossus extends PartyBossMonster {
 		}
 	}
 
-	/** 끌어당기기 한 틱: 16칸 안 플레이어를 거상 쪽으로. 당긴 수를 돌려준다. */
+	/** 끌어당기기 한 틱: 16칸 안 플레이어를 거상 쪽으로 + 공허 침식 (이미 걸려 있으면 그대로). 당긴 수를 돌려준다. */
 	public int pull(ServerLevel level) {
 		int pulled = 0;
+		SanupcraftConfig config = SanupcraftConfig.current();
 		for (Player player : targets(level, PULL_RANGE)) {
+			if (!player.hasEffect(ModEffects.VOID_EROSION)) {
+				ModEffects.inflict(player, ModEffects.VOID_EROSION, config.colossusErosionTicks, config.colossusErosionLevel, this);
+			}
 			Vec3 to = position().add(0.0, 1.0, 0.0).subtract(player.position());
 			if (to.lengthSqr() < 4.0) {
 				continue;

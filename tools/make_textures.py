@@ -3175,6 +3175,97 @@ def main_fin(made):
     made.append(save(void_shield_texture(), "entity/void_colossus_shield.png"))
 
 
+# ---------- 확장 3 C3 상태 이상 아이콘 (18x18, textures/mob_effect) ----------
+def effect_art(rows, colors):
+    assert len(rows) == 18 and all(len(r) == 18 for r in rows), rows
+    im = Image.new("RGBA", (18, 18))
+    for y, row in enumerate(rows):
+        for x, ch in enumerate(row):
+            if ch != ".":
+                im.putpixel((x, y), hex_px(colors[ch]))
+    return im
+
+
+def rust_effect_icon():
+    """녹: 녹이 번진 강철 볼트 머리."""
+    return effect_art([
+        "..................",
+        "......aaaaaa......",
+        "....aabccccbaa....",
+        "...abccdddccsba...",
+        "..abcdddeddcstba..",
+        "..abcdeeeedstuba..",
+        ".abcddeaaedsttcba.",
+        ".abcdea..aestscba.",
+        ".abcsta..ascdcba..",
+        ".abstsa..adddcba..",
+        ".abcsta..aedcbba..",
+        ".abcdea..aedcba...",
+        "..abcdeaaedcsba...",
+        "..abcdddddcstba...",
+        "...abcccsstsba....",
+        "....aabbssbaa.....",
+        "......aaaaaa......",
+        "..................",
+    ], {"a": "#2c3138", "b": "#5f6873", "c": "#8f99a5", "d": "#bcc6d0", "e": "#eaf0f5",
+        "s": "#a85628", "t": "#de8442", "u": "#ffc27a"})
+
+
+def overheat_effect_icon():
+    """과열: 붉게 달아오른 온도계와 불꽃."""
+    return effect_art([
+        "..................",
+        "........aa........",
+        ".......abba.......",
+        ".......abea....f..",
+        ".......abea...fgf.",
+        ".......abea..fghf.",
+        ".......arra..fghf.",
+        ".......arra...ff..",
+        ".......arra.......",
+        ".......arra.......",
+        ".......arra.......",
+        "......arrrra......",
+        ".....arrsssra.....",
+        ".....arsshsra.....",
+        ".....arssssra.....",
+        "......arrrra......",
+        ".......aaaa.......",
+        "..................",
+    ], {"a": "#2c3138", "b": "#bcc6d0", "e": "#eaf0f5", "r": "#a3262a", "s": "#e04848", "h": "#ffc27a",
+        "f": "#de8442", "g": "#ff9a3c"})
+
+
+def void_erosion_effect_icon():
+    """공허 침식: 금 간 하트를 보라 공허가 갉아 먹는다."""
+    return effect_art([
+        "..................",
+        "..................",
+        "...aaaa....aaaa...",
+        "..arrrra..arrdca..",
+        ".arrsssraarrdcdca.",
+        ".arsshssrrsr.cdea.",
+        ".arshhssssr..dca..",
+        ".arssssssr.c..ca..",
+        ".arsssssr.ccd.ca..",
+        "..arssssr..dc.a...",
+        "...arsssr.ca.a....",
+        "....arssr.c.a.....",
+        ".....arsr..a......",
+        "......arr.a.......",
+        ".......aaa........",
+        "..................",
+        "..................",
+        "..................",
+    ], {"a": "#24133a", "r": "#7a1c22", "s": "#c0313a", "h": "#f07a80", "c": "#73479e", "d": "#c7a2ff", "e": "#f2e6ff"})
+
+
+def main_ex3_c3(made):
+    made.append(save(rust_effect_icon(), "mob_effect/rust.png"))
+    made.append(save(overheat_effect_icon(), "mob_effect/overheat.png"))
+    made.append(save(void_erosion_effect_icon(), "mob_effect/void_erosion.png"))
+
+
 def save(im, rel, scale=1):
     path = os.path.join(OUT, *rel.split("/"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -3220,6 +3311,7 @@ def main():
     main_m6(made)
     main_m8c(made)
     main_fin(made)
+    main_ex3_c3(made)
 
     if "--sheet" in sys.argv:
         tiles = [Image.open(p) for p in made]

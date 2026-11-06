@@ -32,7 +32,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
+import io.github.yhyeop.sanupcraft.config.SanupcraftConfig;
 import io.github.yhyeop.sanupcraft.core.ModItems;
+import io.github.yhyeop.sanupcraft.effect.ModEffects;
+import io.github.yhyeop.sanupcraft.effect.Resistances;
 import io.github.yhyeop.sanupcraft.gear.HeatproofGear;
 import io.github.yhyeop.sanupcraft.sound.ModSounds;
 
@@ -43,7 +46,8 @@ import io.github.yhyeop.sanupcraft.sound.ModSounds;
  *   <li>화염 장판: 주변 플레이어 발밑(인원수만큼 3 ~ 6곳)에 25틱 동안 불꽃 고리 → 반경 2.5칸 폭발. 고리 밖으로 나가면 된다.</li>
  *   <li>도약 내려찍기: 15틱 웅크렸다가 대상에게 뛰어올라 착지하면 반경 4칸 피해 + 띄우기. 뛰는 순간 예상 착지점에 고리가 보인다.</li>
  * </ul>
- * 과열: 내열 갑옷 한 벌을 다 입지 않은 대상은 피해 1.5배 + 불 붙음. 패턴 타격은 방패를 깨고 들어간다.
+ * 과열: 내열 갑옷 한 벌을 다 입지 않은 대상은 피해 1.5배 + 과열 효과(1초마다 피해 1, 5초, 물에 들어가면 풀림 — 확장 3 C3, 전에는 불 붙음).
+ * 패턴 타격은 방패를 깨고 들어간다.
  * 내열 검으로 때리면 피해 1.5배. 거미줄에 걸리지 않고 구속이 안 걸린다.
  * 불 · 낙하 피해를 받지 않는다. 체력이 절반 아래면 패턴 간격이 짧아진다.
  * 여러 명이면 체력이 늘고, 기여자 각자 심장을 받는다 ({@link BossParty}).
@@ -52,7 +56,9 @@ public class FurnaceWarden extends PartyBossMonster {
 	public static final double MAX_HEALTH = 450.0;
 	public static final float HEAT_MULTIPLIER = 1.5F;
 	public static final float HEATPROOF_SWORD_MULTIPLIER = 1.5F;
-	public static final int HEAT_FIRE_TICKS = 100;
+	/** 과열 효과 기본값 (설정 {@code statusEffect.wardenOverheat*}). 전의 불 붙음(100틱 = 피해 5)과 같은 양. */
+	public static final int OVERHEAT_TICKS = 100;
+	public static final int OVERHEAT_LEVEL = 1;
 	public static final float BLAST_DAMAGE = 10.0F;
 	public static final double BLAST_RANGE = 7.0;
 	public static final double BLAST_HALF_ANGLE = Math.toRadians(35.0);
@@ -418,7 +424,7 @@ public class FurnaceWarden extends PartyBossMonster {
 	}
 
 	/**
-	 * 과열: 내열 갑옷 한 벌이 없으면 더 아프고 불이 붙는다.
+	 * 과열: 내열 갑옷 한 벌이 없으면 더 아프고 과열 효과가 걸린다.
 	 * 패턴 타격(pattern)은 맞히기 직전에 대상의 방패를 깨고 그대로 들어간다.
 	 */
 	public boolean hitWithHeat(ServerLevel level, LivingEntity target, float damage, boolean pattern) {
@@ -426,10 +432,11 @@ public class FurnaceWarden extends PartyBossMonster {
 			BossCombat.breakShield(level, target);
 			damage *= (float) party().outgoingDamageScale(); // 강화 단계 (근접은 공격력 속성에 이미 들어 있다)
 		}
-		boolean heatproof = HeatproofGear.wearsFullSet(target);
+		boolean heatproof = Resistances.heatResistant(target);
 		boolean hurt = target.hurtServer(level, damageSources().mobAttack(this), heatproof ? damage : damage * HEAT_MULTIPLIER);
 		if (hurt && !heatproof) {
-			target.igniteForTicks(HEAT_FIRE_TICKS);
+			SanupcraftConfig config = SanupcraftConfig.current();
+			ModEffects.inflict(target, ModEffects.OVERHEAT, config.wardenOverheatTicks, config.wardenOverheatLevel, this);
 			BossCombat.warn(level, target, heatWarning, "entity.sanupcraft.furnace_warden.heat_warning"); // 세트 없이 맞은 플레이어에게 안내
 		}
 		return hurt;

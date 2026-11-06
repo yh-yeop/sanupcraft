@@ -104,8 +104,8 @@
   "advancements.sanupcraft.press.description": "Press: iron ingot → iron plate. Alloy Smelter = 6 iron plates + 2 furnaces + blast furnace.",
   "block.sanupcraft.guardian_altar.no_room": "Not enough room: clear 3x3 and 4 blocks high above the altar.",
   "block.sanupcraft.guardian_altar.peaceful": "Bosses do not wake on Peaceful.",
-  "entity.sanupcraft.rusty_guardian.rust_warning": "Rusted! Without a full steel set you take 1.5x damage and slowness.",
-  "entity.sanupcraft.furnace_warden.heat_warning": "Overheated! Without a full heatproof set you take 1.5x damage and burn.",
+  "entity.sanupcraft.rusty_guardian.rust_warning": "Rusted! Without a full steel set you take 1.5x damage, slowness and rust (less armor).",
+  "entity.sanupcraft.furnace_warden.heat_warning": "Overheated! Without a full heatproof set you take 1.5x damage and overheat (water cools you down).",
   "block.sanupcraft.boiler.water_full": "The water tank is full.",
   "block.sanupcraft.boiler.other_fuel": "It holds a different fuel. You can only add the same fuel.",
   "block.sanupcraft.boiler.hint.no_water": "No water: pour a bucket or place it next to a water source",
@@ -309,7 +309,7 @@
   "book.sanupcraft.guide.4": "Boss 1 · Rusty Guardian\n\nUse a summoner (iron plate + gear part + redstone block) on a guardian altar. Rusted shrines in plains and forests have one.\nWithout a full steel set rust hits 1.5x and slows. Steel swords deal 1.5x.",
   "book.sanupcraft.guide.5": "Guardian tips\n\nCharge: when it crouches and a line shows, dodge sideways.\nSlam: leave the warning ring.\nMinions (silverfish): clear them first.\nPattern hits break shields. It speeds up at half health.\nDrop: Guardian Core",
   "book.sanupcraft.guide.6": "Stage 3 · Nether\n\nCore → crusher → 4 core shards. Steel gear + gear part + core shard = heatproof gear.\nIn the Nether a geothermal vent next to lava gives steam; a heatproof drill quarry mines ancient debris. An ender anchor keeps an empty outpost running.",
-  "book.sanupcraft.guide.7": "Boss 2 · Furnace Warden\n\nUse a warden summoner (core shard + magma block + blaze rod) on a Nether altar.\nWithout a full heatproof set you overheat (1.5x + fire). Heatproof swords deal 1.5x.",
+  "book.sanupcraft.guide.7": "Boss 2 · Furnace Warden\n\nUse a warden summoner (core shard + magma block + blaze rod) on a Nether altar.\nWithout a full heatproof set you overheat (1.5x + damage over time, water cools). Heatproof swords deal 1.5x.",
   "book.sanupcraft.guide.8": "Warden tips\n\nSteam blast: when its mouth glows, leave the cone (sides or behind).\nFire pads: step out of the ring at your feet.\nLeap slam: stay out of the landing ring.\nMore players mean more pads.\nDrop: Warden Heart",
   "book.sanupcraft.guide.9": "Stage 4 · The End\n\nHeart forge: ancient debris → netherite scrap, blaze rod → powder (eye of ender).\nShulker shell + heart = ender sender / receiver. Same dye color sends items across dimensions.",
   "book.sanupcraft.guide.10": "Machine tips\n\n· Machines only accept their own recipe inputs from hoppers and belts.\n· A quarry is much faster than a crusher. Route through a chest and pick what you need.\n· Steam gauge + comparator reads fill level.\n· Hover an item to see what it is for.",
@@ -711,5 +711,10 @@
   "subtitles.sanupcraft.boss.colossus.pull": "Void Colossus gathers the void",
   "subtitles.sanupcraft.boss.colossus.crystals": "Void Colossus summons crystals",
   "subtitles.sanupcraft.boss.colossus.rage": "Void Colossus rages",
-  "subtitles.sanupcraft.boss.colossus.death": "Void Colossus crumbles"
+  "subtitles.sanupcraft.boss.colossus.death": "Void Colossus crumbles",
+  "effect.sanupcraft.rust": "Rust",
+  "effect.sanupcraft.overheat": "Overheat",
+  "effect.sanupcraft.void_erosion": "Void Erosion",
+  "death.attack.sanupcraft.overheat": "%1$s overheated",
+  "death.attack.sanupcraft.overheat.player": "%1$s overheated whilst fighting %2$s"
 }

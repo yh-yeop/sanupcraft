@@ -26,6 +26,7 @@ import io.github.yhyeop.sanupcraft.boss.FurnaceWarden;
 import io.github.yhyeop.sanupcraft.boss.GuardianAltarBlock;
 import io.github.yhyeop.sanupcraft.boss.ModBoss;
 import io.github.yhyeop.sanupcraft.core.ModItems;
+import io.github.yhyeop.sanupcraft.effect.ModEffects;
 import io.github.yhyeop.sanupcraft.factory.MachineBlockEntity;
 import io.github.yhyeop.sanupcraft.factory.ModMachines;
 import io.github.yhyeop.sanupcraft.gear.HeatproofGear;
@@ -158,7 +159,10 @@ public class SanupcraftM2GameTest {
 		helper.succeed();
 	}
 
-	/** 과열: 내열 한 벌이 없으면 1.5배 아프고 불이 붙는다 (모의 플레이어는 갑옷 방어력이 안 붙는다). */
+	/**
+	 * 과열: 내열 한 벌이 없으면 1.5배 아프고 과열 효과가 걸린다 (모의 플레이어는 갑옷 방어력이 안 붙는다).
+	 * 확장 3 C3에서 불 붙음을 과열 효과로 옮겼다 (같은 피해량, 물에 들어가면 풀림).
+	 */
 	@GameTest
 	public void heatHitsHarderWithoutHeatproof(GameTestHelper helper) {
 		FurnaceWarden warden = helper.spawn(ModBoss.FURNACE_WARDEN, new BlockPos(3, 1, 3));
@@ -172,8 +176,8 @@ public class SanupcraftM2GameTest {
 		float suitedLoss = suited.getMaxHealth() - suited.getHealth();
 
 		helper.assertTrue(bareLoss >= suitedLoss * FurnaceWarden.HEAT_MULTIPLIER - 0.01F, "맨몸 피해 " + bareLoss + ", 내열 피해 " + suitedLoss);
-		helper.assertTrue(bare.isOnFire(), "맨몸인데 불이 안 붙음");
-		helper.assertFalse(suited.isOnFire(), "내열 한 벌인데 불이 붙음");
+		helper.assertTrue(bare.hasEffect(ModEffects.OVERHEAT), "맨몸인데 과열이 안 걸림");
+		helper.assertFalse(suited.hasEffect(ModEffects.OVERHEAT), "내열 한 벌인데 과열이 걸림");
 		helper.succeed();
 	}
 
