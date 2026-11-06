@@ -51,7 +51,8 @@
 			"io.github.yhyeop.sanupcraft.test.SanupcraftM11bClientGameTest",
 			"io.github.yhyeop.sanupcraft.test.SanupcraftFinClientGameTest",
 			"io.github.yhyeop.sanupcraft.test.SanupcraftD1ClientGameTest",
-			"io.github.yhyeop.sanupcraft.test.SanupcraftA5ClientGameTest"
+			"io.github.yhyeop.sanupcraft.test.SanupcraftA5ClientGameTest",
+			"io.github.yhyeop.sanupcraft.test.SanupcraftC4ClientGameTest"
 		]
 	},
 	"depends": {

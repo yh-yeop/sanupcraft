@@ -3919,7 +3919,7 @@ def c4_art(rows, palette):
     return im
 
 
-def c4_cracks(name, glow_colors, seed):
+def c4_cracks(name, glow_colors, seed, density=90):
     """보스 텍스처의 몸통 칸 위에만 금을 긋는다: 금 레이어(어두운 금 + 둘레 그늘)와 빛 레이어(금 속 빛)."""
     base = Image.open(os.path.join(OUT, "entity", name + ".png")).convert("RGBA")
     w, h = base.size
@@ -3946,7 +3946,7 @@ def c4_cracks(name, glow_colors, seed):
                 y += dy
 
     cells = [(x, y) for y in range(h) for x in range(w) if solid[y][x]]
-    for _ in range(max(6, count // 90)):
+    for _ in range(max(6, count // density)):
         x, y = rnd.choice(cells)
         walk(x, y, rnd.randint(4, 9), rnd.choice((-1, 0, 1)) or 1, rnd.choice((-1, 1)))
     cracks = Image.new("RGBA", (w, h))
@@ -4063,10 +4063,11 @@ def c4_shield():
 
 def main_c4(made):
     # R7: 보스 2페이즈 금 간 갑옷 (금 + 금 속 빛, 보스 빛 색)
-    for name, colors, seed in (("rusty_guardian", ["#2fb8ef", "#a6efff", "#5fd0ff"], 4401),
-                               ("furnace_warden", ["#ffb040", "#fff0a0", "#ff7a1a"], 4402),
-                               ("void_colossus", ["#e872ff", "#ffd2ff", "#b632d8"], 4403)):
-        cracks, glow = c4_cracks(name, colors, seed)
+    # 파수꾼은 원래 주황 줄무늬라 흰 노랑(녹은 쇠), 거상은 원래 자홍 빛 금이 있어 흰 연보라로 더 많이 긋는다
+    for name, colors, seed, density in (("rusty_guardian", ["#2fb8ef", "#a6efff", "#5fd0ff"], 4401, 90),
+                                        ("furnace_warden", ["#fff6c8", "#ffffff", "#ffe070"], 4402, 75),
+                                        ("void_colossus", ["#ffffff", "#f0dcff", "#c8f0ff"], 4403, 60)):
+        cracks, glow = c4_cracks(name, colors, seed, density)
         made.append(save(cracks, f"entity/{name}_cracks.png"))
         made.append(save(glow, f"entity/{name}_cracks_glow.png"))
     # C4: 보스 전용 장비
