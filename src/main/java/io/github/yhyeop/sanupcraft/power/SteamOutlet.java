@@ -1,5 +1,6 @@
 package io.github.yhyeop.sanupcraft.power;
 
+import java.util.Collection;
 import java.util.List;
 
 import net.minecraft.core.BlockPos;
@@ -19,8 +20,13 @@ public final class SteamOutlet {
 
 	/** {@code steam}을 나눠 주고 남은 양을 돌려준다. */
 	public int distribute(ServerLevel level, BlockPos pos, int steam) {
+		return distribute(level, List.of(pos), steam);
+	}
+
+	/** 여러 칸에서 파이프망을 찾는다 (대형 보일러: 외벽에 붙은 파이프 · 기계도 받는다). */
+	public int distribute(ServerLevel level, Collection<BlockPos> starts, int steam) {
 		if (--refresh <= 0) {
-			consumers = SteamNetwork.findConsumers(level, pos);
+			consumers = SteamNetwork.findConsumers(level, starts);
 			refresh = NETWORK_REFRESH_TICKS;
 		}
 		if (steam <= 0 || consumers.isEmpty()) {

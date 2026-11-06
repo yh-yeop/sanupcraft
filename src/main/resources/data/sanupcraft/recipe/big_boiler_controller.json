@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "sanupcraft:steel_plate",
+    "R": "sanupcraft:reinforced_machine_frame",
+    "G": "sanupcraft:gear_part",
+    "B": "sanupcraft:boiler"
+  },
+  "pattern": [
+    "PRP",
+    "GBG",
+    "PPP"
+  ],
+  "result": {
+    "id": "sanupcraft:big_boiler_controller"
+  }
+}

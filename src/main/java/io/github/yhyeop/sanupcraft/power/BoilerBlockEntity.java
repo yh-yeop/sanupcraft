@@ -16,6 +16,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CookingFuel;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -36,6 +37,7 @@ import org.jspecify.annotations.Nullable;
  * 연료 칸 하나 (깔때기로도 넣을 수 있음). 옆에 물 원천이 있으면 물이 계속 찬다.
  * 물은 {@link FluidHolder}로도 받는다: 옆의 펌프가 밀어 넣고, 옆의 물 탱크에서는 보일러가 틱당 100까지 끌어온다.
  * 증기를 실제로 만든 틱에만 연료가 탄다 (증기가 가득하거나 물이 없으면 불이 붙은 채로 기다린다).
+ * 대형 보일러 제어기가 이 클래스를 물려받아 용량 · 틱당 증기 · 연료 칸 수와 증기 내보내기만 바꾼다.
  */
 public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer, SteamStorage, FluidHolder {
 	public static final int WATER_CAPACITY = 8000;
@@ -46,9 +48,9 @@ public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer, 
 	private static final int WATER_FROM_SOURCE_PER_TICK = 100;
 	/** 증기를 못 만든 채 이 틱이 지나면 LIT를 끈다 (연료는 그대로 남아 있음). */
 	private static final int LIT_HOLD_TICKS = 10;
-	private static final int[] SLOTS = {0};
+	private final int[] slots;
 
-	private NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
+	private NonNullList<ItemStack> items;
 	private int water;
 	private int steam;
 	private final SteamFlowMeter flow = new SteamFlowMeter();
@@ -59,21 +61,37 @@ public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer, 
 	private final SteamOutlet outlet = new SteamOutlet();
 
 	public BoilerBlockEntity(BlockPos pos, BlockState state) {
-		super(ModPower.BOILER_BLOCK_ENTITY, pos, state);
+		this(ModPower.BOILER_BLOCK_ENTITY, pos, state, 1);
+	}
+
+	/** 물려받는 블록 엔티티용 (대형 보일러 제어기): 연료 칸 수를 정한다. */
+	protected BoilerBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, int fuelSlots) {
+		super(type, pos, state);
+		items = NonNullList.withSize(fuelSlots, ItemStack.EMPTY);
+		slots = new int[fuelSlots];
+		for (int i = 0; i < fuelSlots; i++) {
+			slots[i] = i;
+		}
 	}
 
 	public static void serverTick(ServerLevel level, BlockPos pos, BlockState state, BoilerBlockEntity boiler) {
-		if (boiler.touchesWaterSource(level, pos)) {
-			boiler.water = Math.min(WATER_CAPACITY, boiler.water + WATER_FROM_SOURCE_PER_TICK);
+		boiler.tick(level, pos, state);
+	}
+
+	/** 한 틱: 물 받기 → 연료 태우기 → 증기 만들기 → 내보내기 → LIT 맞추기. */
+	protected void tick(ServerLevel level, BlockPos pos, BlockState state) {
+		if (touchesWaterSource(level, pos)) {
+			water = Math.min(waterCapacity(), water + WATER_FROM_SOURCE_PER_TICK);
 		} else {
-			boiler.drawFromTanks(level, pos);
+			drawFromTanks(level, pos);
 		}
-		ItemStack fuel = boiler.items.get(0);
-		if (boiler.litTime <= 0 && !fuel.isEmpty() && boiler.water > 0 && boiler.steam < STEAM_CAPACITY) {
-			int burn = burnDuration(level, boiler, fuel);
+		boolean running = canRun();
+		ItemStack fuel = nextFuel();
+		if (running && litTime <= 0 && !fuel.isEmpty() && water > 0 && steam < steamCapacity()) {
+			int burn = burnDuration(level, this, fuel);
 			if (burn > 0) {
-				boiler.litTime = burn;
-				boiler.litDuration = burn;
+				litTime = burn;
+				litDuration = burn;
 				ItemStack remainder = MachineBlockEntity.consumeFuel(fuel);
 				if (!remainder.isEmpty()) {
 					// 용암 양동이 → 빈 양동이: 보일러에는 빼낼 칸이 없으니 위에 떨군다
@@ -82,28 +100,84 @@ public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer, 
 			}
 		}
 		int made = 0;
-		if (boiler.litTime > 0) {
-			made = Math.min(STEAM_PER_TICK, Math.min(STEAM_CAPACITY - boiler.steam, boiler.water));
+		if (running && litTime > 0) {
+			made = Math.min(steamPerTick(), Math.min(steamCapacity() - steam, water));
 			if (made > 0) {
-				boiler.steam += made;
-				boiler.flow.add(level.getGameTime(), made);
-				boiler.water -= made;
-				boiler.litTime--;
+				steam += made;
+				flow.add(level.getGameTime(), made);
+				water -= made;
+				litTime = Math.max(0, litTime - burnPerTick());
 			}
 		}
-		boiler.idleTicks = made > 0 ? 0 : Math.min(boiler.idleTicks + 1, LIT_HOLD_TICKS);
-		boiler.steam = boiler.outlet.distribute(level, pos, boiler.steam);
+		idleTicks = made > 0 ? 0 : Math.min(idleTicks + 1, LIT_HOLD_TICKS);
+		steam = distributeSteam(level, pos, steam);
 
-		boolean isLit = boiler.isLit();
+		boolean isLit = isLit();
 		if (state.getValue(BoilerBlock.LIT) != isLit) {
 			level.setBlockAndUpdate(pos, state.setValue(BoilerBlock.LIT, isLit));
 		}
 		setChanged(level, pos, state);
 	}
 
+	/** 다음에 태울 연료 (앞 칸부터). 없으면 빈 스택. */
+	private ItemStack nextFuel() {
+		for (ItemStack stack : items) {
+			if (!stack.isEmpty()) {
+				return stack;
+			}
+		}
+		return ItemStack.EMPTY;
+	}
+
+	/** 지금 불을 붙이고 증기를 만들어도 되는가. 대형 보일러는 모양이 맞을 때만. */
+	protected boolean canRun() {
+		return true;
+	}
+
+	/** 틱당 만드는 증기 (= 쓰는 물). */
+	protected int steamPerTick() {
+		return STEAM_PER_TICK;
+	}
+
+	/** 증기를 만든 틱마다 줄어드는 연소 틱. */
+	protected int burnPerTick() {
+		return 1;
+	}
+
+	public int waterCapacity() {
+		return WATER_CAPACITY;
+	}
+
+	/** 증기를 나눠 주고 남은 양을 돌려준다. */
+	protected int distributeSteam(ServerLevel level, BlockPos pos, int steam) {
+		return outlet.distribute(level, pos, steam);
+	}
+
+	/**
+	 * 손에 든 연료를 넣는다 (빈 칸 또는 같은 연료 칸에, 앞 칸부터).
+	 * 받을 칸이 하나도 없으면 false (다른 연료가 차 있음). 같은 연료가 꽉 찼을 때는 그대로 true.
+	 */
+	public boolean insertFuel(ItemStack stack) {
+		boolean accepted = false;
+		for (int i = 0; i < items.size() && !stack.isEmpty(); i++) {
+			ItemStack current = items.get(i);
+			if (current.isEmpty()) {
+				items.set(i, stack.split(stack.getCount()));
+				accepted = true;
+			} else if (ItemStack.isSameItemSameComponents(current, stack)) {
+				int move = Math.min(stack.getCount(), current.getMaxStackSize() - current.getCount());
+				current.grow(move);
+				stack.shrink(move);
+				accepted = true;
+			}
+		}
+		setChanged();
+		return accepted;
+	}
+
 	/** 옆의 물 탱크에서 틱당 {@link #WATER_FROM_SOURCE_PER_TICK}까지 끌어온다. 끌어온 양을 돌려준다. */
 	public int drawFromTanks(ServerLevel level, BlockPos pos) {
-		int want = Math.min(WATER_FROM_SOURCE_PER_TICK, WATER_CAPACITY - water);
+		int want = Math.min(WATER_FROM_SOURCE_PER_TICK, waterCapacity() - water);
 		int drawn = 0;
 		for (Direction direction : Direction.values()) {
 			if (drawn >= want) {
@@ -140,7 +214,7 @@ public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer, 
 
 	/** 물 양동이 하나를 붓는다. 다 들어가면 true. */
 	public boolean pourBucket() {
-		if (water + BUCKET > WATER_CAPACITY) {
+		if (water + BUCKET > waterCapacity()) {
 			return false;
 		}
 		water += BUCKET;
@@ -162,7 +236,7 @@ public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer, 
 
 	@Override
 	public int fluidCapacity() {
-		return WATER_CAPACITY;
+		return waterCapacity();
 	}
 
 	@Override
@@ -170,7 +244,7 @@ public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer, 
 		if (kind != FluidKind.WATER || amount <= 0) {
 			return 0;
 		}
-		int accepted = Math.min(amount, WATER_CAPACITY - water);
+		int accepted = Math.min(amount, waterCapacity() - water);
 		if (accepted > 0 && !simulate) {
 			water += accepted;
 			setChanged();
@@ -217,14 +291,19 @@ public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer, 
 		return litTime;
 	}
 
+	/** 연료 칸에 든 개수 (칸이 여럿이면 합). */
 	public int fuelCount() {
-		return items.get(0).getCount();
+		int count = 0;
+		for (ItemStack stack : items) {
+			count += stack.getCount();
+		}
+		return count;
 	}
 
 	@Override
 	protected void loadAdditional(ValueInput input) {
 		super.loadAdditional(input);
-		items = NonNullList.withSize(1, ItemStack.EMPTY);
+		items = NonNullList.withSize(items.size(), ItemStack.EMPTY);
 		ContainerHelper.loadAllItems(input, items);
 		water = input.getIntOr("water", 0);
 		steam = input.getIntOr("steam", 0);
@@ -246,12 +325,12 @@ public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer, 
 
 	@Override
 	public int getContainerSize() {
-		return 1;
+		return items.size();
 	}
 
 	@Override
 	public boolean isEmpty() {
-		return items.get(0).isEmpty();
+		return fuelCount() == 0;
 	}
 
 	@Override
@@ -295,7 +374,7 @@ public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer, 
 
 	@Override
 	public int[] getSlotsForFace(Direction direction) {
-		return SLOTS;
+		return slots;
 	}
 
 	@Override

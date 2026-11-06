@@ -8,6 +8,8 @@ import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.client.model.geom.ModelLayers;
+import net.minecraft.client.renderer.entity.MinecartRenderer;
 import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
@@ -17,6 +19,7 @@ import io.github.yhyeop.sanupcraft.boss.ModBoss;
 import io.github.yhyeop.sanupcraft.factory.ModMachines;
 import io.github.yhyeop.sanupcraft.gear.SteamGear;
 import io.github.yhyeop.sanupcraft.logistics.ModLogistics;
+import io.github.yhyeop.sanupcraft.transport.ModTransport;
 
 public class SanupcraftClient implements ClientModInitializer {
 	@Override
@@ -27,6 +30,9 @@ public class SanupcraftClient implements ClientModInitializer {
 		EntityRendererRegistry.register(ModBoss.RUSTY_GUARDIAN, RustyGuardianRenderer::new);
 		EntityRendererRegistry.register(ModBoss.FURNACE_WARDEN, FurnaceWardenRenderer::new);
 		EntityRendererRegistry.register(SteamGear.RIVET_ENTITY, ThrownItemRenderer::new);
+		// M8 묶음 A: 바닐라 수레 모델에 보일러 · 통을 얹어 그린다 (엔티티의 getDefaultDisplayBlockState)
+		EntityRendererRegistry.register(ModTransport.STEAM_LOCOMOTIVE, context -> new MinecartRenderer(context, ModelLayers.FURNACE_MINECART));
+		EntityRendererRegistry.register(ModTransport.CARGO_WAGON, context -> new MinecartRenderer(context, ModelLayers.CHEST_MINECART));
 		ItemTooltipCallback.EVENT.register((stack, context, flag, lines) -> addGuideTooltip(stack, lines));
 	}
 

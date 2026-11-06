@@ -1,0 +1,34 @@
+{
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "sanupcraft:big_boiler_controller"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:big_boiler_controller"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.big_boiler.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.big_boiler.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ],
+  "parent": "sanupcraft:guardian_core"
+}

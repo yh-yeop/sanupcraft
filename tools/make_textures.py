@@ -1322,6 +1322,165 @@ def main_bundle4(made):
     made.append(save(tank_top(), "block/tank_top.png"))
 
 
+# ---------- M8 묶음 A: 대형 보일러 · 증기 기관차 ----------
+DARK_STEEL = {"a": "#1d2126", "b": "#3a414a", "c": "#545d68", "d": "#717b87", "e": "#9aa4b0"}
+
+
+def big_casing(formed):
+    """대형 보일러 외벽: 어두운 강철판에 리벳 띠. 모양이 맞으면 가운데 띠가 달아오른 구리색."""
+    im = recolor(panel(seed=501), DARK_STEEL)
+    for y in (5, 10):
+        for x in range(16):
+            im.putpixel((x, y), px("a"))
+    for x in range(1, 15, 3):
+        im.putpixel((x, 4), px("e"))
+        im.putpixel((x, 11), px("e"))
+    for y in range(6, 10):
+        for x in range(16):
+            if formed:
+                im.putpixel((x, y), px("t" if (x + y) % 4 else "u"))
+            else:
+                im.putpixel((x, y), px("b" if (x + y) % 4 else "c"))
+    return im
+
+
+def big_controller_front(lit):
+    """대형 보일러 제어기 앞면: 위에 압력계, 아래에 큰 화구."""
+    im = recolor(panel(seed=502), DARK_STEEL)
+    for y in range(2, 7):
+        for x in range(5, 11):
+            d = math.hypot(x - 7.5, y - 4.0)
+            if d < 2.9:
+                im.putpixel((x, y), px("a") if d > 2.1 else px("e"))
+    im.putpixel((8, 3), px("R"))
+    im.putpixel((7, 4), px("a"))
+    for y in range(8, 15):
+        for x in range(3, 13):
+            edge = x in (3, 12) or y in (8, 14)
+            if edge:
+                im.putpixel((x, y), px("a"))
+            elif lit:
+                im.putpixel((x, y), px("u" if (x * 3 + y) % 4 == 0 else "t" if (x + y) % 2 else "s"))
+            else:
+                im.putpixel((x, y), px("m" if (x + y) % 2 else "a"))
+    for x in range(4, 12, 2):
+        im.putpixel((x, 9), px("b"))
+    return im
+
+
+def station_side():
+    """역 옆면: 강철판에 상자 무늬와 노란 띠."""
+    im = panel(seed=511)
+    for y in range(4, 13):
+        for x in range(3, 13):
+            edge = x in (3, 12) or y in (4, 12)
+            im.putpixel((x, y), px("w") if edge else px("x" if (y % 3) else "w"))
+    for x in range(16):
+        im.putpixel((x, 1), px("u" if (x // 2) % 2 else "a"))
+    return im
+
+
+def station_top(unload):
+    """역 윗면: 화살표 (적재 = 바깥으로 초록, 하역 = 안으로 주황)."""
+    im = panel(seed=512)
+    color = "t" if unload else "g"
+    arrow = [
+        "................",
+        "................",
+        ".......XX.......",
+        "......XXXX......",
+        ".....XXXXXX.....",
+        "....XXXXXXXX....",
+        ".......XX.......",
+        ".......XX.......",
+        ".......XX.......",
+        ".......XX.......",
+        ".......XX.......",
+        ".......XX.......",
+        "................",
+        "................",
+        "................",
+        "................",
+    ]
+    for y, row in enumerate(arrow):
+        for x, ch in enumerate(row):
+            if ch == "X":
+                yy = 15 - y if unload else y
+                im.putpixel((x, yy), px(color))
+    return im
+
+
+LOCOMOTIVE = [
+    "................",
+    "...aa...........",
+    "...ab...........",
+    "..aaaa..........",
+    "..abba.aaaaaa...",
+    "..abbaaadddcca..",
+    ".aaccccccccccba.",
+    ".acdddddcttucba.",
+    ".accccccctssbba.",
+    ".aaaaaaaaaaaaaa.",
+    "..abba....abba..",
+    ".abeeba..abeeba.",
+    ".abeeba..abeeba.",
+    "..abba....abba..",
+    "................",
+    "................",
+]
+
+CARGO_WAGON = [
+    "................",
+    "................",
+    "................",
+    "...wwwwwwwwww...",
+    "...wxxxxxxxxw...",
+    "...wxwwxxwwxw...",
+    "...wxxxxxxxxw...",
+    ".aaaaaaaaaaaaaa.",
+    ".acddddddddddca.",
+    ".abccccccccccba.",
+    ".aaaaaaaaaaaaaa.",
+    "..abba....abba..",
+    ".abeeba..abeeba.",
+    ".abeeba..abeeba.",
+    "..abba....abba..",
+    "................",
+]
+
+COUPLER = [
+    "................",
+    "................",
+    "..........aaa...",
+    ".........acdca..",
+    ".........ad.da..",
+    ".........acdca..",
+    "........aaaaa...",
+    ".......acda.....",
+    "......acda......",
+    ".....acda.......",
+    "...aaaaa........",
+    "..acdca.........",
+    "..ad.da.........",
+    "..acdca.........",
+    "...aaa..........",
+    "................",
+]
+
+
+def main_m8a(made):
+    made.append(save(big_casing(False), "block/big_boiler_casing.png"))
+    made.append(save(big_casing(True), "block/big_boiler_casing_formed.png"))
+    made.append(save(big_controller_front(False), "block/big_boiler_controller_front.png"))
+    made.append(save(big_controller_front(True), "block/big_boiler_controller_front_on.png"))
+    made.append(save(station_side(), "block/cargo_station_side.png"))
+    made.append(save(station_top(False), "block/cargo_station_top_load.png"))
+    made.append(save(station_top(True), "block/cargo_station_top_unload.png"))
+    made.append(save(from_art(LOCOMOTIVE), "item/steam_locomotive.png"))
+    made.append(save(from_art(CARGO_WAGON), "item/cargo_wagon.png"))
+    made.append(save(from_art(COUPLER), "item/coupler.png"))
+
+
 def save(im, rel, scale=1):
     path = os.path.join(OUT, *rel.split("/"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -1356,6 +1515,7 @@ def main():
     main_bundle2(made)
     main_bundle3(made)
     main_bundle4(made)
+    main_m8a(made)
 
     if "--sheet" in sys.argv:
         tiles = [Image.open(p) for p in made]

@@ -1,0 +1,34 @@
+{
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "sanupcraft:steam_locomotive"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:steam_locomotive"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.steam_locomotive.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.steam_locomotive.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ],
+  "parent": "sanupcraft:big_boiler"
+}

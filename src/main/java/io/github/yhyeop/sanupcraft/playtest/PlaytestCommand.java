@@ -39,6 +39,8 @@ import io.github.yhyeop.sanupcraft.gear.SteelGear;
 import io.github.yhyeop.sanupcraft.logistics.ModLogistics;
 import io.github.yhyeop.sanupcraft.mining.ModMining;
 import io.github.yhyeop.sanupcraft.power.ModPower;
+import io.github.yhyeop.sanupcraft.industry.ModIndustry;
+import io.github.yhyeop.sanupcraft.transport.ModTransport;
 
 /**
  * 싱글 실테스트용: {@code /sanupcraft playtest <단계>} (OP). 그 단계를 시험하는 데 필요한 장비 · 재료를 주고,
@@ -56,7 +58,8 @@ public final class PlaytestCommand {
 		FORGE("심장 제련로 · 고대 잔해", Level.NETHER, PlaytestCommand::kitForge),
 		OUTPOST("네더 전초기지: 지열 분출구 · 내열 드릴 굴착기 · 엔더 닻", Level.NETHER, PlaytestCommand::kitOutpost),
 		HOME("오버월드로 돌아오기", Level.OVERWORLD, PlaytestCommand::kitHome),
-		END("엔드 · 엔더 운반기", Level.END, PlaytestCommand::kitEnd);
+		END("엔드 · 엔더 운반기", Level.END, PlaytestCommand::kitEnd),
+		INDUSTRY("산업 규모: 대형 보일러 · 증기 기관차 · 화물 열차", null, PlaytestCommand::kitIndustry);
 
 		final String description;
 		final ResourceKey<Level> dimension;
@@ -295,6 +298,34 @@ public final class PlaytestCommand {
 		give(p, Items.COBBLESTONE, 64);
 		give(p, Items.BOW, 1);
 		give(p, Items.ARROW, 64);
+		food(p);
+	}
+
+	/** M8 묶음 A: 외벽 33 + 제어기로 대형 보일러, 레일 위 기관차 + 화물칸 + 역 (꺼진 동력 레일 = 정거장). */
+	private static void kitIndustry(ServerPlayer p) {
+		give(p, ModIndustry.BIG_BOILER_CASING.asItem(), 40);
+		give(p, ModIndustry.BIG_BOILER_CONTROLLER.asItem(), 1);
+		give(p, Items.COAL, 64);
+		give(p, Items.WATER_BUCKET, 2);
+		give(p, ModFluid.PUMP.asItem(), 1);
+		give(p, ModFluid.TANK.asItem(), 1);
+		give(p, ModPower.STEAM_PIPE.asItem(), 16);
+		give(p, ModPower.STEAM_GAUGE.asItem(), 1);
+		give(p, ModMachines.CRUSHER.asItem(), 1);
+		give(p, Items.COMPARATOR, 1);
+		give(p, Items.RAIL, 64);
+		give(p, Items.RAIL, 64);
+		give(p, Items.POWERED_RAIL, 8);
+		give(p, Items.LEVER, 2);
+		give(p, ModTransport.STEAM_LOCOMOTIVE_ITEM, 1);
+		give(p, ModTransport.CARGO_WAGON_ITEM, 1);
+		give(p, ModTransport.CARGO_WAGON_ITEM, 1);
+		give(p, ModTransport.COUPLER, 4);
+		give(p, ModTransport.CARGO_STATION.asItem(), 2);
+		give(p, charged(SteamGear.STEAM_CANISTER));
+		give(p, Items.HOPPER, 4);
+		give(p, Items.CHEST, 2);
+		give(p, Items.COBBLESTONE, 64);
 		food(p);
 	}
 

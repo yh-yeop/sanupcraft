@@ -75,19 +75,9 @@ public class BoilerBlock extends BaseEntityBlock {
 			return InteractionResult.SUCCESS;
 		}
 		if (stack.has(DataComponents.COOKING_FUEL)) {
-			if (!level.isClientSide()) {
-				ItemStack current = boiler.getItem(0);
-				if (current.isEmpty()) {
-					boiler.setItem(0, stack.split(stack.getCount()));
-				} else if (ItemStack.isSameItemSameComponents(current, stack)) {
-					int move = Math.min(stack.getCount(), current.getMaxStackSize() - current.getCount());
-					current.grow(move);
-					stack.shrink(move);
-					boiler.setChanged();
-				} else {
-					player.sendOverlayMessage(Component.translatable("block.sanupcraft.boiler.other_fuel"));
-					return InteractionResult.FAIL;
-				}
+			if (!level.isClientSide() && !boiler.insertFuel(stack)) {
+				player.sendOverlayMessage(Component.translatable("block.sanupcraft.boiler.other_fuel"));
+				return InteractionResult.FAIL;
 			}
 			return InteractionResult.SUCCESS;
 		}

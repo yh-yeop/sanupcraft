@@ -19,6 +19,9 @@
     "sanupcraft:filter_hopper",
     "sanupcraft:steam_charger",
     "sanupcraft:pump",
-    "sanupcraft:tank"
+    "sanupcraft:tank",
+    "sanupcraft:big_boiler_casing",
+    "sanupcraft:big_boiler_controller",
+    "sanupcraft:cargo_station"
   ]
 }

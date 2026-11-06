@@ -18,10 +18,12 @@ import io.github.yhyeop.sanupcraft.fluid.ModFluid;
 import io.github.yhyeop.sanupcraft.gear.HeatproofGear;
 import io.github.yhyeop.sanupcraft.gear.SteamGear;
 import io.github.yhyeop.sanupcraft.gear.SteelGear;
+import io.github.yhyeop.sanupcraft.industry.ModIndustry;
 import io.github.yhyeop.sanupcraft.logistics.ModLogistics;
 import io.github.yhyeop.sanupcraft.mining.ModMining;
 import io.github.yhyeop.sanupcraft.playtest.PlaytestCommand;
 import io.github.yhyeop.sanupcraft.power.ModPower;
+import io.github.yhyeop.sanupcraft.transport.ModTransport;
 import io.github.yhyeop.sanupcraft.world.ModWorld;
 
 public class Sanupcraft implements ModInitializer {
@@ -44,6 +46,9 @@ public class Sanupcraft implements ModInitializer {
 		SteamGear.init();
 		ModBoss.init();
 		ModWorld.init();
+		// M8 묶음 A: 대형 보일러 · 증기 기관차
+		ModIndustry.init();
+		ModTransport.init();
 		ModTab.init();
 		CorpseGravesCompat.init();
 		PlaytestCommand.init();
