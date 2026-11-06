@@ -202,8 +202,10 @@ public class SanupcraftM9aGameTest {
 			}
 			helper.assertTrue(wheat >= 6, "상자에 밀이 모자람: " + wheat);
 			for (int z = 3; z <= 5; z++) {
-				helper.assertBlockProperty(new BlockPos(1, 2, z), CropBlock.AGE, 0);
-				helper.assertBlockProperty(new BlockPos(3, 2, z), CropBlock.AGE, 2);
+				// 시험이 몇백 틱 걸려 무작위 틱으로 자랄 수 있다 → 정확한 단계 대신: 다시 심은 칸은 다 자라지 않은 밀, 어린 칸은 거두지 않음(2 이상 그대로)
+				int replanted = helper.getBlockState(new BlockPos(1, 2, z)).getValue(CropBlock.AGE);
+				helper.assertTrue(helper.getBlockState(new BlockPos(1, 2, z)).is(Blocks.WHEAT) && replanted < CropBlock.MAX_AGE, "다시 심지 않음: " + replanted);
+				helper.assertTrue(helper.getBlockState(new BlockPos(3, 2, z)).getValue(CropBlock.AGE) >= 2, "어린 밀을 거둠");
 			}
 		});
 	}
