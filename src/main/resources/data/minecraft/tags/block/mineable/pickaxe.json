@@ -19,6 +19,8 @@
     "sanupcraft:filter_hopper",
     "sanupcraft:steam_charger",
     "sanupcraft:pump",
-    "sanupcraft:tank"
+    "sanupcraft:tank",
+    "sanupcraft:boss_record_board",
+    "sanupcraft:goal_board"
   ]
 }

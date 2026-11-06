@@ -1,0 +1,25 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:goal_board"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.goal_done.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.goal_done.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "parent": "sanupcraft:root"
+}

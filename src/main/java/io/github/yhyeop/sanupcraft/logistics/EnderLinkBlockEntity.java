@@ -104,9 +104,10 @@ public class EnderLinkBlockEntity extends BaseContainerBlockEntity {
 		return owner != null && owner.equals(player.getUUID());
 	}
 
-	/** 잠금을 켜고 끌 수 있는가: 주인, OP, 또는 주인이 없을 때 (처음 잠그는 사람이 주인이 된다). */
+	/** 잠금을 켜고 끌 수 있는가: 주인, 주인과 같은 팀(M10), OP, 또는 주인이 없을 때 (처음 잠그는 사람이 주인이 된다). */
 	public boolean canManage(Player player) {
-		return owner == null || isOwner(player) || player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER);
+		return owner == null || isOwner(player) || io.github.yhyeop.sanupcraft.server.Teams.sameTeam(level, owner, player) // M10 팀
+				|| player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER);
 	}
 
 	/** 열기 · 채널 바꾸기를 할 수 있는가. 잠기지 않았으면 누구나. */

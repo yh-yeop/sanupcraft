@@ -84,6 +84,7 @@
 | `compat` | 모드팩 편의 모드 맞춤 (시체 모드) |
 | `world` | 월드 구조물(녹슨 사당) · 바닐라 상자 전리품 더하기 (요새 · 보루) |
 | `playtest` | `/sanupcraft playtest <단계>` 실테스트 꾸러미 |
+| `server` | 10명 서버 운영: 팀(`/sanupcraft team`) · 보스 기록판 · 공용 목표판 · 설명서 (M10) |
 
 `src/main` 공통 · 서버, `src/client` 클라이언트 전용(렌더링), `src/gametest` 자동 검사.
 

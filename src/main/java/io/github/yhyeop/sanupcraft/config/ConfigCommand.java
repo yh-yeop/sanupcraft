@@ -18,9 +18,10 @@ public final class ConfigCommand {
 	}
 
 	private static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+		// 뿌리(sanupcraft)에는 권한을 걸지 않고 하위 명령마다 건다 (M10: 팀 명령은 누구나 쓴다)
 		dispatcher.register(Commands.literal("sanupcraft")
-				.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
 				.then(Commands.literal("config")
+						.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
 						.then(Commands.literal("reload").executes(c -> reload(c.getSource())))));
 	}
 

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "S": "sanupcraft:steel_plate",
+    "H": "minecraft:hopper",
+    "B": "minecraft:book"
+  },
+  "pattern": [
+    "SBS",
+    "SHS",
+    "SSS"
+  ],
+  "result": {
+    "id": "sanupcraft:goal_board"
+  }
+}
