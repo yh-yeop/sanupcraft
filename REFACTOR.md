@@ -1338,3 +1338,52 @@ Opus 샘플링(직접 읽음, Haiku 담당 영역): `boss/gear/VoidStaffItem` ·
 - 2단계: 1은 닫고(R2) 5는 앞 3줄로 축소(R3) 6은 보류(R4)하면 2단계 항목이 거의 남지 않는다. 받아들이면 이번 4차는 사실상 2단계 없이 끝난다.
 - 3단계: 없음에 동의.
 - 묶음 소유: R1을 받아들이면 `gear/special/HeadLamp.java` · `gear/special/SpecialGearTicks.java`(이벤트 등록) · 시험 파일 하나가 필요하다. 세 묶음 어디에도 없으므로 새 묶음 **L4**로(파일 겹침 없음).
+
+### 8-5. 최종 결정 (Opus)
+| 반론 | 결정 | 이유 |
+|---|---|---|
+| R1 #28 머리 조명 고아 빛 블록 | **받아들임 (a)만, (b)는 보류** | 확인: `tick`은 `remove`가 `isLoaded` 거짓으로 건너뛰어도 `LAMPS.remove`를 하고, 조명 틱은 2틱마다라 차원 이동 직후 옛 칸 티켓이 먼저 빠질 수 있다. 차원 이동은 Fabric `ServerEntityLevelChangeEvents.AFTER_PLAYER_CHANGE_LEVEL`(26.3 이름, `fabric-entity-events-v1`에서 확인)이 옮긴 그 틱에 불려 옛 칸이 아직 불러와져 있다 → 오탐 → **수정**. 같은 차원 안 시야 밖 `/tp`(홀수 틱)만 남는데, 막으려면 대기 집합 + 청크 불러오기 훅(새 상태)이 필요해 이번엔 문서로 낮추고 보류(28b) |
+| R2 #1 보스 장비 ↔ 설정 | **받아들임** | 툴팁(`ko_kr.json`)이 장비 수치를 적고, 보스 설정은 "맞는 쪽 난이도"라 묶으면 운영자가 보스를 쉽게 할 때 장비도 약해진다. 보스 방해물도 이미 상수. 2단계에서 빼고 **수정(주석)**: 세 장비 상수 옆에 "보스 설정과 일부러 따로 (툴팁이 이 수치를 적는다)" |
+| R3 #5 `hitWithHeat` · `hitWithRust` | **받아들임 → 오탐** | 같은 것은 앞 3줄뿐이고 수호자만 구속을 더 건다. 사용처 둘 · 각 14줄이라 #62 기준(짧은 반복)으로 닫는다. `prepareStrike`로 3줄만 올리는 것도 보스 공격 경로를 건드리는 위험에 비해 이득이 작다 |
+| R4 #6 원 둘레 입자 | **받아들임 → 오탐** | 서버 입자 원은 5~6곳이고 입자 · 개수 · 오프셋 · 반지름 규칙이 다 다르다(나머지는 위치 계산). 설계 판단도 아니다. #62 기준 |
+| R5 #26 토템 | **받아들임 → 오탐** | V1 확인: `bleedOut`이 `clear` 먼저라 토템이 막아도 잠김 · 효과 잔류가 없고, 클래스 문서에 "불사의 토템을 들고 있으면 토템이 먼저다"가 이미 있다. `bypasses_invulnerability` 대안은 오히려 해롭다 |
+| R6 #17 수리대 | **받아들임 (a), (b)는 보류** | 이 프로젝트는 "깔때기만 막고 손은 그대로"를 `canPlaceItemThroughFace`에서 한다(`SanupcraftFixFactoryGameTest`의 기계 재료 시험). `canPlaceItem`은 그대로 두고 면 경로의 재료 갈래만 바꾼다. 장비를 바꿀 때 남은 재료 정체(b)는 칸 비우기 규칙 결정이 필요해 보류(17b) |
+| R7 #4 화남 판정 | **받아들임** | 2페이즈는 한 번 들어가면 유지(시험 고정)인데 화남은 순간 체력이라, 보스가 회복하면 2페이즈 패턴인 채로 쿨다운 · 수정 파동 · 렌더가 1페이즈로 돌아간다. `isPhaseTwo()`는 클라이언트에도 동기 → `isPhaseTwo() \|\| 체력 <= 최대 × PHASE_TWO_HEALTH`. 로드 기본값은 그 시점 `isPhaseTwo()`가 거짓이라 그대로 |
+| R8 #25 `LAST_HIT` | **받아들임** | `clear`가 이미 지우고, 남는 길(쓰러진 채 나감)은 `goDown`의 `remove`가 덮는다. `SERVER_STARTING` 훅은 뺀다 |
+| R9 #27 물속 화염 방사기 | **받아들임 (주석 유지)** | 동작 변경은 문구 · 설계 결정이 따른다. 주석만 고치고 "물속 비용(쓸지 · 멈출지)"은 보류 메모(27b) |
+| V1~V6 | 동의 | V2: `<=` 식은 경계에서 `checkPhaseTwo`와 같다. V3: 34 · 35는 내 화면의 헛휘두름뿐. V4: #22는 `drain` 먼저 → 주사기 `take` 순서로 부분 소모 없음. V5 · V6: 40 · 48 판정 그대로 |
+
+**최종 집계** (48건): **수정 대상 21** (1 · 2 · 3 · 4 · 7 · 10 · 17 · 19 · 20 · 22 · 24 · 25 · 27 · 28 · 32 · 33 · 37 · 40 · 44 · 45 · 47. 그중 1 · 2 · 3 · 10 · 20 · 24 · 27 · 33 · 37 · 40 · 44 · 45는 주석만, 7 · 19는 죽은 코드) · **오탐 26** (5 · 6 · 8 · 9 · 12 · 13 · 14 · 15 · 16 · 18 · 21 · 23 · 26 · 29 · 30 · 31 · 34 · 35 · 36 · 38 · 39 · 41 · 42 · 43 · 46 · 48) · **보류 1** (11) · **2단계로 0** · **3단계로 0**.
+보류 메모 (번호 안에 딸린 것, 다음 라운드 후보): **17b** 수리대에서 장비를 바꿀 때 남은 재료가 다음 장비에 안 맞으면 칸이 막힘(칸 비우기 규칙) · **27b** 물속 화염 방사기 비용(쓰지 않거나 멈추게 할지, 문구 필요) · **28b** 같은 차원 시야 밖 순간이동 때 머리 조명 빛 블록이 남을 수 있음(대기 집합 + 청크 불러오기 훅).
+
+### 8-6. 최종 수정 묶음
+세 묶음은 파일이 겹치지 않는다. 각자 자기 git 작업 트리에서 병렬로 고친다. **공용 파일(`lang/*.json` · README · ROADMAP · `src/gametest/resources/fabric.mod.json` · `sounds.json` · 데이터 JSON)은 아무 묶음도 건드리지 않는다** — 새 시험은 이미 등록된 시험 파일에 메서드로만 넣는다. REFACTOR.md도 묶음은 안 고친다(수정 기록은 조정자가 병합 뒤 적는다).
+경로 앞 `main/` = `src/main/java/io/github/yhyeop/sanupcraft/`, `test/` = `src/gametest/java/io/github/yhyeop/sanupcraft/test/`. 위치는 줄 번호가 아니라 문구로 찾는다.
+모든 묶음 공통 완료 조건: `./gradlew build` 통과(GameTest 409 + 새 시험), **새 시험은 고치기 전에 한 번 실패하는지 확인**(수정을 되돌려 돌려 보기), 주석만 고치는 파일은 코드 변경 금지.
+
+| 묶음 | 소유 파일 (이 묶음만 수정) | 시험 |
+|---|---|---|
+| **L1 보스 · 몹** (1, 2, 3, 4, 7, 10, 32, 33) | `main/boss/PartyBossMonster.java`, `main/boss/phase/BossHazard.java`, `main/boss/RustyGuardian.java`(주석만), `main/boss/FurnaceWarden.java`(주석만), `main/boss/VoidColossus.java`(주석만), `main/boss/gear/RustyHammerItem.java`(주석만), `main/boss/gear/FurnaceShieldItem.java`(주석만), `main/boss/gear/VoidBolt.java`(주석만), `main/mob/VoidShade.java`, `main/mob/EliteMonster.java`(주석만), `main/mob/EliteAbility.java`(주석만), `test/SanupcraftC4GameTest.java`(시험 추가만) | **필수 1** (4). build + `runClientGameTest`(렌더가 `isEnraged`를 읽음) |
+| **L2 모듈 · 장비 · 설정** (17, 19, 20, 24, 28, 47) | `main/module/RepairStationBlockEntity.java`, `main/module/GearUpgradeRecipes.java`(주석만), `main/module/ModuleEffects.java`(상수 셋 추가만), `main/config/SanupcraftConfig.java`(세 항목만), `main/gear/SteelGear.java`(주석만), `main/gear/special/HeadLamp.java`(문서만), `main/gear/special/SpecialGearTicks.java`, `test/SanupcraftModulesGameTest.java`(시험 추가만), `test/SanupcraftBundle1GameTest.java`(47 선택 시 세 줄만) | **필수 1** (17). 선택: 47 · 28 |
+| **L3 전투 · 기타 주석** (22, 25, 27, 37, 40, 44, 45) | `main/combat/SteamSyringeItem.java`, `main/combat/Downed.java`, `main/combat/FlamethrowerItem.java`(주석만), `main/hazard/ToxicGasPocketFeature.java`(주석만), `main/industry/MultiblockShape.java`(주석만), `main/playtest/PlaytestCommand.java`(주석만), `main/sound/ModSounds.java`(주석만), `test/SanupcraftM13GameTest.java`(시험 추가만) | **필수 1** (22) |
+
+#### L1 걸음
+1. **#4** `PartyBossMonster.isEnraged()` 본문 → `return isPhaseTwo() || getHealth() <= getMaxHealth() * PHASE_TWO_HEALTH;`, 문서 "2페이즈이거나 체력이 절반 이하". `checkPhaseTwo` · 불러오기의 `getBooleanOr("phase_two", isEnraged())`는 그대로. **시험**(C4 새 메서드): 보스 소환 → `setHealth(max × PHASE_TWO_HEALTH)` → `isEnraged()` 참(고치기 전 실패) → `checkPhaseTwo(level)` → `setHealth(max)` → `isEnraged()` 참(고치기 전 실패). 세 보스 중 하나(수호자)면 충분
+2. **#7** `BossHazard.lifetime()` 함수만 삭제(필드 · `spawn`의 대입 · `tick`의 읽기는 유지)
+3. **#32** `VoidShade.customServerAiStep`: 거리 조건(`> AMBUSH_MIN_DISTANCE && < AMBUSH_MAX_DISTANCE`) 안에서 `teleportBehind`가 거짓이면 `ambushCooldown = 20`. 성공 · 가까울 때 분기는 그대로. 시험 없음
+4. 주석: **#2** 수호자 클래스 문서 "강철 검 · 내열 검으로" → "강철 · 내열 · 크롬강 검으로". **#10** 수호자 문서에 "낙하 · 익사 피해를 받지 않는다", 파수꾼 "불 · 낙하 피해를" → "불 · 낙하 · 익사 피해를". **#3** `VoidColossus.volley` 문서에 "아무도 없으면 지금 대상에게 하나 (32칸 밖이어도)". **#33** `EliteMonster.hurtServer` 문서 · `EliteAbility` 반사 항목의 "받은 피해" → "들어온 피해(방어 전)". **#1** `RustyHammerItem` · `FurnaceShieldItem` · `VoidBolt`의 효과 상수 위에 "보스 설정(statusEffect.*)과 일부러 따로 둔 장비 수치 (툴팁이 이 수치를 적는다)"
+
+#### L2 걸음
+1. **#17** `RepairStationBlockEntity.canPlaceItemThroughFace`: 재료 갈래를 `canPlaceItem(slot, stack)` → `!items.get(SLOT_GEAR).isEmpty() && items.get(SLOT_GEAR).isValidRepairItem(stack)`. `canPlaceItem`은 그대로. 클래스 문서 "깔때기: 위로 재료" → "깔때기: 위로 재료(장비가 올라간 뒤 그 장비의 재료만)". **시험**(Modules 새 메서드): 빈 수리대에 `canPlaceItemThroughFace(SLOT_MATERIAL, 흙, UP)` 거짓 · `(강철 주괴, UP)` 거짓(고치기 전 둘 다 실패) → 강철 검을 `setItem` → `(강철 주괴, UP)` 참 · `(흙, UP)` 거짓. 기존 `repairStationRestoresDurability`는 그대로 통과
+2. **#19** `working()` · `pool()` 함수와 `working` 필드(선언 · `repairTick`의 대입 두 줄) 삭제. `pool` 필드 · 저장 키는 유지
+3. **#47** `ModuleEffects`에 `RAPID_COOLDOWN_PERCENT = 50` · `SCATTER_PELLETS = 3` · `SCATTER_DAMAGE_PERCENT = 50`(기존 "기본값" 주석 묶음 안에). `SanupcraftConfig`의 세 필드 초기값과 `OPTIONS`의 `rapidCooldownPercent` · `scatterPellets` · `scatterDamagePercent` 기본값이 이 상수를 참조. 값은 바꾸지 않는다. 선택: `configDefaultsMatchConstants`에 세 줄
+4. **#28** `SpecialGearTicks.init`에 `ServerEntityLevelChangeEvents.AFTER_PLAYER_CHANGE_LEVEL.register((player, origin, destination) -> HeadLamp.clear(player));` (`net.fabricmc.fabric.api.entity.event.v1`). `HeadLamp`는 코드 그대로, 클래스 문서의 "차원을 옮기거나 … 지운다" 뒤에 "(불러온 청크에서만 지운다. 같은 차원 안 먼 순간이동 직후에는 드물게 빛 블록이 남을 수 있다)". 선택 시험: 모의 플레이어 조명을 켠 뒤 다른 차원으로 `teleport` → 옛 칸이 공기 · `lampOf` null (모의 플레이어 차원 이동이 불안정하면 빼도 됨)
+5. 주석: **#20** `GearUpgradeRecipes` 클래스 문서 "격자의 첫 장비(내구도가 있는 칸)에서" → "격자의 장비({@link #source}: 마법 부여 · 모듈 · 이름이 있는 것 먼저, 없으면 첫 장비)에서". **#24** `SteelGear` "내구도 철의 1.5배" → "내구도 갑옷은 철의 약 1.5배 · 도구는 2배"
+
+#### L3 걸음
+1. **#22** `SteamSyringeItem.inject`의 비창작 분기: `int have = Math.min(SteamCharge.get(syringe), cost); int need = cost - have; if (need > 0 && !SteamCharge.drain(user, need)) return Result.NO_STEAM; SteamCharge.take(syringe, have);` (`drain`이 먼저라 모자라면 아무것도 안 빠진다). `SELF` · `NOT_DOWNED` · 창작 면제 순서 그대로. 클래스 문서 "모자라면 인벤토리의 증기 통에서 쓴다" → "모자란 몫만 인벤토리의 증기 통에서 쓴다 (합쳐도 모자라면 아무것도 안 쓴다)". **시험**(M13 새 메서드, 쓰러진 사람 + 주사자 + 셋째로 기존 시험과 같은 꼴): 주사기 150 + 통 100 → `REVIVED` · 주사기 0 · 통 50(고치기 전 실패). 다시 쓰러뜨릴 대상으로 주사기 50 + 통 100 → `NO_STEAM` · 주사기 50 · 통 100 그대로. 기존 시험(600 → 400, 빈 주사기 + 통 250 → 통 50) 그대로 통과
+2. **#25** `Downed.goDown`에 `LAST_HIT.remove(player.getUUID());`(쓰러질 때마다 새로). `SERVER_STARTING` 훅은 넣지 않는다. 시험 없음
+3. 주석: **#27** `FlamethrowerItem` 클래스 문서에 "물속에서는 증기 · 연료를 쓰고 거품만 난다 (불이 안 붙는다)". **#37** `ToxicGasPocketFeature` "불 · 용암 · 횃불 옆 칸" → "불씨({@link ToxicGasBlock#isIgnitionSource}: 불 · 용암 · 횃불 · 켜진 모닥불) 옆 칸". **#40** `MultiblockShape.unform` 문서 "안 불러온 청크는 건드리지 않는다" → "안 불러온 청크의 이웃 제어기는 못 보므로, 그 제어기가 가진 공유 외벽은 잠시 꺼졌다가 그 제어기의 다음 확인에서 다시 켜진다". **#44** `kitIndustry` 문서 "외벽 33 + 제어기로" → "외벽 33(여분 포함 40개) + 제어기로". **#45** `ModSounds.machine` 문서 "40틱에 한 번쯤" → "40틱(분쇄기 30틱)에 한 번쯤"
+
+### 8-7. 2단계 계획
+**2단계 없음.** 8-2에서 올린 셋은 반론으로 모두 닫았다: 1은 설계상 장비 상수(주석 한 줄, L1), 5 · 6은 #62 기준 오탐. 3단계도 없음. 다음 라운드 후보는 보류 11(렌더러 기반 클래스, 보스가 넷이 될 때)과 보류 메모 17b · 27b · 28b.
