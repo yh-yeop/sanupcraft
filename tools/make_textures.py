@@ -697,6 +697,12 @@ def gui_machine(two_inputs):
     slot(55, 52)                     # 연료
     slot(111, 30, 26)                # 결과 (큰 칸)
     slot(143, 34)                    # 부산물
+    # 업그레이드 2칸 (왼쪽 끝): 빈 칸에 옅은 위쪽 화살표
+    for uy in (25, 43):
+        slot(7, uy)
+        for i, (x0, x1) in enumerate(((15, 15), (14, 16), (13, 17))):
+            d.line([(x0, uy + 6 + i), (x1, uy + 6 + i)], fill="#9C9C9C")
+        d.line([(15, uy + 9), (15, uy + 12)], fill="#9C9C9C")
     # 불꽃 · 화살표 자리 (진행 그림이 위에 덮인다)
     d.polygon([(57, 49), (69, 49), (69, 42), (63, 37), (57, 42)], fill=GUI_SLOT)
     d.rectangle([80, 39, 95, 44], fill=GUI_SLOT)
@@ -1177,6 +1183,145 @@ def main_bundle3(made):
     made.append(save(charger_bottom(), "block/steam_charger_bottom.png"))
 
 
+# ---------- 묶음 4: 기계 업그레이드 · 펌프 · 탱크 ----------
+UPGRADE_CARD = [
+    "................",
+    "..aaaaaaaaaaaa..",
+    ".abddddddddddba.",
+    ".adccccccccccda.",
+    ".adccccccccccda.",
+    ".adccccccccccda.",
+    ".adccccccccccda.",
+    ".adccccccccccda.",
+    ".adccccccccccda.",
+    ".adccccccccccda.",
+    ".adccccccccccda.",
+    ".abddddddddddba.",
+    "..aaaaaaaaaaaa..",
+    "...t.t.t.t.t....",
+    "...s.s.s.s.s....",
+    "................",
+]
+
+
+def upgrade_icon(symbol, color, light):
+    """업그레이드: 강철 회로판(아래 구리 다리) 위에 기호 하나."""
+    im = from_art(UPGRADE_CARD)
+    c = tuple(int(color[i:i + 2], 16) for i in (1, 3, 5)) + (255,)
+    l = tuple(int(light[i:i + 2], 16) for i in (1, 3, 5)) + (255,)
+    for y, row in enumerate(symbol):
+        for x, ch in enumerate(row):
+            if ch != ".":
+                im.putpixel((3 + x, 3 + y), l if ch == "L" else c)
+    return im
+
+
+SPEED_SYMBOL = [    # 겹 화살 >>
+    "..........",
+    ".C...C....",
+    ".LC..LC...",
+    "..LC..LC..",
+    "...LC..LC.",
+    "..LC..LC..",
+    ".LC..LC...",
+    ".C...C....",
+]
+EFFICIENCY_SYMBOL = [   # 잎 (아끼기)
+    "......CC..",
+    "....CCLC..",
+    "...CLLC...",
+    "..CLLCC...",
+    "..CLCC....",
+    ".CCC......",
+    ".C........",
+    "C.........",
+]
+DOUBLE_SYMBOL = [   # x2
+    "..........",
+    "......LCC.",
+    "C...C....C",
+    ".C.C.....C",
+    "..C.....C.",
+    ".C.C...C..",
+    "C...C.CCCC",
+    "..........",
+]
+
+
+def pump_side():
+    """펌프 옆면: 철판에 가운데 하늘색 관과 띠."""
+    im = panel(seed=401)
+    for y in range(1, 15):
+        for x in (6, 7, 8, 9):
+            im.putpixel((x, y), px("k") if x in (6, 9) else px("g"))
+    for x in range(1, 15):
+        im.putpixel((x, 4), px("a"))
+        im.putpixel((x, 11), px("a"))
+    for x in (7, 8):
+        im.putpixel((x, 7), px("h"))
+    return im
+
+
+def pump_top():
+    """펌프 윗면: 톱니 모양 모터 덮개."""
+    im = panel(seed=402)
+    for y in range(3, 13):
+        for x in range(3, 13):
+            d = math.hypot(x - 7.5, y - 7.5)
+            if d < 4.8:
+                im.putpixel((x, y), px("a") if d > 3.8 else px("b") if d > 1.6 else px("t"))
+    return im
+
+
+def pump_bottom():
+    """펌프 밑면: 빨아들이는 구멍 (격자)."""
+    im = panel(seed=403)
+    for y in range(3, 13):
+        for x in range(3, 13):
+            im.putpixel((x, y), px("m") if (x + y) % 3 else px("a"))
+    for y in range(3, 13):
+        im.putpixel((3, y), px("a"))
+        im.putpixel((12, y), px("a"))
+    return im
+
+
+def tank_side():
+    """탱크 옆면: 철판 테두리에 세로 유리창 (안은 어두운 물빛)."""
+    im = panel(seed=411)
+    for y in range(2, 14):
+        for x in range(4, 12):
+            edge = x in (4, 11) or y in (2, 13)
+            im.putpixel((x, y), px("a") if edge else (px("h") if x == 5 and y < 9 else px("k")))
+    for y in (5, 8, 11):
+        im.putpixel((10, y), px("e"))
+    return im
+
+
+def tank_top():
+    """탱크 윗면: 둥근 뚜껑과 손잡이."""
+    im = panel(seed=412)
+    for y in range(2, 14):
+        for x in range(2, 14):
+            d = math.hypot(x - 7.5, y - 7.5)
+            if d < 5.8:
+                im.putpixel((x, y), px("a") if d > 4.9 else px("d") if d > 4.0 else px("c"))
+    for x in range(6, 10):
+        im.putpixel((x, 7), px("b"))
+        im.putpixel((x, 8), px("e"))
+    return im
+
+
+def main_bundle4(made):
+    made.append(save(upgrade_icon(SPEED_SYMBOL, "#de8442", "#ffc27a"), "item/speed_upgrade.png"))
+    made.append(save(upgrade_icon(EFFICIENCY_SYMBOL, "#3f9a3a", "#9fe08a"), "item/efficiency_upgrade.png"))
+    made.append(save(upgrade_icon(DOUBLE_SYMBOL, "#8a3fc4", "#d6a6ff"), "item/double_upgrade.png"))
+    made.append(save(pump_side(), "block/pump_side.png"))
+    made.append(save(pump_top(), "block/pump_top.png"))
+    made.append(save(pump_bottom(), "block/pump_bottom.png"))
+    made.append(save(tank_side(), "block/tank_side.png"))
+    made.append(save(tank_top(), "block/tank_top.png"))
+
+
 def save(im, rel, scale=1):
     path = os.path.join(OUT, *rel.split("/"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -1210,6 +1355,7 @@ def main():
     main_bundle1(made)
     main_bundle2(made)
     main_bundle3(made)
+    main_bundle4(made)
 
     if "--sheet" in sys.argv:
         tiles = [Image.open(p) for p in made]

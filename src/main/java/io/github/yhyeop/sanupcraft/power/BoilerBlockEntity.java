@@ -25,15 +25,19 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.providers.number.ints.ResolvableInt;
 import io.github.yhyeop.sanupcraft.factory.MachineBlockEntity;
+import io.github.yhyeop.sanupcraft.fluid.FluidHolder;
+import io.github.yhyeop.sanupcraft.fluid.FluidKind;
+import io.github.yhyeop.sanupcraft.fluid.TankBlockEntity;
 import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 /**
  * 보일러: 연료를 태우는 동안 물을 증기로 바꾸고, 파이프로 이어진 기계에 나눠 준다.
  * 연료 칸 하나 (깔때기로도 넣을 수 있음). 옆에 물 원천이 있으면 물이 계속 찬다.
+ * 물은 {@link FluidHolder}로도 받는다: 옆의 펌프가 밀어 넣고, 옆의 물 탱크에서는 보일러가 틱당 100까지 끌어온다.
  * 증기를 실제로 만든 틱에만 연료가 탄다 (증기가 가득하거나 물이 없으면 불이 붙은 채로 기다린다).
  */
-public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer, SteamStorage {
+public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer, SteamStorage, FluidHolder {
 	public static final int WATER_CAPACITY = 8000;
 	public static final int STEAM_CAPACITY = 1000;
 	/** 타는 동안 틱마다 만드는 증기 (= 쓰는 물). 1단계 기계 4대를 돌릴 수 있다. */
@@ -61,6 +65,8 @@ public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer, 
 	public static void serverTick(ServerLevel level, BlockPos pos, BlockState state, BoilerBlockEntity boiler) {
 		if (boiler.touchesWaterSource(level, pos)) {
 			boiler.water = Math.min(WATER_CAPACITY, boiler.water + WATER_FROM_SOURCE_PER_TICK);
+		} else {
+			boiler.drawFromTanks(level, pos);
 		}
 		ItemStack fuel = boiler.items.get(0);
 		if (boiler.litTime <= 0 && !fuel.isEmpty() && boiler.water > 0 && boiler.steam < STEAM_CAPACITY) {
@@ -95,6 +101,22 @@ public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer, 
 		setChanged(level, pos, state);
 	}
 
+	/** 옆의 물 탱크에서 틱당 {@link #WATER_FROM_SOURCE_PER_TICK}까지 끌어온다. 끌어온 양을 돌려준다. */
+	public int drawFromTanks(ServerLevel level, BlockPos pos) {
+		int want = Math.min(WATER_FROM_SOURCE_PER_TICK, WATER_CAPACITY - water);
+		int drawn = 0;
+		for (Direction direction : Direction.values()) {
+			if (drawn >= want) {
+				break;
+			}
+			if (level.getBlockEntity(pos.relative(direction)) instanceof TankBlockEntity tank) {
+				drawn += tank.drain(FluidKind.WATER, want - drawn, false);
+			}
+		}
+		water += drawn;
+		return drawn;
+	}
+
 	private boolean touchesWaterSource(ServerLevel level, BlockPos pos) {
 		for (Direction direction : Direction.values()) {
 			var fluid = level.getFluidState(pos.relative(direction));
@@ -124,6 +146,41 @@ public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer, 
 		water += BUCKET;
 		setChanged();
 		return true;
+	}
+
+	// ---- 물 (FluidHolder: 물만 받고, 빼 가지는 못한다) ----
+
+	@Override
+	public @Nullable FluidKind fluid() {
+		return water > 0 ? FluidKind.WATER : null;
+	}
+
+	@Override
+	public int fluidAmount() {
+		return water;
+	}
+
+	@Override
+	public int fluidCapacity() {
+		return WATER_CAPACITY;
+	}
+
+	@Override
+	public int fill(FluidKind kind, int amount, boolean simulate) {
+		if (kind != FluidKind.WATER || amount <= 0) {
+			return 0;
+		}
+		int accepted = Math.min(amount, WATER_CAPACITY - water);
+		if (accepted > 0 && !simulate) {
+			water += accepted;
+			setChanged();
+		}
+		return accepted;
+	}
+
+	@Override
+	public int drain(FluidKind kind, int amount, boolean simulate) {
+		return 0;
 	}
 
 	public int water() {

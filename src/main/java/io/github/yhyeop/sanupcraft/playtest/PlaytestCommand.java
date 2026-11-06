@@ -31,6 +31,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import io.github.yhyeop.sanupcraft.boss.ModBoss;
 import io.github.yhyeop.sanupcraft.core.ModItems;
 import io.github.yhyeop.sanupcraft.factory.ModMachines;
+import io.github.yhyeop.sanupcraft.fluid.ModFluid;
 import io.github.yhyeop.sanupcraft.gear.HeatproofGear;
 import io.github.yhyeop.sanupcraft.gear.SteamCharge;
 import io.github.yhyeop.sanupcraft.gear.SteamGear;
@@ -170,6 +171,10 @@ public final class PlaytestCommand {
 		give(p, Items.COAL, 64);
 		give(p, Items.COBBLESTONE, 64);
 		give(p, Items.GRAVEL, 32);
+		// 기계 업그레이드: 속도 · 효율 · 두 배 각 2 (같은 것 둘이면 효과 두 번)
+		give(p, ModMachines.SPEED_UPGRADE, 2);
+		give(p, ModMachines.EFFICIENCY_UPGRADE, 2);
+		give(p, ModMachines.DOUBLE_UPGRADE, 2);
 		food(p);
 	}
 
@@ -209,6 +214,12 @@ public final class PlaytestCommand {
 		give(p, Items.CHEST, 4);
 		give(p, Items.RAW_IRON, 64);
 		give(p, ModItems.GUARDIAN_CORE, 3);
+		// 펌프 · 탱크: 물 위에 펌프, 옆에 탱크 · 보일러
+		give(p, ModFluid.PUMP.asItem(), 1);
+		give(p, ModFluid.TANK.asItem(), 2);
+		give(p, Items.BUCKET, 1);
+		give(p, ModMachines.SPEED_UPGRADE, 1);
+		give(p, ModMachines.EFFICIENCY_UPGRADE, 1);
 		food(p);
 	}
 
@@ -257,6 +268,9 @@ public final class PlaytestCommand {
 		give(p, Items.NETHER_QUARTZ_ORE, 8);
 		give(p, Items.NETHER_GOLD_ORE, 8);
 		give(p, ModMachines.CRUSHER.asItem(), 1);
+		// 펌프로 용암을 탱크에 모아 분출구 옆에 두면 용암 원천으로 친다
+		give(p, ModFluid.PUMP.asItem(), 1);
+		give(p, ModFluid.TANK.asItem(), 2);
 	}
 
 	/** 네더에서 돌아온 뒤: 오버월드에서 파수꾼 소환석이 안 먹는 것(네더에서만 깨어난다)을 확인할 수 있게 제단과 소환석을 준다. */

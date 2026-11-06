@@ -22,6 +22,8 @@ import net.fabricmc.loader.api.FabricLoader;
 
 import io.github.yhyeop.sanupcraft.Sanupcraft;
 import io.github.yhyeop.sanupcraft.boss.BossParty;
+import io.github.yhyeop.sanupcraft.factory.MachineUpgrade;
+import io.github.yhyeop.sanupcraft.fluid.PumpBlockEntity;
 import io.github.yhyeop.sanupcraft.gear.RivetGunItem;
 import io.github.yhyeop.sanupcraft.gear.SteamBoots;
 import io.github.yhyeop.sanupcraft.logistics.BeltSorterBlockEntity;
@@ -75,6 +77,18 @@ public final class SanupcraftConfig {
 	public int bootsDashCooldown = SteamBoots.DASH_COOLDOWN;
 	/** 증기 충전대: 틱당 채우는 증기. */
 	public int chargerSteamPerTick = SteamChargerBlockEntity.TRANSFER_PER_TICK;
+	/** 기계 업그레이드: 속도 업그레이드 하나의 처리 배율 (틱당 증기 · 연료도 같은 배율). */
+	public double upgradeSpeedMultiplier = MachineUpgrade.SPEED_MULTIPLIER;
+	/** 기계 업그레이드: 효율 업그레이드 하나의 증기 · 연료 배율 (0.7 = 30% 절약). */
+	public double upgradeEfficiencyMultiplier = MachineUpgrade.EFFICIENCY_MULTIPLIER;
+	/** 기계 업그레이드: 두 배 업그레이드 하나가 결과를 하나 더 낼 확률. */
+	public double upgradeDoubleChance = MachineUpgrade.DOUBLE_CHANCE;
+	/** 펌프: 원천을 찾는 반경 (같은 높이 ~ 아래 이 칸 수, 가로 원). */
+	public int pumpRadius = PumpBlockEntity.RADIUS;
+	/** 펌프: 원천 하나(1양동이)에 드는 증기. */
+	public int pumpSteamPerBucket = PumpBlockEntity.STEAM_PER_BUCKET;
+	/** 펌프: 원천 하나를 빨아들이는 간격(틱). */
+	public int pumpTicksPerBucket = PumpBlockEntity.TICKS_PER_BUCKET;
 
 	/** float 상수를 0.05F -> 0.05처럼 보이는 그대로의 double로 (파일에 0.0500000007...이 안 찍히게). */
 	private static double asDouble(float value) {
@@ -116,7 +130,19 @@ public final class SanupcraftConfig {
 			new Option("steamBoots", "dashCooldownTicks", SteamBoots.DASH_COOLDOWN, 0, 600, true,
 					c -> c.bootsDashCooldown, (c, v) -> c.bootsDashCooldown = (int) v),
 			new Option("steamCharger", "steamPerTick", SteamChargerBlockEntity.TRANSFER_PER_TICK, 1, 1000, true,
-					c -> c.chargerSteamPerTick, (c, v) -> c.chargerSteamPerTick = (int) v));
+					c -> c.chargerSteamPerTick, (c, v) -> c.chargerSteamPerTick = (int) v),
+			new Option("machineUpgrade", "speedMultiplier", MachineUpgrade.SPEED_MULTIPLIER, 1.0, 10.0, false,
+					c -> c.upgradeSpeedMultiplier, (c, v) -> c.upgradeSpeedMultiplier = v),
+			new Option("machineUpgrade", "efficiencyMultiplier", MachineUpgrade.EFFICIENCY_MULTIPLIER, 0.05, 1.0, false,
+					c -> c.upgradeEfficiencyMultiplier, (c, v) -> c.upgradeEfficiencyMultiplier = v),
+			new Option("machineUpgrade", "doubleChance", MachineUpgrade.DOUBLE_CHANCE, 0.0, 1.0, false,
+					c -> c.upgradeDoubleChance, (c, v) -> c.upgradeDoubleChance = v),
+			new Option("pump", "radius", PumpBlockEntity.RADIUS, 0, 8, true,
+					c -> c.pumpRadius, (c, v) -> c.pumpRadius = (int) v),
+			new Option("pump", "steamPerBucket", PumpBlockEntity.STEAM_PER_BUCKET, 0, PumpBlockEntity.STEAM_CAPACITY, true,
+					c -> c.pumpSteamPerBucket, (c, v) -> c.pumpSteamPerBucket = (int) v),
+			new Option("pump", "ticksPerBucket", PumpBlockEntity.TICKS_PER_BUCKET, 1, 1200, true,
+					c -> c.pumpTicksPerBucket, (c, v) -> c.pumpTicksPerBucket = (int) v));
 
 	/** 읽은 결과: 설정, 경고 문구, 파일에 빠진 키가 있었는지, 파일을 새로 썼는지. */
 	public record Loaded(SanupcraftConfig config, List<String> warnings, boolean missingKeys, boolean wroteFile) {

@@ -2,6 +2,7 @@ package io.github.yhyeop.sanupcraft.core;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 import net.minecraft.core.Registry;
@@ -39,9 +40,15 @@ public final class ModRegistry {
 
 	/** 블록과 그 블록 아이템을 함께 등록한다. */
 	public static <B extends Block> B block(String name, Function<BlockBehaviour.Properties, B> factory, BlockBehaviour.Properties properties) {
+		return block(name, factory, properties, BlockItem::new);
+	}
+
+	/** 블록과 그 블록 아이템을 함께 등록한다. 아이템을 따로 만들 때 (탱크: 남은 유체 툴팁). */
+	public static <B extends Block> B block(String name, Function<BlockBehaviour.Properties, B> factory, BlockBehaviour.Properties properties,
+			BiFunction<? super B, Item.Properties, ? extends Item> itemFactory) {
 		ResourceKey<Block> key = ResourceKey.create(Registries.BLOCK, Sanupcraft.id(name));
 		B block = Registry.register(BuiltInRegistries.BLOCK, key, factory.apply(properties.setId(key)));
-		item(name, p -> new BlockItem(block, p), new Item.Properties().useBlockDescriptionPrefix());
+		item(name, p -> itemFactory.apply(block, p), new Item.Properties().useBlockDescriptionPrefix());
 		return block;
 	}
 }

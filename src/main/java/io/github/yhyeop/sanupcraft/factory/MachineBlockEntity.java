@@ -14,6 +14,7 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.Containers;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.WorldlyContainer;
@@ -33,6 +34,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.providers.number.ints.ResolvableInt;
 
+import io.github.yhyeop.sanupcraft.config.SanupcraftConfig;
 import io.github.yhyeop.sanupcraft.power.SteamConsumer;
 import io.github.yhyeop.sanupcraft.power.SteamFlowMeter;
 import io.github.yhyeop.sanupcraft.power.SteamStorage;
@@ -41,6 +43,7 @@ import io.github.yhyeop.sanupcraft.power.SteamStorage;
  * 기계의 칸과 진행 상태. 화로처럼 연료를 태우는 동안 재료를 하나씩 처리하고, 레시피에 부산물이 있으면 확률로 부산물 칸에 낸다.
  * 증기 파이프가 이어져 있으면 연료 대신 증기로 돈다 (증기가 있으면 연료를 태우지 않음).
  * 깔때기: 위 → 재료(합금로는 두 칸, 이 기계 레시피의 재료만), 옆 → 연료, 아래 ← 결과 · 부산물 · 쓰고 남은 빈 양동이.
+ * 업그레이드 칸 2개(속도 · 효율 · 두 배, {@link MachineUpgrade})는 손으로만 넣고 뺀다. 칸 번호는 옛 저장과 맞도록 뒤에 붙였다.
  */
 public class MachineBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, SteamConsumer, SteamStorage {
 	public static final int SLOT_INPUT = 0;
@@ -48,7 +51,12 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 	public static final int SLOT_RESULT = 2;
 	public static final int SLOT_BYPRODUCT = 3;
 	public static final int SLOT_INPUT2 = 4;
-	public static final int SLOT_COUNT = 5;
+	/** 업그레이드 칸 두 개 (5, 6). */
+	public static final int SLOT_UPGRADE = 5;
+	public static final int UPGRADE_SLOTS = 2;
+	/** 업그레이드를 뺀 칸 수 (비교기 신호는 이 칸들만 센다). */
+	public static final int WORK_SLOT_COUNT = 5;
+	public static final int SLOT_COUNT = SLOT_UPGRADE + UPGRADE_SLOTS;
 	public static final int DATA_LIT_TIME = 0;
 	public static final int DATA_LIT_DURATION = 1;
 	public static final int DATA_PROGRESS = 2;
@@ -80,6 +88,10 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 	private boolean steamWorking;
 	/** 일하지 않은 연속 틱 수 (저장하지 않음). 처음에는 쉬는 상태. */
 	private int idleTicks = LIT_HOLD_TICKS;
+	/** 속도 업그레이드로 생긴 진행의 소수 부분 (저장하지 않음). */
+	private double progressCarry;
+	/** 업그레이드로 틱당 증기가 소수가 될 때 남은 몫 (저장하지 않음). */
+	private double steamCarry;
 
 	/** 서버가 가진 기계 레시피를 종류별로 모아 둔 것. RecipeManager가 새로 만들어지면(재로드) 다시 만든다. */
 	private record RecipeCache(RecipeManager manager, Map<MachineKind, List<MachineRecipe>> byKind) {
@@ -145,15 +157,17 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 		RecipeHolder<MachineRecipe> recipe = input.isEmpty() ? null : machine.quickCheck.getRecipeFor(input, level).orElse(null);
 		ItemStack output = recipe == null ? ItemStack.EMPTY : recipe.value().output().create();
 		boolean canWork = recipe != null && machine.canOutput(output);
+		MachineUpgrade.Effects effects = machine.upgradeEffects();
 
 		if (canWork) {
 			machine.totalTime = recipe.value().time();
-			if (machine.litTime <= 0 && machine.steam >= STEAM_PER_TICK) {
-				machine.steam -= STEAM_PER_TICK;
+			if (machine.litTime <= 0 && machine.useSteam(effects.use())) {
 				machine.steamWorking = true;
 			} else if (machine.litTime <= 0 && !fuel.isEmpty()) {
 				int burn = machine.burnDuration(level, fuel);
 				if (burn > 0) {
+					// 업그레이드: 틱당 연료가 use배 → 한 개가 타는 시간은 1/use
+					burn = Math.max(1, (int) Math.round(burn / effects.use()));
 					machine.litTime = burn;
 					machine.litDuration = burn;
 					ItemStack remainder = consumeFuel(fuel);
@@ -169,10 +183,11 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 				}
 			}
 			if (machine.litTime > 0 || machine.steamWorking) {
-				machine.progress++;
+				machine.advance(effects.speed());
 				if (machine.progress >= machine.totalTime) {
 					machine.progress = 0;
-					machine.finish(level, recipe.value(), input, output);
+					machine.progressCarry = 0.0;
+					machine.finish(level, recipe.value(), input, output, effects.doubles());
 					changed = true;
 				}
 			} else {
@@ -196,6 +211,73 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 		}
 	}
 
+	/** 진행을 {@code speed}만큼 (소수는 다음 틱으로 넘김). 업그레이드가 없으면 1씩. */
+	private void advance(double speed) {
+		progressCarry += speed;
+		int whole = (int) progressCarry;
+		progress += whole;
+		progressCarry -= whole;
+	}
+
+	/**
+	 * 증기로 한 틱 일할 수 있으면 증기를 쓰고 true. 틱당 {@code STEAM_PER_TICK × use}를 쓰고, 소수 부분은 모아 두었다가 낸다.
+	 * 효율 업그레이드로 이번 틱에 낼 몫이 0이어도 증기가 하나는 있어야 돈다.
+	 */
+	private boolean useSteam(double use) {
+		double need = steamCarry + STEAM_PER_TICK * use;
+		int whole = (int) need;
+		if (steam < Math.max(1, whole)) {
+			return false;
+		}
+		steam -= whole;
+		steamCarry = need - whole;
+		return true;
+	}
+
+	/** 끼운 업그레이드의 효과. */
+	public MachineUpgrade.Effects upgradeEffects() {
+		int speed = 0;
+		int efficiency = 0;
+		int doubles = 0;
+		for (int i = 0; i < UPGRADE_SLOTS; i++) {
+			if (items.get(SLOT_UPGRADE + i).getItem() instanceof MachineUpgradeItem upgrade) {
+				switch (upgrade.upgrade()) {
+					case SPEED -> speed++;
+					case EFFICIENCY -> efficiency++;
+					case DOUBLE -> doubles++;
+				}
+			}
+		}
+		return speed + efficiency + doubles == 0 ? MachineUpgrade.Effects.NONE : MachineUpgrade.Effects.of(speed, efficiency, doubles);
+	}
+
+	/** 두 배 업그레이드 {@code doubles}개가 각각 {@code chance}로 굴려 나온 덤 개수 (시험이 통계로 확인한다). */
+	public static int extraResults(RandomSource random, int doubles, double chance) {
+		int extra = 0;
+		for (int i = 0; i < doubles; i++) {
+			if (random.nextDouble() < chance) {
+				extra++;
+			}
+		}
+		return extra;
+	}
+
+	public static boolean isUpgrade(ItemStack stack) {
+		return stack.getItem() instanceof MachineUpgradeItem;
+	}
+
+	/** 비교기 신호: 바닐라 계산과 같되 업그레이드 칸은 세지 않는다 (업그레이드를 끼워도 신호가 그대로). */
+	public int comparatorSignal() {
+		float total = 0.0F;
+		for (int i = 0; i < WORK_SLOT_COUNT; i++) {
+			ItemStack stack = items.get(i);
+			if (!stack.isEmpty()) {
+				total += (float) stack.getCount() / getMaxStackSize(stack);
+			}
+		}
+		return Mth.lerpDiscrete(total / WORK_SLOT_COUNT, 0, 15);
+	}
+
 	private boolean canOutput(ItemStack output) {
 		return fits(items.get(SLOT_RESULT), output);
 	}
@@ -211,9 +293,16 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 				&& current.getCount() + add.getCount() <= Math.min(getMaxStackSize(), add.getMaxStackSize());
 	}
 
-	/** 결과를 내고 재료를 덜고, 부산물은 확률로 (부산물 칸이 차 있으면 버려진다). */
-	private void finish(ServerLevel level, MachineRecipe recipe, MachineInput input, ItemStack output) {
+	/** 결과를 내고 재료를 덜고, 부산물은 확률로 (부산물 칸이 차 있으면 버려진다). 두 배 업그레이드의 덤은 결과 칸에 자리가 있을 때만. */
+	private void finish(ServerLevel level, MachineRecipe recipe, MachineInput input, ItemStack output, int doubles) {
 		merge(SLOT_RESULT, output);
+		int bonusCount = extraResults(level.getRandom(), doubles, SanupcraftConfig.current().upgradeDoubleChance);
+		for (int i = 0; i < bonusCount; i++) {
+			ItemStack bonus = output.copyWithCount(1);
+			if (fits(items.get(SLOT_RESULT), bonus)) {
+				merge(SLOT_RESULT, bonus);
+			}
+		}
 		recipe.byproduct().ifPresent(byproduct -> {
 			if (level.getRandom().nextFloat() < byproduct.chance()) {
 				ItemStack extra = byproduct.item().create();
@@ -365,12 +454,22 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 		this.items = items;
 	}
 
+	/** 업그레이드 칸은 하나씩만 든다. */
+	@Override
+	public void setItem(int slot, ItemStack stack) {
+		super.setItem(slot, stack);
+		if (slot >= SLOT_UPGRADE) {
+			stack.limitSize(1);
+		}
+	}
+
 	@Override
 	public boolean canPlaceItem(int slot, ItemStack stack) {
 		return switch (slot) {
 			case SLOT_INPUT -> true;
 			case SLOT_INPUT2 -> kind.twoInputs();
 			case SLOT_FUEL -> isFuel(stack);
+			case SLOT_UPGRADE, SLOT_UPGRADE + 1 -> isUpgrade(stack);
 			default -> false;
 		};
 	}
@@ -386,7 +485,8 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 
 	@Override
 	public boolean canPlaceItemThroughFace(int slot, ItemStack stack, @Nullable Direction direction) {
-		if (!canPlaceItem(slot, stack)) {
+		// 업그레이드 칸은 어느 면에도 없지만, 혹시 직접 불려도 넣지 않는다
+		if (slot >= SLOT_UPGRADE || !canPlaceItem(slot, stack)) {
 			return false;
 		}
 		if (slot != SLOT_INPUT && slot != SLOT_INPUT2) {
@@ -421,6 +521,16 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 	/** 테스트 · 디버그용: 지금 결과 칸. */
 	public ItemStack result() {
 		return items.get(SLOT_RESULT);
+	}
+
+	/** 테스트 · 디버그용: 지금 타는 연료 하나의 연소 틱 (업그레이드로 늘고 준다). */
+	public int litDuration() {
+		return litDuration;
+	}
+
+	/** 업그레이드 칸 하나 (0 · 1). */
+	public ItemStack upgrade(int index) {
+		return items.get(SLOT_UPGRADE + index);
 	}
 
 	/** 테스트 · 디버그용: 지금 부산물 칸. */

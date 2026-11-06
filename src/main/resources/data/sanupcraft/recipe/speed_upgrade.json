@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "R": "minecraft:redstone",
+    "P": "sanupcraft:steel_plate",
+    "C": "sanupcraft:core_shard",
+    "G": "sanupcraft:gear_part"
+  },
+  "pattern": [
+    " R ",
+    "PCP",
+    " G "
+  ],
+  "result": {
+    "id": "sanupcraft:speed_upgrade"
+  }
+}

@@ -12,7 +12,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * 기계 화면: 재료(합금로는 둘) · 연료 · 결과 · 부산물. 칸 위치는 MachineScreen의 텍스처와 맞춘다.
+ * 기계 화면: 재료(합금로는 둘) · 연료 · 결과 · 부산물 · 왼쪽 끝 업그레이드 2칸. 칸 위치는 MachineScreen의 텍스처와 맞춘다.
  */
 public class MachineMenu extends AbstractContainerMenu {
 	public static final int INPUT_X = 56;
@@ -22,6 +22,8 @@ public class MachineMenu extends AbstractContainerMenu {
 	public static final int RESULT_X = 116;
 	public static final int RESULT_Y = 35;
 	public static final int BYPRODUCT_X = 144;
+	public static final int UPGRADE_X = 8;
+	public static final int UPGRADE_Y = 26;
 
 	private static final int MACHINE_SLOTS = MachineBlockEntity.SLOT_COUNT;
 	private static final int PLAYER_START = MACHINE_SLOTS;
@@ -63,6 +65,19 @@ public class MachineMenu extends AbstractContainerMenu {
 				return twoInputs();
 			}
 		});
+		for (int i = 0; i < MachineBlockEntity.UPGRADE_SLOTS; i++) {
+			addSlot(new Slot(container, MachineBlockEntity.SLOT_UPGRADE + i, UPGRADE_X, UPGRADE_Y + i * 18) {
+				@Override
+				public boolean mayPlace(ItemStack stack) {
+					return MachineBlockEntity.isUpgrade(stack);
+				}
+
+				@Override
+				public int getMaxStackSize() {
+					return 1;
+				}
+			});
+		}
 		addStandardInventorySlots(inventory, 8, 84);
 		addDataSlots(data);
 	}
@@ -117,8 +132,12 @@ public class MachineMenu extends AbstractContainerMenu {
 		return original;
 	}
 
-	/** 연료면 연료 칸, 아니면 재료 칸 (합금로는 둘째 칸까지). */
+	/** 업그레이드면 업그레이드 칸, 연료면 연료 칸, 아니면 재료 칸 (합금로는 둘째 칸까지). */
 	private boolean moveToMachine(ItemStack stack) {
+		if (MachineBlockEntity.isUpgrade(stack)) {
+			int start = MachineBlockEntity.SLOT_UPGRADE;
+			return moveItemStackTo(stack, start, start + MachineBlockEntity.UPGRADE_SLOTS, false);
+		}
 		if (MachineBlockEntity.isFuel(stack) && moveItemStackTo(stack, MachineBlockEntity.SLOT_FUEL, MachineBlockEntity.SLOT_FUEL + 1, false)) {
 			return true;
 		}

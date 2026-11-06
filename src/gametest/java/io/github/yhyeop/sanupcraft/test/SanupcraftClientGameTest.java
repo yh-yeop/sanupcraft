@@ -90,6 +90,7 @@ public class SanupcraftClientGameTest implements FabricClientGameTest {
 			server.runCommand("item replace block -2 -60 -4 container.0 with minecraft:raw_iron 8");
 			server.runCommand("item replace block -2 -60 -4 container.2 with sanupcraft:iron_dust 6");
 			server.runCommand("item replace block -2 -60 -4 container.3 with sanupcraft:gold_dust 1");
+			server.runCommand("item replace block -2 -60 -4 container.5 with sanupcraft:speed_upgrade");
 			context.getInput().lookAt(new BlockPos(-2, -60, -4));
 			context.waitTicks(2);
 			context.getInput().pressKey(options -> options.keyUse);
@@ -103,6 +104,8 @@ public class SanupcraftClientGameTest implements FabricClientGameTest {
 			server.runCommand("item replace block -3 -60 -4 container.4 with sanupcraft:coal_dust 32");
 			server.runCommand("item replace block -3 -60 -4 container.1 with minecraft:coal 8");
 			server.runCommand("item replace block -3 -60 -4 container.2 with sanupcraft:steel_ingot 3");
+			server.runCommand("item replace block -3 -60 -4 container.5 with sanupcraft:efficiency_upgrade");
+			server.runCommand("item replace block -3 -60 -4 container.6 with sanupcraft:double_upgrade");
 			context.waitTicks(40);
 			context.getInput().lookAt(new BlockPos(-3, -60, -4));
 			context.waitTicks(2);

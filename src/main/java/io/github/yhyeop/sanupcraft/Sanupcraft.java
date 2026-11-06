@@ -14,6 +14,7 @@ import io.github.yhyeop.sanupcraft.config.SanupcraftConfig;
 import io.github.yhyeop.sanupcraft.core.ModItems;
 import io.github.yhyeop.sanupcraft.core.ModTab;
 import io.github.yhyeop.sanupcraft.factory.ModMachines;
+import io.github.yhyeop.sanupcraft.fluid.ModFluid;
 import io.github.yhyeop.sanupcraft.gear.HeatproofGear;
 import io.github.yhyeop.sanupcraft.gear.SteamGear;
 import io.github.yhyeop.sanupcraft.gear.SteelGear;
@@ -35,6 +36,7 @@ public class Sanupcraft implements ModInitializer {
 		ModItems.init();
 		ModMachines.init();
 		ModPower.init();
+		ModFluid.init();
 		ModLogistics.init();
 		ModMining.init();
 		SteelGear.init();

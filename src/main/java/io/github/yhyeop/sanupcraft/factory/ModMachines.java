@@ -6,6 +6,8 @@ import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.crafting.RecipeBookCategory;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -22,6 +24,11 @@ public final class ModMachines {
 	public static final MachineBlock ASSEMBLER = machine("assembler", MachineKind.ASSEMBLER);
 	public static final MachineBlock ALLOY_SMELTER = machine("alloy_smelter", MachineKind.ALLOY);
 	public static final MachineBlock HEART_FORGE = machine("heart_forge", MachineKind.FORGE);
+
+	/** 기계 업그레이드 (B1): 기계 화면 왼쪽 업그레이드 칸 2개에 끼운다. */
+	public static final MachineUpgradeItem SPEED_UPGRADE = upgrade("speed_upgrade", MachineUpgrade.SPEED, Rarity.UNCOMMON);
+	public static final MachineUpgradeItem EFFICIENCY_UPGRADE = upgrade("efficiency_upgrade", MachineUpgrade.EFFICIENCY, Rarity.COMMON);
+	public static final MachineUpgradeItem DOUBLE_UPGRADE = upgrade("double_upgrade", MachineUpgrade.DOUBLE, Rarity.RARE);
 
 	public static final BlockEntityType<MachineBlockEntity> MACHINE_BLOCK_ENTITY = Registry.register(
 			BuiltInRegistries.BLOCK_ENTITY_TYPE, Sanupcraft.id("machine"),
@@ -43,6 +50,10 @@ public final class ModMachines {
 				.requiresCorrectToolForDrops()
 				.sound(SoundType.METAL)
 				.lightLevel(state -> state.getValue(MachineBlock.LIT) ? 8 : 0));
+	}
+
+	private static MachineUpgradeItem upgrade(String name, MachineUpgrade type, Rarity rarity) {
+		return (MachineUpgradeItem) ModRegistry.item(name, p -> new MachineUpgradeItem(type, p), new Item.Properties().stacksTo(16).rarity(rarity));
 	}
 
 	public static void init() {

@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "sanupcraft:block/tank_top",
+    "side": "sanupcraft:block/tank_side"
+  }
+}

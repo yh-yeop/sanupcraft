@@ -1,0 +1,36 @@
+{
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "sanupcraft:speed_upgrade",
+              "sanupcraft:efficiency_upgrade",
+              "sanupcraft:double_upgrade"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:speed_upgrade"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.machine_upgrade.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.machine_upgrade.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ],
+  "parent": "sanupcraft:guardian_core"
+}

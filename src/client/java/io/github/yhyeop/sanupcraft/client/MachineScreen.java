@@ -13,7 +13,7 @@ import io.github.yhyeop.sanupcraft.factory.MachineBlockEntity;
 import io.github.yhyeop.sanupcraft.factory.MachineMenu;
 
 /**
- * 기계 화면: 재료(합금로는 둘) · 연료 · 결과 · 부산물. 배경은 tools/make_textures.py가 만든 전용 텍스처,
+ * 기계 화면: 재료(합금로는 둘) · 연료 · 결과 · 부산물 · 업그레이드 2칸. 배경은 tools/make_textures.py가 만든 전용 텍스처,
  * 불꽃 · 진행 화살표는 바닐라 화로 그림을 쓴다.
  */
 public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
@@ -61,6 +61,7 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
 			case MachineBlockEntity.SLOT_FUEL -> "gui.sanupcraft.machine.slot.fuel";
 			case MachineBlockEntity.SLOT_RESULT -> "gui.sanupcraft.machine.slot.result";
 			case MachineBlockEntity.SLOT_BYPRODUCT -> "gui.sanupcraft.machine.slot.byproduct";
+			case MachineBlockEntity.SLOT_UPGRADE, MachineBlockEntity.SLOT_UPGRADE + 1 -> "gui.sanupcraft.machine.slot.upgrade";
 			default -> null;
 		};
 	}

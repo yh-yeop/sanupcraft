@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "sanupcraft:block/pump_top",
+    "side": "sanupcraft:block/pump_side",
+    "bottom": "sanupcraft:block/pump_bottom"
+  }
+}

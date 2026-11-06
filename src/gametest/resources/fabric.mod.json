@@ -19,7 +19,8 @@
 			"io.github.yhyeop.sanupcraft.test.SanupcraftWorldGameTest",
 			"io.github.yhyeop.sanupcraft.test.SanupcraftBundle1GameTest",
 			"io.github.yhyeop.sanupcraft.test.SanupcraftBundle2GameTest",
-			"io.github.yhyeop.sanupcraft.test.SanupcraftBundle3GameTest"
+			"io.github.yhyeop.sanupcraft.test.SanupcraftBundle3GameTest",
+			"io.github.yhyeop.sanupcraft.test.SanupcraftBundle4GameTest"
 		],
 		"fabric-client-gametest": [
 			"io.github.yhyeop.sanupcraft.test.SanupcraftClientGameTest",

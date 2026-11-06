@@ -12,9 +12,12 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
 import io.github.yhyeop.sanupcraft.config.SanupcraftConfig;
+import io.github.yhyeop.sanupcraft.fluid.FluidKind;
+import io.github.yhyeop.sanupcraft.fluid.TankBlockEntity;
 
 /**
  * 지열 증기 분출구 (네더 단계). 맞닿은 용암 원천 하나마다 틱당 증기 2 (최대 4곳 = 8, 보일러 둘 몫).
+ * 용암이 1양동이 이상 든 탱크도 원천 하나로 센다 (펌프로 용암을 모아 두면 용암 호수 옆이 아니어도 된다).
  * 물도 연료도 안 쓴다. 대신 네더의 열기에서만 돈다 (오버월드 · 엔드에서는 "너무 차갑다").
  * 네더에는 물을 놓을 수 없어 보일러를 못 쓰므로, 네더 전초기지(굴착기 · 심장 제련로)의 동력이 된다.
  */
@@ -70,11 +73,15 @@ public class GeothermalVentBlockEntity extends BlockEntity implements SteamStora
 		return made;
 	}
 
+	/** 맞닿은 용암 원천 수 (최대 {@link #MAX_LAVA}). 용암이 1양동이 이상 든 탱크도 하나로 센다 (용암은 줄지 않는다). */
 	private static int countLava(Level level, BlockPos pos) {
 		int count = 0;
 		for (Direction direction : Direction.values()) {
-			FluidState fluid = level.getFluidState(pos.relative(direction));
-			if (fluid.is(FluidTags.LAVA) && fluid.isSource() && ++count >= MAX_LAVA) {
+			BlockPos side = pos.relative(direction);
+			FluidState fluid = level.getFluidState(side);
+			boolean lava = fluid.is(FluidTags.LAVA) && fluid.isSource()
+					|| level.getBlockEntity(side) instanceof TankBlockEntity tank && tank.fluid() == FluidKind.LAVA && tank.fluidAmount() >= FluidKind.BUCKET;
+			if (lava && ++count >= MAX_LAVA) {
 				break;
 			}
 		}

@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "sanupcraft:steel_plate",
+    "G": "sanupcraft:gear_part",
+    "H": "sanupcraft:warden_heart"
+  },
+  "pattern": [
+    " P ",
+    "GHG",
+    " P "
+  ],
+  "result": {
+    "id": "sanupcraft:double_upgrade"
+  }
+}
