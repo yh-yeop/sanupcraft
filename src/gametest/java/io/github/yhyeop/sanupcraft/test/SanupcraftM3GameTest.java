@@ -117,7 +117,7 @@ public class SanupcraftM3GameTest {
 				"portable_terminal", "soul_furnace", "precision_part", "debris_sonar", "lava_steamboat", "abandoned_furnace", "stronger_foe",
 				"ore_washer", "hp_refiner", "furnace_tower", "colossus_summoner", "void_core", "void_gear", "dimensional_vault",
 				"abandoned_station", "wrench",
-				"new_metal"};
+				"new_metal", "vein_prospector"};
 		var advancements = helper.getLevel().getServer().getAdvancements();
 		for (String id : ids) {
 			helper.assertTrue(advancements.get(Sanupcraft.id(id)) != null, "발전 과제가 없음: " + id);

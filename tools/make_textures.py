@@ -3379,6 +3379,31 @@ def main_a1(made):
     made.append(save(recolor(from_art(INGOT), ALUMINIUM), "item/aluminium_ingot.png"))
 
 
+# ---- 확장 3 D2: 광맥 탐사기 ----
+VEIN_PROSPECTOR_ICON = [
+    "................",
+    "......aaaaa.....",
+    ".....abbbbba....",
+    "....abtuuutba...",
+    "....abuuRuuba...",
+    "....abuuRRuba...",
+    "....abtuhRtba...",
+    ".....abbbbba....",
+    "......acdca.....",
+    ".......cd.......",
+    ".......cd.......",
+    ".......cd.......",
+    "......acdc......",
+    ".......cdc......",
+    ".......ctc......",
+    "........t.......",
+]
+
+
+def main_d2(made):
+    made.append(save(from_art(VEIN_PROSPECTOR_ICON), "item/vein_prospector.png"))
+
+
 def save(im, rel, scale=1):
     path = os.path.join(OUT, *rel.split("/"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -3426,6 +3451,7 @@ def main():
     main_fin(made)
     main_ex3_c3(made)
     main_a1(made)  # 확장 3 D1 새 광석
+    main_d2(made)  # 확장 3 D2 광맥 탐사기
 
     if "--sheet" in sys.argv:
         tiles = [Image.open(p) for p in made]

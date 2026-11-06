@@ -11,6 +11,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
@@ -23,6 +24,8 @@ import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.phys.BlockHitResult;
+
+import io.github.yhyeop.sanupcraft.resource.vein.Veins;
 
 /**
  * 증기 굴착기. 증기 파이프를 잇고 위에 상자(또는 깔때기 · 벨트)를 둔다. 빈손 우클릭: 상태, 웅크리고 빈손 우클릭: 쓰레기 버림 켜기 · 끄기.
@@ -89,6 +92,12 @@ public class QuarryBlock extends BaseEntityBlock {
 			}
 			if (quarry.voidsJunk() && quarry.voided() > 0) {
 				message = message.copy().append(" · ").append(Component.translatable("block.sanupcraft.steam_quarry.voided", quarry.voided()));
+			}
+			if (level instanceof ServerLevel serverLevel) {
+				Component vein = Veins.describe(serverLevel, ChunkPos.containing(pos), quarry.veinBonus()); // D2 광맥
+				if (vein != null) {
+					message = message.copy().append(" · ").append(vein);
+				}
 			}
 			player.sendOverlayMessage(message);
 		}
