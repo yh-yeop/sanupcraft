@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "sanupcraft:steel_boots",
+    "sanupcraft:gear_part",
+    "sanupcraft:gear_part",
+    "sanupcraft:steam_pipe"
+  ],
+  "result": {
+    "id": "sanupcraft:steam_boots"
+  }
+}

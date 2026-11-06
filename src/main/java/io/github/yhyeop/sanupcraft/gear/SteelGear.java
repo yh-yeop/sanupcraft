@@ -60,13 +60,14 @@ public final class SteelGear {
 
 	/**
 	 * 녹 방어 한 벌을 다 입었나. 부위마다 강철 또는 내열이면 된다 (내열은 강철의 윗단계라 섞어 입어도 인정).
+	 * 증기 부츠는 강철 부츠와 같은 방어라 신발 자리에 인정한다.
 	 * 내열로 올려 입은 사람이 핵을 모으려고 수호자를 다시 잡을 때 녹 공격을 맞지 않게.
 	 */
 	public static boolean wearsFullSet(LivingEntity entity) {
 		return wears(entity, EquipmentSlot.HEAD, STEEL_HELMET, HeatproofGear.HEATPROOF_HELMET)
 				&& wears(entity, EquipmentSlot.CHEST, STEEL_CHESTPLATE, HeatproofGear.HEATPROOF_CHESTPLATE)
 				&& wears(entity, EquipmentSlot.LEGS, STEEL_LEGGINGS, HeatproofGear.HEATPROOF_LEGGINGS)
-				&& wears(entity, EquipmentSlot.FEET, STEEL_BOOTS, HeatproofGear.HEATPROOF_BOOTS);
+				&& (wears(entity, EquipmentSlot.FEET, STEEL_BOOTS, HeatproofGear.HEATPROOF_BOOTS) || entity.getItemBySlot(EquipmentSlot.FEET).is(SteamGear.STEAM_BOOTS));
 	}
 
 	private static boolean wears(LivingEntity entity, EquipmentSlot slot, Item steel, Item heatproof) {

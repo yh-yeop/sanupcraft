@@ -8,12 +8,14 @@ import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
 import io.github.yhyeop.sanupcraft.boss.ModBoss;
 import io.github.yhyeop.sanupcraft.factory.ModMachines;
+import io.github.yhyeop.sanupcraft.gear.SteamGear;
 import io.github.yhyeop.sanupcraft.logistics.ModLogistics;
 
 public class SanupcraftClient implements ClientModInitializer {
@@ -24,6 +26,7 @@ public class SanupcraftClient implements ClientModInitializer {
 		MenuScreens.register(ModLogistics.FILTER_HOPPER_MENU, FilterScreen::new);
 		EntityRendererRegistry.register(ModBoss.RUSTY_GUARDIAN, RustyGuardianRenderer::new);
 		EntityRendererRegistry.register(ModBoss.FURNACE_WARDEN, FurnaceWardenRenderer::new);
+		EntityRendererRegistry.register(SteamGear.RIVET_ENTITY, ThrownItemRenderer::new);
 		ItemTooltipCallback.EVENT.register((stack, context, flag, lines) -> addGuideTooltip(stack, lines));
 	}
 

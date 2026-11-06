@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "P": "sanupcraft:iron_plate",
+    "G": "minecraft:glass",
+    "S": "sanupcraft:steam_pipe"
+  },
+  "pattern": [
+    "PSP",
+    "PGP",
+    " P "
+  ],
+  "result": {
+    "id": "sanupcraft:steam_canister"
+  }
+}

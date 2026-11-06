@@ -1,0 +1,9 @@
+{
+  "type": "sanupcraft:pressing",
+  "ingredient": "sanupcraft:iron_plate",
+  "result": {
+    "id": "sanupcraft:rivet",
+    "count": 4
+  },
+  "time": 60
+}

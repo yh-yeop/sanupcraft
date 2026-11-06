@@ -32,6 +32,8 @@ import io.github.yhyeop.sanupcraft.boss.ModBoss;
 import io.github.yhyeop.sanupcraft.core.ModItems;
 import io.github.yhyeop.sanupcraft.factory.ModMachines;
 import io.github.yhyeop.sanupcraft.gear.HeatproofGear;
+import io.github.yhyeop.sanupcraft.gear.SteamCharge;
+import io.github.yhyeop.sanupcraft.gear.SteamGear;
 import io.github.yhyeop.sanupcraft.gear.SteelGear;
 import io.github.yhyeop.sanupcraft.logistics.ModLogistics;
 import io.github.yhyeop.sanupcraft.mining.ModMining;
@@ -178,6 +180,12 @@ public final class PlaytestCommand {
 		give(p, Items.SHIELD, 1);
 		give(p, ModBoss.GUARDIAN_ALTAR.asItem(), 1);
 		give(p, ModBoss.GUARDIAN_SUMMONER, 4);
+		// 증기 장비: 가득 찬 증기 통 · 부츠로 바로 써 볼 수 있게 (충전대는 steam 꾸러미)
+		give(p, SteamGear.RIVET_GUN, 1);
+		give(p, SteamGear.RIVET, 64);
+		give(p, charged(SteamGear.STEAM_CANISTER));
+		give(p, charged(SteamGear.STEAM_CANISTER));
+		give(p, charged(SteamGear.STEAM_BOOTS));
 		food(p);
 	}
 
@@ -191,6 +199,9 @@ public final class PlaytestCommand {
 		give(p, ModLogistics.BELT_SORTER.asItem(), 2);
 		give(p, ModLogistics.FILTER_HOPPER.asItem(), 2);
 		give(p, ModLogistics.ORE_MARKER, 1);
+		give(p, ModPower.STEAM_CHARGER.asItem(), 1);
+		give(p, SteamGear.STEAM_CANISTER, 2);
+		give(p, SteamGear.STEAM_BOOTS, 1);
 		give(p, ModMachines.CRUSHER.asItem(), 1);
 		give(p, ModMachines.ASSEMBLER.asItem(), 1);
 		give(p, ModMining.STEAM_QUARRY.asItem(), 1);
@@ -275,6 +286,13 @@ public final class PlaytestCommand {
 
 	private static void food(ServerPlayer p) {
 		give(p, Items.COOKED_BEEF, 32);
+	}
+
+	/** 증기가 가득 찬 증기 통 · 부츠. */
+	private static ItemStack charged(Item item) {
+		ItemStack stack = new ItemStack(item);
+		SteamCharge.set(stack, SteamCharge.capacity(stack));
+		return stack;
 	}
 
 	private static void give(ServerPlayer p, Item item, int count) {

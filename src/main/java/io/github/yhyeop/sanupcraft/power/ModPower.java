@@ -42,6 +42,13 @@ public final class ModPower {
 			.sound(SoundType.METAL)
 			.noOcclusion());
 
+	/** 증기 충전대: 파이프에서 받은 증기를 증기 통 · 증기 부츠에 채운다. */
+	public static final SteamChargerBlock STEAM_CHARGER = ModRegistry.block("steam_charger", SteamChargerBlock::new, BlockBehaviour.Properties.of()
+			.mapColor(MapColor.METAL)
+			.strength(3.0F)
+			.requiresCorrectToolForDrops()
+			.sound(SoundType.METAL));
+
 	public static final BlockEntityType<BoilerBlockEntity> BOILER_BLOCK_ENTITY = Registry.register(
 			BuiltInRegistries.BLOCK_ENTITY_TYPE, Sanupcraft.id("boiler"), new BlockEntityType<>(BoilerBlockEntity::new, Set.of(BOILER)));
 
@@ -50,6 +57,9 @@ public final class ModPower {
 
 	public static final BlockEntityType<SteamGaugeBlockEntity> STEAM_GAUGE_BLOCK_ENTITY = Registry.register(
 			BuiltInRegistries.BLOCK_ENTITY_TYPE, Sanupcraft.id("steam_gauge"), new BlockEntityType<>(SteamGaugeBlockEntity::new, Set.of(STEAM_GAUGE)));
+
+	public static final BlockEntityType<SteamChargerBlockEntity> STEAM_CHARGER_BLOCK_ENTITY = Registry.register(
+			BuiltInRegistries.BLOCK_ENTITY_TYPE, Sanupcraft.id("steam_charger"), new BlockEntityType<>(SteamChargerBlockEntity::new, Set.of(STEAM_CHARGER)));
 
 	private ModPower() {
 	}

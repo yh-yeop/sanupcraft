@@ -16,6 +16,7 @@
     "sanupcraft:ender_anchor",
     "sanupcraft:steam_gauge",
     "sanupcraft:belt_sorter",
-    "sanupcraft:filter_hopper"
+    "sanupcraft:filter_hopper",
+    "sanupcraft:steam_charger"
   ]
 }

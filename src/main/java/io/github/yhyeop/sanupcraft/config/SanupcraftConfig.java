@@ -22,11 +22,14 @@ import net.fabricmc.loader.api.FabricLoader;
 
 import io.github.yhyeop.sanupcraft.Sanupcraft;
 import io.github.yhyeop.sanupcraft.boss.BossParty;
+import io.github.yhyeop.sanupcraft.gear.RivetGunItem;
+import io.github.yhyeop.sanupcraft.gear.SteamBoots;
 import io.github.yhyeop.sanupcraft.logistics.BeltSorterBlockEntity;
 import io.github.yhyeop.sanupcraft.logistics.EnderAnchorBlockEntity;
 import io.github.yhyeop.sanupcraft.logistics.FilterHopperBlockEntity;
 import io.github.yhyeop.sanupcraft.mining.QuarryBlockEntity;
 import io.github.yhyeop.sanupcraft.power.GeothermalVentBlockEntity;
+import io.github.yhyeop.sanupcraft.power.SteamChargerBlockEntity;
 
 /**
  * 서버 설정 파일 {@code config/sanupcraft.json}. 서버(싱글은 내장 서버)가 시작될 때 읽고, 파일이 없으면 기본값으로 만든다.
@@ -60,6 +63,18 @@ public final class SanupcraftConfig {
 	public int sorterTicksPerMove = BeltSorterBlockEntity.TICKS_PER_MOVE;
 	/** 필터 깔때기: 아이템 하나를 옮기는 간격(틱). 바닐라 깔때기는 8. */
 	public int filterHopperTicksPerMove = FilterHopperBlockEntity.TICKS_PER_MOVE;
+	/** 리벳총: 한 발에 드는 증기. */
+	public int rivetGunSteam = RivetGunItem.STEAM_COST;
+	/** 리벳총: 리벳이 주는 피해. */
+	public double rivetGunDamage = asDouble(RivetGunItem.DAMAGE);
+	/** 리벳총: 쏘고 나서 기다리는 틱. */
+	public int rivetGunCooldown = RivetGunItem.COOLDOWN_TICKS;
+	/** 증기 부츠: 돌진 한 번에 드는 증기. */
+	public int bootsDashSteam = SteamBoots.DASH_COST;
+	/** 증기 부츠: 돌진 뒤 기다리는 틱. */
+	public int bootsDashCooldown = SteamBoots.DASH_COOLDOWN;
+	/** 증기 충전대: 틱당 채우는 증기. */
+	public int chargerSteamPerTick = SteamChargerBlockEntity.TRANSFER_PER_TICK;
 
 	/** float 상수를 0.05F -> 0.05처럼 보이는 그대로의 double로 (파일에 0.0500000007...이 안 찍히게). */
 	private static double asDouble(float value) {
@@ -89,7 +104,19 @@ public final class SanupcraftConfig {
 			new Option("beltSorter", "ticksPerMove", BeltSorterBlockEntity.TICKS_PER_MOVE, 1, 200, true,
 					c -> c.sorterTicksPerMove, (c, v) -> c.sorterTicksPerMove = (int) v),
 			new Option("filterHopper", "ticksPerMove", FilterHopperBlockEntity.TICKS_PER_MOVE, 1, 200, true,
-					c -> c.filterHopperTicksPerMove, (c, v) -> c.filterHopperTicksPerMove = (int) v));
+					c -> c.filterHopperTicksPerMove, (c, v) -> c.filterHopperTicksPerMove = (int) v),
+			new Option("rivetGun", "steamCost", RivetGunItem.STEAM_COST, 0, 1000, true,
+					c -> c.rivetGunSteam, (c, v) -> c.rivetGunSteam = (int) v),
+			new Option("rivetGun", "damage", asDouble(RivetGunItem.DAMAGE), 0.0, 100.0, false,
+					c -> c.rivetGunDamage, (c, v) -> c.rivetGunDamage = v),
+			new Option("rivetGun", "cooldownTicks", RivetGunItem.COOLDOWN_TICKS, 0, 200, true,
+					c -> c.rivetGunCooldown, (c, v) -> c.rivetGunCooldown = (int) v),
+			new Option("steamBoots", "dashSteamCost", SteamBoots.DASH_COST, 0, SteamBoots.CAPACITY, true,
+					c -> c.bootsDashSteam, (c, v) -> c.bootsDashSteam = (int) v),
+			new Option("steamBoots", "dashCooldownTicks", SteamBoots.DASH_COOLDOWN, 0, 600, true,
+					c -> c.bootsDashCooldown, (c, v) -> c.bootsDashCooldown = (int) v),
+			new Option("steamCharger", "steamPerTick", SteamChargerBlockEntity.TRANSFER_PER_TICK, 1, 1000, true,
+					c -> c.chargerSteamPerTick, (c, v) -> c.chargerSteamPerTick = (int) v));
 
 	/** 읽은 결과: 설정, 경고 문구, 파일에 빠진 키가 있었는지, 파일을 새로 썼는지. */
 	public record Loaded(SanupcraftConfig config, List<String> warnings, boolean missingKeys, boolean wroteFile) {

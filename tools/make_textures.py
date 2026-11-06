@@ -1059,6 +1059,124 @@ def main_bundle2(made):
     made.append(save(from_art(ORE_MARKER_ICON), "item/ore_marker.png"))
 
 
+CANISTER_ICON = [
+    "................",
+    "......aaaa......",
+    ".....abccba.....",
+    "......abba......",
+    "....aaaaaaaa....",
+    "...adeeeeeeca...",
+    "...aedddddcca...",
+    "...aedkkkkdca...",
+    "...aedghhgdca...",
+    "...aedghhgdca...",
+    "...aedkkkkdca...",
+    "...aedddddcba...",
+    "...abccccccba...",
+    "....aaaaaaaa....",
+    "................",
+    "................",
+]
+
+RIVET_ICON = [
+    "................",
+    "................",
+    "................",
+    "................",
+    "......aaaa......",
+    ".....adeeca.....",
+    "....adeddcca....",
+    "....abcccbba....",
+    ".....aaaaaa.....",
+    "......abca......",
+    "......abca......",
+    "......abca......",
+    "......abca......",
+    ".......aa.......",
+    "................",
+    "................",
+]
+
+RIVET_GUN_ICON = [
+    "................",
+    "................",
+    "................",
+    "..aaaaaaaaaaaa..",
+    ".adeeeeeeeeedca.",
+    ".aedddddddddcba.",
+    ".abccccccgcbbaa.",
+    ".aabbbbbbbbaa...",
+    "...aeda.........",
+    "...adca.........",
+    "...adcaa........",
+    "...abcca........",
+    "....abba........",
+    ".....aa.........",
+    "................",
+    "................",
+]
+
+CHARGER_TOP_SLOT = 6
+
+
+def charger_top():
+    """충전대 윗면: 철판 가운데에 증기 통이 서는 둥근 칸."""
+    im = panel(seed=301)
+    for y in range(3, 13):
+        for x in range(3, 13):
+            im.putpixel((x, y), px("a") if min(x - 3, 12 - x, y - 3, 12 - y) == 0 else px("b"))
+    for y in range(5, 11):
+        for x in range(5, 11):
+            d = math.hypot(x - 7.5, y - 7.5)
+            if d < 3.2:
+                im.putpixel((x, y), px("k") if d > 2.0 else px("g"))
+    return im
+
+
+def charger_side():
+    """충전대 옆면: 철판에 하늘색 증기 눈금 띠."""
+    im = panel(seed=302)
+    for x in range(2, 14):
+        im.putpixel((x, 5), px("a"))
+        im.putpixel((x, 10), px("a"))
+        for y in (6, 7, 8, 9):
+            im.putpixel((x, y), px("k") if y in (6, 9) else px("g"))
+    for x in (4, 7, 10):
+        im.putpixel((x, 7), px("h"))
+    return im
+
+
+def charger_bottom():
+    im = panel(seed=303)
+    for y in range(1, 15):
+        for x in range(1, 15):
+            r, g, b, a = im.getpixel((x, y))
+            im.putpixel((x, y), (max(0, r - 40), max(0, g - 40), max(0, b - 40), a))
+    return im
+
+
+def steam_boots_icon():
+    """증기 부츠: 강철 부츠에 구리 띠와 하늘색 밸브."""
+    im = from_art(ITEMS["steel_boots"])
+    for x in (3, 4, 5, 6, 9, 10, 11, 12):
+        for y in (7, 8):
+            if im.getpixel((x, y))[3]:
+                im.putpixel((x, y), px("t") if y == 7 else px("s"))
+    for x in (4, 10):
+        im.putpixel((x, 9), px("h"))
+    return im
+
+
+def main_bundle3(made):
+    made.append(save(from_art(CANISTER_ICON), "item/steam_canister.png"))
+    made.append(save(from_art(RIVET_ICON), "item/rivet.png"))
+    made.append(save(from_art(RIVET_GUN_ICON), "item/rivet_gun.png"))
+    made.append(save(steam_boots_icon(), "item/steam_boots.png"))
+    made.append(save(charger_top(), "block/steam_charger_top.png"))
+    made.append(save(charger_side(), "block/steam_charger_side.png"))
+    made.append(save(charger_bottom(), "block/steam_charger_bottom.png"))
+
+
 def save(im, rel, scale=1):
     path = os.path.join(OUT, *rel.split("/"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -1091,6 +1209,7 @@ def main():
     main_m4(made)
     main_bundle1(made)
     main_bundle2(made)
+    main_bundle3(made)
 
     if "--sheet" in sys.argv:
         tiles = [Image.open(p) for p in made]

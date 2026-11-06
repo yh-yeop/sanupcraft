@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "P": "sanupcraft:steel_plate",
+    "G": "sanupcraft:gear_part",
+    "S": "sanupcraft:steam_pipe"
+  },
+  "pattern": [
+    "PPS",
+    " GP",
+    " P "
+  ],
+  "result": {
+    "id": "sanupcraft:rivet_gun"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:rivet_gun"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:rivet_gun"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.rivet_gun.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.rivet_gun.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ],
+  "parent": "sanupcraft:boiler"
+}
