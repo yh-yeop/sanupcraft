@@ -284,6 +284,21 @@ public final class SanupcraftConfig {
 	public int repairTicksForFull = io.github.yhyeop.sanupcraft.module.RepairStationBlockEntity.TICKS_FOR_FULL;
 	/** 증기 수리대: 재료 하나가 채우는 내구도(최대 내구도의 %). */
 	public int repairMaterialPercent = io.github.yhyeop.sanupcraft.module.RepairStationBlockEntity.MATERIAL_PERCENT;
+	// ---- 확장 3 G5 특수 장비 · G6 멀티툴 ----
+	/** 잠수 헬멧: 물속에서 1초마다 드는 증기. */
+	public int divingSteamPerSecond = io.github.yhyeop.sanupcraft.gear.special.DivingHelmet.STEAM_PER_SECOND;
+	/** 광부 헬멧: 머리 조명 빛 세기 (0이면 끔). */
+	public int minerLampLevel = io.github.yhyeop.sanupcraft.gear.special.HeadLamp.LAMP_LEVEL;
+	/** 광부 헬멧: 유독 가스 경고 거리(칸, 0이면 끔). */
+	public int minerGasWarnRange = io.github.yhyeop.sanupcraft.gear.special.MinerGear.GAS_WARN_RANGE;
+	/** 광부 갑옷 한 벌: 캐는 속도 증가(%). */
+	public int minerMiningSpeedPercent = io.github.yhyeop.sanupcraft.gear.special.MinerGear.MINING_SPEED_PERCENT;
+	/** 광부 갑옷 한 벌: 낙하 피해 감소(%). */
+	public int minerFallReductionPercent = io.github.yhyeop.sanupcraft.gear.special.MinerGear.FALL_REDUCTION_PERCENT;
+	/** 증기 파워 아머: 한 벌 효과가 1초마다 쓰는 증기. */
+	public int powerArmorSteamPerSecond = io.github.yhyeop.sanupcraft.gear.special.PowerArmor.STEAM_PER_SECOND;
+	/** 멀티툴: 블록 하나에 드는 증기. */
+	public int multitoolSteamPerBlock = io.github.yhyeop.sanupcraft.gear.special.MultitoolItem.STEAM_PER_BLOCK;
 
 	/** float 상수를 0.05F -> 0.05처럼 보이는 그대로의 double로 (파일에 0.0500000007...이 안 찍히게). */
 	private static double asDouble(float value) {
@@ -518,7 +533,23 @@ public final class SanupcraftConfig {
 			new Option("repairStation", "ticksForFull", io.github.yhyeop.sanupcraft.module.RepairStationBlockEntity.TICKS_FOR_FULL, 1, 72_000, true,
 					c -> c.repairTicksForFull, (c, v) -> c.repairTicksForFull = (int) v),
 			new Option("repairStation", "materialPercent", io.github.yhyeop.sanupcraft.module.RepairStationBlockEntity.MATERIAL_PERCENT, 1, 100, true,
-					c -> c.repairMaterialPercent, (c, v) -> c.repairMaterialPercent = (int) v));
+					c -> c.repairMaterialPercent, (c, v) -> c.repairMaterialPercent = (int) v),
+			// 확장 3 G5 특수 장비 · G6 멀티툴
+			new Option("divingHelmet", "steamPerSecond", io.github.yhyeop.sanupcraft.gear.special.DivingHelmet.STEAM_PER_SECOND, 0, 100, true,
+					c -> c.divingSteamPerSecond, (c, v) -> c.divingSteamPerSecond = (int) v),
+			new Option("minerArmor", "lampLevel", io.github.yhyeop.sanupcraft.gear.special.HeadLamp.LAMP_LEVEL, 0, 15, true,
+					c -> c.minerLampLevel, (c, v) -> c.minerLampLevel = (int) v),
+			new Option("minerArmor", "gasWarnRange", io.github.yhyeop.sanupcraft.gear.special.MinerGear.GAS_WARN_RANGE, 0, 8, true,
+					c -> c.minerGasWarnRange, (c, v) -> c.minerGasWarnRange = (int) v),
+			new Option("minerArmor", "miningSpeedPercent", io.github.yhyeop.sanupcraft.gear.special.MinerGear.MINING_SPEED_PERCENT, 0, 500, true,
+					c -> c.minerMiningSpeedPercent, (c, v) -> c.minerMiningSpeedPercent = (int) v),
+			new Option("minerArmor", "fallReductionPercent", io.github.yhyeop.sanupcraft.gear.special.MinerGear.FALL_REDUCTION_PERCENT, 0, 100, true,
+					c -> c.minerFallReductionPercent, (c, v) -> c.minerFallReductionPercent = (int) v),
+			new Option("powerArmor", "steamPerSecond", io.github.yhyeop.sanupcraft.gear.special.PowerArmor.STEAM_PER_SECOND, 0, 1000, true,
+					c -> c.powerArmorSteamPerSecond, (c, v) -> c.powerArmorSteamPerSecond = (int) v),
+			new Option("multitool", "steamPerBlock", io.github.yhyeop.sanupcraft.gear.special.MultitoolItem.STEAM_PER_BLOCK, 0,
+					io.github.yhyeop.sanupcraft.gear.special.MultitoolItem.CAPACITY, true,
+					c -> c.multitoolSteamPerBlock, (c, v) -> c.multitoolSteamPerBlock = (int) v));
 
 	/** 읽은 결과: 설정, 경고 문구, 파일에 빠진 키가 있었는지, 파일을 새로 썼는지. */
 	public record Loaded(SanupcraftConfig config, List<String> warnings, boolean missingKeys, boolean wroteFile) {

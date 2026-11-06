@@ -1,0 +1,15 @@
+{
+  "type": "sanupcraft:gear_upgrade_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "sanupcraft:steam_drill",
+    "sanupcraft:chainsaw",
+    "sanupcraft:precision_part",
+    "sanupcraft:precision_part",
+    "minecraft:iron_hoe",
+    "sanupcraft:steam_canister"
+  ],
+  "result": {
+    "id": "sanupcraft:multitool"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "parent": "sanupcraft:chainsaw",
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:multitool"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:multitool"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.multitool.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.multitool.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ]
+}

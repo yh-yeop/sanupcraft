@@ -1,0 +1,19 @@
+{
+  "type": "sanupcraft:gear_upgrade_shaped",
+  "category": "equipment",
+  "key": {
+    "G": "sanupcraft:gear_part",
+    "P": "sanupcraft:precision_part",
+    "N": "minecraft:netherite_chestplate",
+    "C": "sanupcraft:steam_canister",
+    "S": "sanupcraft:steam_pipe"
+  },
+  "pattern": [
+    "GCG",
+    "PNP",
+    "GSG"
+  ],
+  "result": {
+    "id": "sanupcraft:power_armor_chestplate"
+  }
+}

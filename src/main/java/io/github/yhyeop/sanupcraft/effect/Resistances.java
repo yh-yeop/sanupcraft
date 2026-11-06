@@ -34,9 +34,9 @@ public final class Resistances {
 		return VoidGear.wearsFullSet(entity) || GearModules.wornHas(entity, GearModule.VOID_PROOF);
 	}
 
-	/** 유독 가스(D5) 면역: 가스 필터 모듈 (G3). */
+	/** 유독 가스(D5) 면역: 가스 필터 모듈 (G3) 또는 광부 헬멧 (G5). */
 	public static boolean toxicGasImmune(LivingEntity entity) {
-		return GearModules.wornHas(entity, GearModule.GAS_FILTER);
+		return GearModules.wornHas(entity, GearModule.GAS_FILTER) || io.github.yhyeop.sanupcraft.gear.special.MinerGear.wearsHelmet(entity);
 	}
 
 	/** 이 효과를 막는가. 우리 효과가 아니면 false. */

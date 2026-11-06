@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "sanupcraft:miner"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "sanupcraft:miner"
+      }
+    ]
+  }
+}

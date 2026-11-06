@@ -119,7 +119,7 @@ public class SanupcraftM3GameTest {
 				"abandoned_station", "wrench", "new_metal", "blast", "vein_prospector", "steel_spear", "steam_hammer", "flamethrower",
 				"combat_beacon", "steam_syringe", "bronze", "chrome_steel", "rust_automaton", "ember_wisp", "void_shade", "elite_mob",
 				"rusty_guardian_phase_two", "furnace_warden_phase_two", "void_colossus_phase_two", "boss_gear", "gear_workbench",
-				"steam_repair_station"};
+				"steam_repair_station", "diving_helmet", "miner_armor", "power_armor", "multitool"};
 		var advancements = helper.getLevel().getServer().getAdvancements();
 		for (String id : ids) {
 			helper.assertTrue(advancements.get(Sanupcraft.id(id)) != null, "발전 과제가 없음: " + id);

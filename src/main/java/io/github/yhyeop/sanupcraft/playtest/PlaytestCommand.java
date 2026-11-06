@@ -99,7 +99,9 @@ public final class PlaytestCommand {
 		// 확장 3 C4 보스 2페이즈 · 전용 장비
 		BOSSGEAR("보스 전용 장비 · 2페이즈: 녹슨 망치 · 화구 방패 · 공허 지팡이 · 소환석 셋 · 제단", null, PlaytestCommand::kitBossGear),
 		// 확장 3 G3 · G4 장비 모듈 · 수리 · 계승
-		MODULES("장비 모듈 · 수리: 장비 작업대 · 모듈 16종 · 증기 수리대 · 계승 (모듈 낀 강철 투구 → 내열)", null, PlaytestCommand::kitModules);
+		MODULES("장비 모듈 · 수리: 장비 작업대 · 모듈 16종 · 증기 수리대 · 계승 (모듈 낀 강철 투구 → 내열)", null, PlaytestCommand::kitModules),
+		// 확장 3 G5 · G6 특수 장비 · 멀티툴
+		SPECIALGEAR("특수 장비 · 멀티툴: 잠수 헬멧 · 광부 갑옷 · 증기 파워 아머(제트팩 모듈) · 멀티툴 · 충전대", null, PlaytestCommand::kitSpecialGear);
 
 		final String description;
 		final ResourceKey<Level> dimension;
@@ -843,6 +845,39 @@ public final class PlaytestCommand {
 		give(p, Items.IRON_ORE, 16);
 		give(p, Items.STONE, 64);
 		give(p, Items.ZOMBIE_SPAWN_EGG, 4);
+		food(p);
+	}
+
+	/**
+	 * 확장 3 G5 · G6: 가득 찬 잠수 헬멧 · 물 양동이, 광부 갑옷 한 벌, 증기 파워 아머 한 벌(가득 찬 흉갑 둘: 하나는 제트팩 모듈을 낌) · 제트팩 모듈,
+	 * 가득 찬 멀티툴, 장비 작업대 · 충전대(보일러 설비째), 캐 볼 블록 · 어둠 효과를 걸어 볼 워든 알. 가스는 `/setblock ~ ~ ~ sanupcraft:toxic_gas`로 깐다.
+	 */
+	private static void kitSpecialGear(ServerPlayer p) {
+		give(p, charged(io.github.yhyeop.sanupcraft.gear.special.ModSpecialGear.DIVING_HELMET));
+		give(p, Items.WATER_BUCKET, 4);
+		give(p, io.github.yhyeop.sanupcraft.gear.special.ModSpecialGear.MINER_HELMET, 1);
+		give(p, io.github.yhyeop.sanupcraft.gear.special.ModSpecialGear.MINER_CHESTPLATE, 1);
+		give(p, io.github.yhyeop.sanupcraft.gear.special.ModSpecialGear.MINER_LEGGINGS, 1);
+		give(p, io.github.yhyeop.sanupcraft.gear.special.ModSpecialGear.MINER_BOOTS, 1);
+		give(p, io.github.yhyeop.sanupcraft.gear.special.ModSpecialGear.POWER_HELMET, 1);
+		give(p, charged(io.github.yhyeop.sanupcraft.gear.special.ModSpecialGear.POWER_CHESTPLATE));
+		ItemStack jetChest = charged(io.github.yhyeop.sanupcraft.gear.special.ModSpecialGear.POWER_CHESTPLATE);
+		io.github.yhyeop.sanupcraft.module.GearModules.install(jetChest, io.github.yhyeop.sanupcraft.module.GearModule.JETPACK);
+		give(p, jetChest);
+		give(p, io.github.yhyeop.sanupcraft.gear.special.ModSpecialGear.POWER_LEGGINGS, 1);
+		give(p, io.github.yhyeop.sanupcraft.gear.special.ModSpecialGear.POWER_BOOTS, 1);
+		give(p, io.github.yhyeop.sanupcraft.module.GearModule.JETPACK.item(), 1);
+		give(p, charged(io.github.yhyeop.sanupcraft.gear.special.ModSpecialGear.MULTITOOL));
+		give(p, io.github.yhyeop.sanupcraft.module.ModModules.GEAR_WORKBENCH.asItem(), 1);
+		give(p, ModPower.STEAM_CHARGER.asItem(), 1);
+		give(p, ModPower.BOILER.asItem(), 1);
+		give(p, ModPower.STEAM_PIPE.asItem(), 8);
+		give(p, Items.COAL, 32);
+		give(p, Items.OAK_LOG, 16);
+		give(p, Items.DIRT, 32);
+		give(p, Items.STONE, 64);
+		give(p, Items.TORCH, 16);
+		give(p, Items.WARDEN_SPAWN_EGG, 1);
 		food(p);
 	}
 }
