@@ -48,21 +48,13 @@ public final class StorageNetwork {
 	}
 
 	private final List<Store> stores;
-	private final int nodes;
-
-	private StorageNetwork(List<Store> stores, int nodes) {
+	private StorageNetwork(List<Store> stores) {
 		this.stores = stores;
-		this.nodes = nodes;
 	}
 
 	/** 관 · 네트워크 블록 근처가 바뀌었다: 모든 캐시를 버린다. */
 	public static void invalidate() {
 		EPOCH.incrementAndGet();
-	}
-
-	/** 지나간 관 · 네트워크 블록 수. */
-	public int nodes() {
-		return nodes;
 	}
 
 	/** 보관함 수. */
@@ -96,7 +88,7 @@ public final class StorageNetwork {
 				addStore(level, next, direction.getOpposite(), stores);
 			}
 		}
-		return new StorageNetwork(stores, nodes);
+		return new StorageNetwork(stores);
 	}
 
 	/** 관 또는 네트워크 블록 (따라 지나가는 곳). */

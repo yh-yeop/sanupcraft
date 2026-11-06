@@ -416,6 +416,11 @@ public class DrawerBlockEntity extends BlockEntity implements Container {
 		}
 	}
 
+	/** 부숴도 내용물은 서랍 아이템에 담긴다 (바닐라 셜커 상자와 같다: 보기 칸을 따로 쏟지 않는다). */
+	@Override
+	public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+	}
+
 	@Override
 	public void removeComponentsFromTag(ValueOutput output) {
 		output.discard("drawer");
