@@ -36,7 +36,8 @@ public class SanupcraftM11bGameTest {
 		JsonObject ko = readJson("/assets/sanupcraft/lang/ko_kr.json");
 		JsonObject en = readJson("/assets/sanupcraft/lang/en_us.json");
 		Set<String> registered = new HashSet<>();
-		for (SoundEvent event : ModSounds.all()) {
+		// 확장 3 C2 새 몹 소리(MobSounds)도 같은 sounds.json에 있다
+		for (SoundEvent event : java.util.stream.Stream.concat(ModSounds.all().stream(), io.github.yhyeop.sanupcraft.mob.MobSounds.all().stream()).toList()) {
 			Identifier id = BuiltInRegistries.SOUND_EVENT.getKey(event);
 			helper.assertTrue(id != null && id.getNamespace().equals(Sanupcraft.MOD_ID), "등록 안 된 소리: " + event.location());
 			helper.assertTrue(BuiltInRegistries.SOUND_EVENT.getValue(id) == event, "레지스트리에서 다른 소리: " + id);

@@ -89,7 +89,9 @@ public class MobGrinderBlockEntity extends BlockEntity implements SteamConsumer,
 		if (entity instanceof OwnableEntity ownable && ownable.getOwnerReference() != null) {
 			return false;
 		}
-		return entity.isAlive() && !entity.isInvulnerable() && !entity.hasCustomName();
+		// 이름표로 이름 붙인 몹은 건너뛴다. 정예 몹(M13)은 이름이 자동으로 붙어 있으니 예외
+		boolean named = entity.hasCustomName() && !(entity instanceof io.github.yhyeop.sanupcraft.mob.EliteMonster elite && elite.isElite());
+		return entity.isAlive() && !entity.isInvulnerable() && !named;
 	}
 
 	/** 한 번 벤다: 위 칸의 몹마다 증기를 쓰고 피해를 준다. 벤 몹 수를 돌려준다. 시험이 직접 부른다. */

@@ -45,6 +45,7 @@ public class SanupcraftClient implements ClientModInitializer {
 		EntityRendererRegistry.register(io.github.yhyeop.sanupcraft.end.ModEnd.VOID_COLOSSUS, io.github.yhyeop.sanupcraft.client.end.VoidColossusRenderer::new);
 		EntityRendererRegistry.register(io.github.yhyeop.sanupcraft.end.ModEnd.VOID_CRYSTAL, io.github.yhyeop.sanupcraft.client.end.VoidCrystalRenderer::new);
 		io.github.yhyeop.sanupcraft.client.machine.MachineLookClient.init(); // 확장 M15 R4: 기계 움직이는 부품
+		io.github.yhyeop.sanupcraft.client.mob.MobModelLayers.init(); // 확장 3 C2 · R7 새 몹 전용 모델
 	}
 
 	/**

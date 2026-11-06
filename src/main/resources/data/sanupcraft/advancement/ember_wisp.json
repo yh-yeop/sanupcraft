@@ -1,0 +1,34 @@
+{
+  "parent": "sanupcraft:heatproof",
+  "criteria": {
+    "killed": {
+      "trigger": "minecraft:player_killed_entity",
+      "conditions": {
+        "entity": {
+          "type": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "minecraft:entity_type": "sanupcraft:ember_wisp"
+          }
+        }
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:ember_wisp_spawn_egg"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.ember_wisp.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.ember_wisp.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "killed"
+    ]
+  ]
+}

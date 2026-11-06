@@ -1,0 +1,34 @@
+{
+  "parent": "sanupcraft:shulker_shell",
+  "criteria": {
+    "killed": {
+      "trigger": "minecraft:player_killed_entity",
+      "conditions": {
+        "entity": {
+          "type": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "minecraft:entity_type": "sanupcraft:void_shade"
+          }
+        }
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:void_shard"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.void_shade.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.void_shade.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "killed"
+    ]
+  ]
+}
