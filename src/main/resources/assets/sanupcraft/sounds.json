@@ -245,5 +245,209 @@
         "pitch": 0.6
       }
     ]
+  },
+  "mob.rust_automaton.ambient": {
+    "subtitle": "subtitles.sanupcraft.mob.rust_automaton.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:mob/irongolem/walk1",
+        "pitch": 1.5,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:mob/irongolem/walk2",
+        "pitch": 1.5,
+        "volume": 0.6
+      },
+      {
+        "name": "minecraft:mob/irongolem/walk3",
+        "pitch": 1.5,
+        "volume": 0.6
+      }
+    ]
+  },
+  "mob.rust_automaton.hurt": {
+    "subtitle": "subtitles.sanupcraft.mob.rust_automaton.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:mob/irongolem/hit1",
+        "pitch": 1.3
+      },
+      {
+        "name": "minecraft:mob/irongolem/hit2",
+        "pitch": 1.3
+      },
+      {
+        "name": "minecraft:mob/irongolem/hit3",
+        "pitch": 1.3
+      }
+    ]
+  },
+  "mob.rust_automaton.death": {
+    "subtitle": "subtitles.sanupcraft.mob.rust_automaton.death",
+    "sounds": [
+      {
+        "name": "minecraft:mob/irongolem/death",
+        "pitch": 1.4
+      }
+    ]
+  },
+  "mob.rust_automaton.step": {
+    "subtitle": "subtitles.sanupcraft.mob.rust_automaton.step",
+    "sounds": [
+      {
+        "name": "minecraft:mob/irongolem/walk1",
+        "pitch": 1.6,
+        "volume": 0.5
+      },
+      {
+        "name": "minecraft:mob/irongolem/walk2",
+        "pitch": 1.6,
+        "volume": 0.5
+      },
+      {
+        "name": "minecraft:mob/irongolem/walk3",
+        "pitch": 1.6,
+        "volume": 0.5
+      },
+      {
+        "name": "minecraft:mob/irongolem/walk4",
+        "pitch": 1.6,
+        "volume": 0.5
+      }
+    ]
+  },
+  "mob.ember_wisp.ambient": {
+    "subtitle": "subtitles.sanupcraft.mob.ember_wisp.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:mob/blaze/breathe1",
+        "pitch": 1.6,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:mob/blaze/breathe2",
+        "pitch": 1.6,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:mob/blaze/breathe3",
+        "pitch": 1.6,
+        "volume": 0.7
+      },
+      {
+        "name": "minecraft:mob/blaze/breathe4",
+        "pitch": 1.6,
+        "volume": 0.7
+      }
+    ]
+  },
+  "mob.ember_wisp.hurt": {
+    "subtitle": "subtitles.sanupcraft.mob.ember_wisp.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:mob/blaze/hit1",
+        "pitch": 1.6
+      },
+      {
+        "name": "minecraft:mob/blaze/hit2",
+        "pitch": 1.6
+      },
+      {
+        "name": "minecraft:mob/blaze/hit3",
+        "pitch": 1.6
+      },
+      {
+        "name": "minecraft:mob/blaze/hit4",
+        "pitch": 1.6
+      }
+    ]
+  },
+  "mob.ember_wisp.death": {
+    "subtitle": "subtitles.sanupcraft.mob.ember_wisp.death",
+    "sounds": [
+      {
+        "name": "minecraft:mob/blaze/death",
+        "pitch": 1.7
+      }
+    ]
+  },
+  "mob.ember_wisp.shoot": {
+    "subtitle": "subtitles.sanupcraft.mob.ember_wisp.shoot",
+    "sounds": [
+      {
+        "name": "minecraft:mob/ghast/fireball4",
+        "pitch": 1.8,
+        "volume": 0.6
+      }
+    ]
+  },
+  "mob.void_shade.ambient": {
+    "subtitle": "subtitles.sanupcraft.mob.void_shade.ambient",
+    "sounds": [
+      {
+        "name": "minecraft:mob/endermen/idle1",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:mob/endermen/idle2",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:mob/endermen/idle3",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:mob/endermen/idle4",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:mob/endermen/idle5",
+        "pitch": 0.6
+      }
+    ]
+  },
+  "mob.void_shade.hurt": {
+    "subtitle": "subtitles.sanupcraft.mob.void_shade.hurt",
+    "sounds": [
+      {
+        "name": "minecraft:mob/endermen/hit1",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:mob/endermen/hit2",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:mob/endermen/hit3",
+        "pitch": 0.7
+      },
+      {
+        "name": "minecraft:mob/endermen/hit4",
+        "pitch": 0.7
+      }
+    ]
+  },
+  "mob.void_shade.death": {
+    "subtitle": "subtitles.sanupcraft.mob.void_shade.death",
+    "sounds": [
+      {
+        "name": "minecraft:mob/endermen/death",
+        "pitch": 0.6
+      }
+    ]
+  },
+  "mob.void_shade.teleport": {
+    "subtitle": "subtitles.sanupcraft.mob.void_shade.teleport",
+    "sounds": [
+      {
+        "name": "minecraft:mob/endermen/portal",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:mob/endermen/portal2",
+        "pitch": 0.6
+      }
+    ]
   }
 }

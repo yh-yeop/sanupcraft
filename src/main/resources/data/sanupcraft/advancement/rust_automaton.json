@@ -1,0 +1,34 @@
+{
+  "parent": "sanupcraft:rusted_shrine",
+  "criteria": {
+    "killed": {
+      "trigger": "minecraft:player_killed_entity",
+      "conditions": {
+        "entity": {
+          "type": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "minecraft:entity_type": "sanupcraft:rust_automaton"
+          }
+        }
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:rust_automaton_spawn_egg"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.rust_automaton.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.rust_automaton.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "killed"
+    ]
+  ]
+}

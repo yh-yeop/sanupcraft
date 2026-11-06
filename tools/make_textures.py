@@ -3266,6 +3266,440 @@ def main_ex3_c3(made):
     made.append(save(void_erosion_effect_icon(), "mob_effect/void_erosion.png"))
 
 
+# ---------- 확장 3 C2 · R7: 새 몹 셋 (녹슨 자동인형 · 잿불 정령 · 공허 그림자), 정예 테두리, 생성 알 · 공허 조각 ----------
+# 자동인형: 푸른 기 도는 무쇠 + 짙은 주황 녹, 호박색 외눈 (금 감) · 계기 · 굴뚝 불씨
+RA_IRON = ["#1d2026", "#2f343c", "#454c56", "#5d6672", "#78828e", "#97a1ac"]
+RA_RUST = ["#3e1a0a", "#6a2e12", "#94441c", "#bf5f26", "#e08440"]
+RA_RIVET = ("#a0a8b0", "#16181c")
+RA_GLOW = ["#5a2a04", "#a85a0a", "#ffa21f", "#ffd27a", "#fff4d0"]
+# 정령: 숯덩이 핵 (용암 같은 금), 주황 → 노랑 불꽃
+EW_CHAR = ["#120a08", "#1e1210", "#2c1a14", "#3c241a", "#4e3020"]
+EW_FIRE = ["#7a1c06", "#c8400c", "#ff7a1a", "#ffb340", "#ffe9a0", "#fffbe6"]
+# 그림자: 보라 기 도는 검정, 자홍 눈 · 균열
+VS_DARK = ["#06040a", "#0d0914", "#16101f", "#20182c", "#2c213b", "#3a2c4c"]
+VS_GLOW = ["#3a0f5a", "#6a1fa0", "#b04aff", "#e09cff", "#f8e6ff"]
+
+
+def c2_glow_px(glow, b, face, x, y, col):
+    fx, fy, fw, fh = b.faces[face]
+    if 0 <= x < fw and 0 <= y < fh:
+        glow.putpixel((fx + x, fy + y), m11a_hex(col) if isinstance(col, str) else col)
+
+
+def rust_automaton_textures():
+    rnd = random.Random(1201)
+    im = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+    glow = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+
+    def box(u, v, w, h, d, rust_amount=0.18):
+        b = M11aBox(im, rnd, u, v, w, h, d)
+        b.fill(RA_IRON, RA_RUST, rust_amount)
+        return b
+
+    # 머리 8x8x8: 이마 판, 금 간 외눈 (호박색, 가운데에서 오른쪽 위로 금), 턱 환기구, 옆 귀 볼트
+    head = box(0, 0, 8, 8, 8, 0.16)
+    for face in ("front", "back", "right", "left"):
+        head.hline(face, 0, RA_IRON[4])
+        head.hline(face, 1, RA_IRON[2])
+    for y in range(1, 7):
+        for x in range(1, 7):
+            dd = math.hypot(x - 3.5, y - 3.5)
+            if dd < 2.6:
+                head.put("front", x, y, "#2a1606" if dd > 1.7 else RA_GLOW[1])
+                if dd <= 1.7:
+                    c2_glow_px(glow, head, "front", x, y, RA_GLOW[2] if dd > 0.8 else RA_GLOW[4])
+    # 금: 눈 가운데에서 오른쪽 위로, 이마 끝까지 (금 자리는 빛이 새지 않는다)
+    for x, y in ((4, 3), (5, 2), (5, 1), (6, 0)):
+        head.put("front", x, y, "#0a0604")
+        glow.putpixel((head.faces["front"][0] + x, head.faces["front"][1] + y), (0, 0, 0, 0))
+    head.put("front", 2, 4, "#0a0604")
+    glow.putpixel((head.faces["front"][0] + 2, head.faces["front"][1] + 4), (0, 0, 0, 0))
+    head.rect("front", 2, 7, 5, 7, RA_IRON[1])
+    for x in (2, 4):
+        head.put("front", x, 7, RA_IRON[0])
+    for face in ("right", "left"):
+        head.rect(face, 3, 3, 4, 4, RA_IRON[4])
+        head.put(face, 4, 4, RA_IRON[0])
+    head.rivets("top", [(1, 1), (5, 1), (1, 5), (5, 5)], *RA_RIVET)
+    head.drips("back", RA_RUST, 3)
+    # 안테나 1x3x1: 끝이 빛남
+    ant = M11aBox(im, rnd, 32, 0, 1, 3, 1)
+    ant.fill(RA_IRON[2:], bevel=False)
+    ant.put("top", 0, 0, RA_GLOW[3])
+    for face in ("front", "back", "right", "left"):
+        ant.put(face, 0, 0, RA_GLOW[2])
+        c2_glow_px(glow, ant, face, 0, 0, RA_GLOW[3])
+    c2_glow_px(glow, ant, "top", 0, 0, RA_GLOW[4])
+
+    # 어깨 갑옷 5x4x5
+    paul = box(40, 0, 5, 4, 5, 0.22)
+    for face in ("front", "back", "right", "left"):
+        paul.hline(face, 3, RA_IRON[0])
+        paul.rivets(face, [(0, 0), (3, 0)], *RA_RIVET)
+    paul.rivets("top", [(1, 1), (3, 3)], *RA_RIVET)
+
+    # 몸통 10x12x6: 판 이음 두 줄, 리벳 테두리, 녹 줄기, 배의 번호판
+    torso = box(0, 16, 10, 12, 6, 0.2)
+    for face in ("front", "back", "right", "left"):
+        fw, fh = torso.size(face)
+        torso.hline(face, 8, RA_IRON[1])
+        torso.hline(face, 9, RA_IRON[4])
+        m11a_edge_rivets(torso, face, *RA_RIVET, step=3)
+        torso.drips(face, RA_RUST, 2 if fw > 6 else 1)
+    torso.rect("front", 3, 9, 6, 10, RA_IRON[1])
+    torso.put("front", 4, 10, RA_IRON[4])
+    torso.put("front", 5, 9, RA_IRON[4])
+    torso.vline("top", 5, RA_IRON[1])
+
+    # 가슴 계기판 8x5x1: 놋쇠 테 안에 둥근 계기 둘 (바늘이 빛남)
+    plate = M11aBox(im, rnd, 32, 16, 8, 5, 1)
+    plate.fill(["#2e2210", "#4a3818", "#6e5524", "#94733a", "#b89350"])
+    for cx in (2, 5):
+        for y in range(5):
+            for x in range(cx - 1, cx + 2):
+                dd = math.hypot(x - cx, y - 2)
+                if dd < 1.6:
+                    plate.put("front", x, y, "#150f06" if dd > 0.9 else RA_GLOW[0])
+                    if dd < 0.9:
+                        c2_glow_px(glow, plate, "front", x, y, RA_GLOW[2])
+        plate.put("front", cx, 1, RA_GLOW[3])
+        c2_glow_px(glow, plate, "front", cx, 1, RA_GLOW[4])
+    plate.vline("front", 7, "#2e2210")
+    plate.vline("front", 0, "#2e2210")
+
+    # 굴뚝 2x4x2: 그을린 끝, 안에 불씨
+    stack = box(50, 16, 2, 4, 2, 0.25)
+    for face in ("front", "back", "right", "left"):
+        stack.hline(face, 0, RA_IRON[0])
+        stack.hline(face, 1, RA_IRON[4])
+    stack.rect("top", 0, 0, 1, 1, "#3a1404")
+    stack.put("top", 0, 0, RA_GLOW[2])
+    for x in range(2):
+        for y in range(2):
+            c2_glow_px(glow, stack, "top", x, y, RA_GLOW[2] if (x + y) % 2 == 0 else RA_GLOW[1])
+
+    # 등 보일러 6x7x3: 둥근 뚜껑 + 압력 밸브
+    boiler = box(32, 22, 6, 7, 3, 0.25)
+    for face in ("back", "right", "left", "front"):
+        boiler.hline(face, 0, RA_IRON[4])
+        boiler.hline(face, 6, RA_IRON[0])
+    for y in range(1, 6):
+        for x in range(0, 6):
+            dd = math.hypot(x - 2.5, y - 3.0)
+            if 1.7 < dd < 2.6:
+                boiler.put("back", x, y, "#6e5524")
+    boiler.put("back", 2, 3, "#94733a")
+    boiler.put("back", 3, 3, "#4a3818")
+    boiler.rivets("top", [(0, 0), (4, 1)], *RA_RIVET)
+
+    # 다리 4x12x4: 무릎 이음 · 정강이 판
+    leg = box(0, 34, 4, 12, 4, 0.18)
+    for face in ("front", "back", "right", "left"):
+        leg.hline(face, 5, RA_IRON[1])
+        leg.hline(face, 6, RA_IRON[4])
+        leg.rivets(face, [(0, 1), (2, 8)], *RA_RIVET)
+    leg.rect("front", 1, 2, 2, 4, RA_IRON[4])
+    # 팔 4x12x4: 팔꿈치 이음 · 피스톤 줄
+    arm = box(16, 34, 4, 12, 4, 0.2)
+    for face in ("front", "back", "right", "left"):
+        arm.hline(face, 5, RA_IRON[1])
+        arm.hline(face, 6, RA_IRON[4])
+    arm.vline("right", 1, "#6e5524", 1, 9)
+    arm.vline("left", 2, "#6e5524", 1, 9)
+    arm.vline("back", 1, "#94733a", 2, 8)
+    # 발 5x3x5: 앞코 판
+    foot = box(32, 34, 5, 3, 5, 0.22)
+    for face in ("front", "back", "right", "left"):
+        foot.hline(face, 0, RA_IRON[4])
+        foot.hline(face, 2, RA_IRON[0])
+    foot.rivets("front", [(0, 1), (3, 1)], *RA_RIVET)
+    foot.rivets("top", [(1, 1), (3, 3)], *RA_RIVET)
+    # 주먹 5x4x5: 손가락 마디
+    fist = box(32, 42, 5, 4, 5, 0.15)
+    for face in ("front", "back", "right", "left"):
+        for x in (1, 3):
+            fist.vline(face, x, RA_IRON[1], 1, 3)
+        fist.hline(face, 0, RA_IRON[4])
+    fist.rect("bottom", 1, 1, 3, 3, RA_IRON[1])
+    for x in (0, 2, 4):
+        fist.put("front", x, 1, RA_IRON[5])
+    return im, glow
+
+
+def ember_wisp_textures():
+    rnd = random.Random(1202)
+    im = Image.new("RGBA", (64, 32), (0, 0, 0, 0))
+    glow = Image.new("RGBA", (64, 32), (0, 0, 0, 0))
+
+    def lava_cracks(b, face, count):
+        fw, fh = b.size(face)
+        for _ in range(count):
+            x, y = rnd.randrange(fw), rnd.randrange(fh)
+            for i in range(rnd.randint(2, 4)):
+                if not (0 <= x < fw and 0 <= y < fh):
+                    break
+                b.put(face, x, y, EW_FIRE[1])
+                c2_glow_px(glow, b, face, x, y, EW_FIRE[2] if i % 2 else EW_FIRE[3])
+                if rnd.random() < 0.5:
+                    x += rnd.choice((-1, 1))
+                else:
+                    y += rnd.choice((-1, 1))
+
+    # 핵 6x6x6: 숯덩이에 용암 금, 앞면은 두 눈 (밝은 노랑) + 입 틈
+    core = M11aBox(im, rnd, 0, 0, 6, 6, 6)
+    core.fill(EW_CHAR)
+    for face in ("front", "back", "right", "left", "top", "bottom"):
+        lava_cracks(core, face, 1 if face == "front" else 3)
+    core.rect("front", 0, 1, 5, 4, EW_CHAR[1])
+    for x in (1, 4):
+        core.put("front", x, 2, EW_FIRE[4])
+        core.put("front", x, 3, EW_FIRE[2])
+        c2_glow_px(glow, core, "front", x, 2, EW_FIRE[5])
+        c2_glow_px(glow, core, "front", x, 3, EW_FIRE[3])
+    for x in (2, 3):
+        core.put("front", x, 5, EW_FIRE[1])
+        c2_glow_px(glow, core, "front", x, 5, EW_FIRE[2])
+
+    # 불꽃 2x5x2: 아래 주황 → 위 노랑 · 흰빛, 끝은 듬성듬성 (전부 빛남)
+    flame = M11aBox(im, rnd, 24, 0, 2, 5, 2)
+    for face, (fx, fy, fw, fh) in flame.faces.items():
+        for y in range(fh):
+            for x in range(fw):
+                if face == "top":
+                    col = EW_FIRE[5]
+                elif face == "bottom":
+                    col = EW_FIRE[1]
+                else:
+                    if y == 0 and rnd.random() < 0.5:
+                        continue
+                    col = EW_FIRE[[5, 4, 3, 3, 2][min(4, y)]]
+                im.putpixel((fx + x, fy + y), m11a_hex(col))
+                glow.putpixel((fx + x, fy + y), m11a_hex(col))
+
+    # 꼬리 3x4x3 · 끝 1x3x1: 위는 주황, 아래로 어두워지며 듬성 (빛은 위쪽만)
+    for (u, v, w, h, d) in ((32, 0, 3, 4, 3), (44, 0, 1, 3, 1)):
+        tail = M11aBox(im, rnd, u, v, w, h, d)
+        for face, (fx, fy, fw, fh) in tail.faces.items():
+            for y in range(fh):
+                for x in range(fw):
+                    t = y / max(1, fh - 1)
+                    if face in ("top", "bottom"):
+                        t = 0.0 if face == "top" else 1.0
+                    if u == 44:
+                        t = 0.5 + t * 0.5
+                    if t > 0.75 and rnd.random() < 0.45:
+                        continue
+                    col = EW_FIRE[3] if t < 0.25 else (EW_FIRE[2] if t < 0.55 else (EW_FIRE[1] if t < 0.8 else EW_FIRE[0]))
+                    im.putpixel((fx + x, fy + y), m11a_hex(col))
+                    if t < 0.7:
+                        glow.putpixel((fx + x, fy + y), m11a_hex(col))
+
+    # 불씨 2x2x2 · 3x3x3: 달아오른 덩어리 (가운데 밝게, 모서리 어둡게)
+    for (u, v, s) in ((0, 12, 2), (8, 12, 3)):
+        ember = M11aBox(im, rnd, u, v, s, s, s)
+        for face, (fx, fy, fw, fh) in ember.faces.items():
+            for y in range(fh):
+                for x in range(fw):
+                    edge = (x in (0, fw - 1)) + (y in (0, fh - 1))
+                    col = EW_FIRE[4] if edge == 0 else (EW_FIRE[2] if edge == 1 else EW_FIRE[1])
+                    if s == 2:
+                        col = EW_FIRE[3] if (x + y) % 2 == 0 else EW_FIRE[2]
+                    im.putpixel((fx + x, fy + y), m11a_hex(col))
+                    glow.putpixel((fx + x, fy + y), m11a_hex(col))
+    return im, glow
+
+
+def void_shade_textures():
+    rnd = random.Random(1203)
+    im = Image.new("RGBA", (64, 32), (0, 0, 0, 0))
+    glow = Image.new("RGBA", (64, 32), (0, 0, 0, 0))
+
+    def box(u, v, w, h, d):
+        b = M11aBox(im, rnd, u, v, w, h, d)
+        b.fill(VS_DARK[:5])
+        return b
+
+    def wisps(b, face, count, col=VS_DARK[4]):
+        """연기처럼 위로 올라가는 옅은 줄."""
+        fw, fh = b.size(face)
+        for _ in range(count):
+            x = rnd.randrange(fw)
+            y = rnd.randrange(fh)
+            for i in range(rnd.randint(2, 4)):
+                b.put(face, x, y - i, col)
+                if rnd.random() < 0.4:
+                    x += rnd.choice((-1, 1))
+
+    # 머리 6x7x6: 얼굴은 더 깊은 어둠, 바깥이 치켜 올라간 가는 두 눈 (자홍 빛), 아래로 흐르는 빛 자국
+    head = box(0, 0, 6, 7, 6)
+    head.rect("front", 0, 1, 5, 6, VS_DARK[0])
+    head.rect("front", 1, 2, 4, 5, "#030206")
+    for x, y in ((0, 2), (1, 3), (4, 3), (5, 2)):
+        head.put("front", x, y, VS_GLOW[3])
+        c2_glow_px(glow, head, "front", x, y, VS_GLOW[4])
+    for x, y in ((1, 2), (4, 2)):
+        head.put("front", x, y, VS_GLOW[2])
+        c2_glow_px(glow, head, "front", x, y, VS_GLOW[2])
+    for x, y in ((1, 4), (4, 4), (1, 5)):
+        head.put("front", x, y, VS_GLOW[0])
+        c2_glow_px(glow, head, "front", x, y, VS_GLOW[1])
+    for face in ("right", "left", "back", "top"):
+        wisps(head, face, 3)
+    # 뿔 1x3x1: 검정, 끝은 보라
+    horn = M11aBox(im, rnd, 40, 14, 1, 3, 1)
+    horn.fill(VS_DARK[:4], bevel=False)
+    horn.put("top", 0, 0, VS_GLOW[1])
+    for face in ("front", "back", "right", "left"):
+        horn.put(face, 0, 0, VS_GLOW[0])
+
+    # 몸통 6x12x3: 가슴 가운데 세로 균열 (빛남), 갈비 같은 옅은 줄
+    torso = box(0, 13, 6, 12, 3)
+    for y in (3, 5, 7):
+        torso.hline("front", y, VS_DARK[3], 0, 1)
+        torso.hline("front", y, VS_DARK[3], 4, 5)
+    rift = [(3, 1), (3, 2), (2, 3), (2, 4), (3, 5), (3, 6), (2, 7), (3, 8)]
+    for i, (x, y) in enumerate(rift):
+        torso.put("front", x, y, VS_GLOW[1])
+        c2_glow_px(glow, torso, "front", x, y, VS_GLOW[3] if i in (3, 4) else VS_GLOW[2])
+    for face in ("back", "right", "left"):
+        wisps(torso, face, 3)
+
+    # 옷자락 7x10x4 · 자락 끝 5x6x3 · 띠 1x5x1: 아래로 갈수록 듬성듬성 투명 (찢어진 끝)
+    for (u, v, w, h, d, holes) in ((24, 0, 7, 10, 4, 0.0), (24, 14, 5, 6, 3, 0.25), (44, 18, 1, 5, 1, 0.3)):
+        robe = M11aBox(im, rnd, u, v, w, h, d)
+        robe.fill(VS_DARK[1:6] if holes == 0.0 else VS_DARK[:5])
+        for face in ("front", "back", "right", "left"):
+            fx, fy, fw, fh = robe.faces[face]
+            wisps(robe, face, 2)
+            for y in range(fh):
+                for x in range(fw):
+                    t = y / max(1, fh - 1)
+                    if holes and t > 0.5 and rnd.random() < holes * (t - 0.4) * 2.2:
+                        im.putpixel((fx + x, fy + y), (0, 0, 0, 0))
+            if holes == 0.0:
+                robe.hline(face, 0, VS_DARK[5])
+                # 옷자락 아래 가장자리의 희미한 보라 실
+                for x in range(fw):
+                    if rnd.random() < 0.3:
+                        robe.put(face, x, fh - 1, VS_GLOW[0])
+        bw, bh = robe.size("bottom")
+        robe.rect("bottom", 0, 0, bw - 1, bh - 1, VS_DARK[0])
+
+    # 팔 2x18x2: 마른 팔, 팔꿈치 마디 · 손목의 보라 띠
+    arm = box(48, 0, 2, 18, 2)
+    for face in ("front", "back", "right", "left"):
+        arm.hline(face, 8, VS_DARK[4])
+        arm.hline(face, 15, VS_GLOW[0])
+        c2_glow_px(glow, arm, face, 0, 15, VS_GLOW[1])
+        wisps(arm, face, 2)
+    # 갈고리 손 3x4x2: 손끝이 보라로 빛남
+    claw = box(48, 20, 3, 4, 2)
+    for face in ("front", "back"):
+        for x in (0, 2):
+            claw.put(face, x, 3, VS_GLOW[2])
+            c2_glow_px(glow, claw, face, x, 3, VS_GLOW[3])
+        claw.put(face, 1, 3, (0, 0, 0, 0))
+        claw.vline(face, 1, VS_DARK[0], 1, 2)
+    for face in ("right", "left"):
+        claw.put(face, 0, 3, VS_GLOW[1])
+        c2_glow_px(glow, claw, face, 0, 3, VS_GLOW[2])
+    claw.rect("bottom", 0, 0, 2, 1, VS_GLOW[0])
+    return im, glow
+
+
+def elite_aura_texture():
+    """정예 테두리 무늬 (충전된 크리퍼처럼 흐른다): 회색 빗금 + 흩어진 반짝임. 색은 렌더러가 능력 색으로 곱한다."""
+    rnd = random.Random(1204)
+    im = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+    for y in range(64):
+        for x in range(64):
+            band = (x + y * 2) % 16
+            v = 0
+            if band < 3:
+                v = 200 - band * 50
+            elif rnd.random() < 0.04:
+                v = 255
+            if v:
+                im.putpixel((x, y), (v, v, v, v))
+    return im
+
+
+def spawn_egg_icon(base, spots, light, dark, seed):
+    """생성 알: 바닐라 알 윤곽 (16x16) + 무늬 점, 밝은 쪽 하이라이트."""
+    rows = [
+        "......aaaa......",
+        ".....abbbba.....",
+        "....abbbbbba....",
+        "...abbbbbbbba...",
+        "...abbbbbbbba...",
+        "..abbbbbbbbbba..",
+        "..abbbbbbbbbba..",
+        "..abbbbbbbbbba..",
+        ".abbbbbbbbbbbba.",
+        ".abbbbbbbbbbbba.",
+        ".abbbbbbbbbbbba.",
+        ".abbbbbbbbbbbba.",
+        "..abbbbbbbbbba..",
+        "..abbbbbbbbbba..",
+        "...abbbbbbbba...",
+        ".....aaaaaa.....",
+    ]
+    rnd = random.Random(seed)
+    im = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    inside = [(x, y) for y, row in enumerate(rows) for x, ch in enumerate(row) if ch == "b"]
+    for y, row in enumerate(rows):
+        for x, ch in enumerate(row):
+            if ch == "a":
+                im.putpixel((x, y), hex_px(dark))
+            elif ch == "b":
+                im.putpixel((x, y), hex_px(base))
+    for _ in range(7):
+        x, y = rnd.choice(inside)
+        for dx, dy in ((0, 0), (1, 0), (0, 1)):
+            if (x + dx, y + dy) in inside and rnd.random() < 0.85:
+                im.putpixel((x + dx, y + dy), hex_px(spots))
+    for x, y in ((5, 3), (5, 4), (4, 5), (4, 6), (6, 2)):
+        im.putpixel((x, y), hex_px(light))
+    return im
+
+
+def void_shard_icon():
+    """공허 조각: 비스듬히 깨진 검보라 결정 조각, 가운데 금이 빛남."""
+    return effect_art([
+        "..................",
+        "..................",
+        "..........aa......",
+        ".........abca.....",
+        "........abcdca....",
+        ".......abcdeca....",
+        "......abcdeeca....",
+        ".....abcdfedba....",
+        "....abccfdcba.....",
+        "....abcfddcba.....",
+        "...abcfdccba......",
+        "...abfdcbba.......",
+        "..abfdcbaa........",
+        "..abdcba..........",
+        "..abbaa...........",
+        "...aa.............",
+        "..................",
+        "..................",
+    ], {"a": "#0d0914", "b": "#2c213b", "c": "#4a2f6e", "d": "#73479e", "e": "#a77ad6", "f": "#e09cff"}).crop((1, 1, 17, 17))
+
+
+def main_ex3_c2(made):
+    for name, maker in (("rust_automaton", rust_automaton_textures), ("ember_wisp", ember_wisp_textures),
+                        ("void_shade", void_shade_textures)):
+        im, glow = maker()
+        made.append(save(im, f"entity/{name}.png"))
+        made.append(save(glow, f"entity/{name}_glow.png"))
+    made.append(save(elite_aura_texture(), "entity/elite_aura.png"))
+    made.append(save(spawn_egg_icon("#5d6672", "#bf5f26", "#97a1ac", "#1d2026", 31), "item/rust_automaton_spawn_egg.png"))
+    made.append(save(spawn_egg_icon("#2c1a14", "#ff7a1a", "#ffb340", "#120a08", 32), "item/ember_wisp_spawn_egg.png"))
+    made.append(save(spawn_egg_icon("#16101f", "#b04aff", "#3a2c4c", "#06040a", 33), "item/void_shade_spawn_egg.png"))
+    made.append(save(void_shard_icon(), "item/void_shard.png"))
+
+
 def save(im, rel, scale=1):
     path = os.path.join(OUT, *rel.split("/"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -3312,6 +3746,7 @@ def main():
     main_m8c(made)
     main_fin(made)
     main_ex3_c3(made)
+    main_ex3_c2(made)
 
     if "--sheet" in sys.argv:
         tiles = [Image.open(p) for p in made]

@@ -43,6 +43,7 @@ public class SanupcraftClient implements ClientModInitializer {
 		// M6 엔드 최종: 공허 거상 · 공허 수정 (전용 모델, X1)
 		EntityRendererRegistry.register(io.github.yhyeop.sanupcraft.end.ModEnd.VOID_COLOSSUS, io.github.yhyeop.sanupcraft.client.end.VoidColossusRenderer::new);
 		EntityRendererRegistry.register(io.github.yhyeop.sanupcraft.end.ModEnd.VOID_CRYSTAL, io.github.yhyeop.sanupcraft.client.end.VoidCrystalRenderer::new);
+		io.github.yhyeop.sanupcraft.client.mob.MobModelLayers.init(); // 확장 3 C2 · R7 새 몹 전용 모델
 	}
 
 	/**

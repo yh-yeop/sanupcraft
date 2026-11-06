@@ -1,0 +1,25 @@
+{
+  "parent": "sanupcraft:rust_automaton",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "minecraft:golden_sword"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.elite_mob.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.elite_mob.description"
+    },
+    "frame": "challenge"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

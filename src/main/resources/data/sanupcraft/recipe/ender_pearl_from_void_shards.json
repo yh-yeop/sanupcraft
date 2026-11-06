@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "##",
+    "##"
+  ],
+  "key": {
+    "#": "sanupcraft:void_shard"
+  },
+  "result": {
+    "id": "minecraft:ender_pearl"
+  }
+}

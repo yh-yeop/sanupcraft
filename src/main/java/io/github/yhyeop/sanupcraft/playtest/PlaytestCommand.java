@@ -83,7 +83,9 @@ public final class PlaytestCommand {
 		// M6 엔드 최종
 		END2("엔드 최종: 공허 거상 · 공허 응축기 · 공허 장비 · 후렴 수확기 · 차원 창고 · 겉날개 가속 · 숨결 수집기", Level.END, PlaytestCommand::kitEnd2),
 		// M8 I4
-		WRENCH("렌치 · 면 설정: 돌리기 · 내용물째 집기 · 기계 면마다 넣기 / 빼기 / 막기", null, PlaytestCommand::kitWrench);
+		WRENCH("렌치 · 면 설정: 돌리기 · 내용물째 집기 · 기계 면마다 넣기 / 빼기 / 막기", null, PlaytestCommand::kitWrench),
+		// 확장 3 C2 새 몹 · 정예
+		MOBS("새 몹 · 정예: 녹슨 자동인형 · 잿불 정령 · 공허 그림자 (생성 알 · 정예 알 · 막는 장비)", null, PlaytestCommand::kitMobs);
 
 		final String description;
 		final ResourceKey<Level> dimension;
@@ -614,6 +616,35 @@ public final class PlaytestCommand {
 		give(p, Items.COAL, 32);
 		give(p, io.github.yhyeop.sanupcraft.logistics.ModLogistics.ENDER_RECEIVER.asItem(), 1);
 		give(p, io.github.yhyeop.sanupcraft.logistics.ModLogistics.BELT.asItem(), 8);
+		food(p);
+	}
+
+	/** 확장 3 C2: 새 몹 생성 알 (보통 4개씩 + 능력별 정예 알), 무기 · 눈덩이 · 물, 막는 장비 세 벌 (강철 = 녹, 내열 = 과열, 공허 = 침식). */
+	private static void kitMobs(ServerPlayer p) {
+		give(p, io.github.yhyeop.sanupcraft.mob.ModMobs.RUST_AUTOMATON_SPAWN_EGG, 4);
+		give(p, io.github.yhyeop.sanupcraft.mob.ModMobs.EMBER_WISP_SPAWN_EGG, 4);
+		give(p, io.github.yhyeop.sanupcraft.mob.ModMobs.VOID_SHADE_SPAWN_EGG, 4);
+		give(p, io.github.yhyeop.sanupcraft.mob.ModMobs.eliteEgg(io.github.yhyeop.sanupcraft.mob.ModMobs.RUST_AUTOMATON_SPAWN_EGG, io.github.yhyeop.sanupcraft.mob.EliteAbility.SPEED));
+		give(p, io.github.yhyeop.sanupcraft.mob.ModMobs.eliteEgg(io.github.yhyeop.sanupcraft.mob.ModMobs.EMBER_WISP_SPAWN_EGG, io.github.yhyeop.sanupcraft.mob.EliteAbility.REGEN));
+		give(p, io.github.yhyeop.sanupcraft.mob.ModMobs.eliteEgg(io.github.yhyeop.sanupcraft.mob.ModMobs.VOID_SHADE_SPAWN_EGG, io.github.yhyeop.sanupcraft.mob.EliteAbility.REFLECT));
+		give(p, SteelGear.STEEL_SWORD, 1);
+		give(p, Items.BOW, 1);
+		give(p, Items.ARROW, 64);
+		give(p, Items.SHIELD, 1);
+		give(p, Items.SNOWBALL, 32);
+		give(p, Items.WATER_BUCKET, 2);
+		give(p, SteelGear.STEEL_HELMET, 1);
+		give(p, SteelGear.STEEL_CHESTPLATE, 1);
+		give(p, SteelGear.STEEL_LEGGINGS, 1);
+		give(p, SteelGear.STEEL_BOOTS, 1);
+		give(p, HeatproofGear.HEATPROOF_HELMET, 1);
+		give(p, HeatproofGear.HEATPROOF_CHESTPLATE, 1);
+		give(p, HeatproofGear.HEATPROOF_LEGGINGS, 1);
+		give(p, HeatproofGear.HEATPROOF_BOOTS, 1);
+		give(p, io.github.yhyeop.sanupcraft.end.VoidGear.VOID_HELMET, 1);
+		give(p, io.github.yhyeop.sanupcraft.end.VoidGear.VOID_CHESTPLATE, 1);
+		give(p, io.github.yhyeop.sanupcraft.end.VoidGear.VOID_LEGGINGS, 1);
+		give(p, io.github.yhyeop.sanupcraft.end.VoidGear.VOID_BOOTS, 1);
 		food(p);
 	}
 }

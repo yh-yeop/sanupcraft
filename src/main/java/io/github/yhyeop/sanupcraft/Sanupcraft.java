@@ -53,6 +53,7 @@ public class Sanupcraft implements ModInitializer {
 		SteamGear.init();
 		ModBoss.init();
 		ModWorld.init();
+		io.github.yhyeop.sanupcraft.mob.ModMobs.init(); // 확장 3 C2 새 몹 · 정예
 		io.github.yhyeop.sanupcraft.effect.ModEffects.init(); // 확장 3 C3 상태 이상
 		io.github.yhyeop.sanupcraft.wrench.ModWrench.init(); // M8 I4 렌치 · 면 설정
 		io.github.yhyeop.sanupcraft.sound.ModSounds.init(); // M11 X2 효과음
