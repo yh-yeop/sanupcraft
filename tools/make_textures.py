@@ -3552,9 +3552,8 @@ def b1_helmet(a):
             a.put(r, 1, 3, "G") if f != "back" else None
             a.vline(r, 4, "g", 4, 6) if f == "back" else None
         elif n == "void":
-            for i in range(1, 7):
-                a.put(r, i, 3 + (i % 2), "g")
-            a.put(r, 3, 4, "G")
+            a.hline(r, 3, "g", 1, 6)
+            a.put(r, 2, 3, "G") if f != "back" else a.vline(r, 3, "g", 4, 6)
 
     fr = a.rect(B1_HEAD, "front")
     a.bevel(fr, 0, 7)
@@ -3696,15 +3695,16 @@ def b1_chest(a):
             a.put(fr, i, j, "r")
     elif n == "void":
         # 자홍 핏줄: 가운데 눈에서 갈라진다
-        veins = [(3, 1), (3, 2), (2, 3), (1, 4), (4, 2), (5, 3), (6, 4), (3, 5), (4, 6), (4, 7), (3, 8), (2, 9), (5, 8), (6, 9)]
-        for i, j in veins:
+        for r in (fr, bk):
+            a.vline(r, 3, "g", 1, 9)
+            a.vline(r, 4, "o", 1, 9)
+        for i, j in ((2, 2), (1, 1), (5, 2), (6, 1), (2, 8), (1, 9), (5, 8), (6, 9)):
             a.put(fr, i, j, "g")
-        a.put(fr, 3, 4, "G")
-        a.put(fr, 4, 4, "G")
-        a.put(fr, 4, 3, "g")
-        a.put(fr, 3, 3, "o")
-        for i, j in ((4, 1), (4, 2), (3, 3), (3, 4), (4, 5), (4, 6), (3, 7), (3, 8), (2, 9)):
-            a.put(bk, i, j, "g")
+        for i, j in ((3, 4), (4, 4), (3, 5), (4, 5)):
+            a.put(fr, i, j, "G")
+        a.put(fr, 2, 4, "g")
+        a.put(fr, 5, 5, "g")
+        a.put(bk, 3, 5, "G")
         for r in (fr, bk):
             a.hline(r, 10, "t", 0, 7)
             a.put(r, 3, 10, "g")
@@ -3720,8 +3720,7 @@ def b1_chest(a):
         if n == "heatproof":
             a.vline(r, 2, "g", 5, 9)
         elif n == "void":
-            for j in range(5, 10):
-                a.put(r, 1 + j % 2, j, "g")
+            a.vline(r, 2, "g", 5, 9)
 
     # 팔: 어깨받이 (0~4행) · 팔뚝 덮개 (7~10행)
     for f in ("top", "right", "front", "left", "back", "bottom"):
@@ -3741,8 +3740,8 @@ def b1_chest(a):
         outer = f == "right"
         if n == "bronze":
             a.hline(r, 4, "t", 0, 3)
-            a.hline(r, 8, "t", 0, 3)
-            a.put(r, 1, 8, "g")
+            a.hline(r, 8, "g", 0, 3)
+            a.put(r, 1, 8, "G")
         elif n == "steel":
             if outer:
                 a.rivet(r, 1, 1)
@@ -3757,11 +3756,11 @@ def b1_chest(a):
             a.hline(r, 9, "g", 0, 3)
             a.put(r, 1, 3, "G") if outer else None
         elif n == "void":
-            a.put(r, 1, 1, "g")
-            a.put(r, 2, 2, "g")
-            a.put(r, 1, 3, "g")
-            a.put(r, 2, 8, "G") if outer else a.put(r, 2, 8, "g")
-            a.put(r, 1, 9, "g")
+            a.hline(r, 3, "g", 0, 3)
+            if outer:
+                a.put(r, 1, 3, "G")
+                a.put(r, 1, 8, "g")
+                a.put(r, 2, 8, "g")
 
     # 부츠 (다리 7~11행)
     for f in ("right", "front", "left", "back"):
@@ -3790,9 +3789,9 @@ def b1_chest(a):
             a.hline(r, 10, "g", 0, 3)
             a.put(r, 1, 10, "G")
         elif n == "void":
-            a.put(r, 1, 9, "g")
-            a.put(r, 2, 10, "g")
-            a.put(r, 2, 8, "G")
+            a.hline(r, 7, "g", 0, 3)
+            if f == "front":
+                a.put(r, 1, 9, "G")
     bottom = a.rect(B1_LEG, "bottom")
     a.hline(bottom, 0, "o")
     for j in range(4):
@@ -3818,8 +3817,7 @@ def b1_leggings(a):
         if n == "heatproof":
             a.hline(r, 3, "g", 0, r[2] - 1)
         elif n == "void":
-            for i in range(0, r[2], 2):
-                a.put(r, i, 3, "g")
+            a.hline(r, 3, "g", 0, r[2] - 1)
         elif n == "chrome_steel":
             a.hline(r, 1, "T")
         elif n == "bronze":
@@ -3862,10 +3860,11 @@ def b1_leggings(a):
                 a.put(r, 1, 6, "g")
                 a.put(r, 2, 6, "G")
         elif n == "void":
-            a.put(r, 1, 1, "g")
-            a.put(r, 2, 2, "g")
-            a.put(r, 1, 3, "g")
+            if f in ("front", "back"):
+                a.vline(r, 1, "g", 1, 3)
             if f == "front":
+                a.put(r, 1, 6, "g")
+                a.put(r, 2, 5, "g")
                 a.put(r, 2, 6, "G")
     a.metal(a.rect(B1_LEG, "top"))
 

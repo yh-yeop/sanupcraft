@@ -4,11 +4,12 @@ import net.fabricmc.fabric.api.client.gametest.v1.FabricClientGameTest;
 import net.fabricmc.fabric.api.client.gametest.v1.context.ClientGameTestContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestServerContext;
 import net.fabricmc.fabric.api.client.gametest.v1.context.TestSingleplayerContext;
+import net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotOptions;
 
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 
 /**
- * 확장 3 G1 · G2 · R1 클라이언트 확인: 마네킹 다섯에 청동 · 강철 · 크롬강 · 내열 · 공허 한 벌을 입혀 앞 · 뒤 · 비스듬히 찍고,
+ * 확장 3 G1 · G2 · R1 클라이언트 확인: 마네킹 다섯에 청동 · 강철 · 크롬강 · 내열 · 공허 한 벌을 입혀 줄 전체 · 비스듬히 · 한 벌씩 앞뒤로 찍고,
  * 새 아이템 아이콘을 인벤토리 화면으로 찍는다.
  * 스크린샷: build/run/clientGameTest/screenshots/alloy-*.png
  */
@@ -39,15 +40,19 @@ public class SanupcraftAlloyGearClientGameTest implements FabricClientGameTest {
 				server.runCommand("item replace entity @e[tag=" + tag + "] weapon.mainhand with sanupcraft:" + WEAPONS[i]);
 			}
 			server.runCommand("gamemode spectator @a");
+			hud(context, false);
 			shot(context, singleplayer, server, "tp @a 0.5 -58.4 1.5 180 12", "alloy-front");
-			shot(context, singleplayer, server, "tp @a 0.5 -58.4 -12.5 0 12", "alloy-back");
 			shot(context, singleplayer, server, "tp @a 5.5 -58.6 -0.5 140 14", "alloy-angle");
-			// 가까이: 청동 · 강철 · 크롬강 / 크롬강 · 내열 · 공허
-			shot(context, singleplayer, server, "tp @a -1.5 -58.7 -2.2 180 14", "alloy-close-left");
-			shot(context, singleplayer, server, "tp @a 2.5 -58.7 -2.2 180 14", "alloy-close-right");
+			// 한 벌씩 가까이: 앞 · 뒤
+			for (int i = 0; i < SETS.length; i++) {
+				double x = -4.0 + i * 2.0 + 0.5;
+				shot(context, singleplayer, server, "tp @a " + x + " -59.6 -2.9 180 22", "alloy-" + SETS[i] + "-front");
+				shot(context, singleplayer, server, "tp @a " + x + " -59.6 -8.1 0 22", "alloy-" + SETS[i] + "-back");
+			}
+			hud(context, true);
 
 			// 아이콘: 새 아이템 열일곱 개
-			server.runCommand("gamemode creative @a");
+			server.runCommand("gamemode survival @a");
 			server.runCommand("tp @a 0.5 -60 1.5 180 0");
 			String[] items = {"bronze_ingot", "bronze_helmet", "bronze_chestplate", "bronze_leggings", "bronze_boots", "bronze_sword",
 					"bronze_pickaxe", "bronze_axe", "bronze_shovel",
@@ -73,6 +78,20 @@ public class SanupcraftAlloyGearClientGameTest implements FabricClientGameTest {
 		server.runCommand(tp);
 		context.waitTicks(20);
 		singleplayer.getConnection().waitForChunksRender();
-		context.takeScreenshot(name);
+		context.runOnClient(client -> {
+			client.gui.toastManager().clear();
+			client.gui.hud.getChat().clearMessages(false);
+		});
+		context.takeScreenshot(TestScreenshotOptions.of(name).withSize(1280, 720));
+	}
+
+	/** 화면 글자(HUD) 켜고 끄기. */
+	private static void hud(ClientGameTestContext context, boolean shown) {
+		context.runOnClient(client -> {
+			if (client.gui.hud.isHidden() == shown) {
+				client.gui.hud.toggle();
+			}
+		});
+		context.waitTicks(2);
 	}
 }

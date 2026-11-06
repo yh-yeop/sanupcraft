@@ -781,5 +781,9 @@
   "advancements.sanupcraft.bronze.title": "청동기 시대",
   "advancements.sanupcraft.bronze.description": "구리 주괴 3 + 알루미늄 주괴 1로 청동 주괴를 만들었다 (합금로 4개 · 제작대 3개). 철보다 조금 약한 갑옷 · 검 · 곡괭이 · 도끼 · 삽을 공장 없이 만든다.",
   "advancements.sanupcraft.chrome_steel.title": "크롬 도금",
-  "advancements.sanupcraft.chrome_steel.description": "합금로에서 강철 주괴 + 크롬 주괴로 크롬강 주괴를 만들었다. 한 벌이면 녹 면역. 강철 장비에 크롬 주괴를 더해 올리면 마법 부여가 그대로 간다."
+  "advancements.sanupcraft.chrome_steel.description": "합금로에서 강철 주괴 + 크롬 주괴로 크롬강 주괴를 만들었다. 한 벌이면 녹 면역. 강철 장비에 크롬 주괴를 더해 올리면 마법 부여가 그대로 간다.",
+  "tag.item.sanupcraft.repairs_bronze": "청동 수리 재료",
+  "tag.item.sanupcraft.repairs_chrome_steel": "크롬강 수리 재료",
+  "tag.item.c.ingots.bronze": "청동 주괴",
+  "tag.item.c.ingots.chrome_steel": "크롬강 주괴"
 }

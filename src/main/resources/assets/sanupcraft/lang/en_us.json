@@ -781,5 +781,9 @@
   "advancements.sanupcraft.bronze.title": "Bronze Age",
   "advancements.sanupcraft.bronze.description": "Make bronze from 3 copper ingots + 1 aluminium ingot (4 in the Alloy Smelter, 3 at a crafting table). Armor, sword, pickaxe, axe and shovel a little weaker than iron, no factory needed.",
   "advancements.sanupcraft.chrome_steel.title": "Chrome Plated",
-  "advancements.sanupcraft.chrome_steel.description": "Alloy a steel ingot with a chromium ingot. A full chrome steel set is immune to rust. Upgrade steel gear with chromium ingots to keep its enchantments."
+  "advancements.sanupcraft.chrome_steel.description": "Alloy a steel ingot with a chromium ingot. A full chrome steel set is immune to rust. Upgrade steel gear with chromium ingots to keep its enchantments.",
+  "tag.item.sanupcraft.repairs_bronze": "Bronze repair materials",
+  "tag.item.sanupcraft.repairs_chrome_steel": "Chrome steel repair materials",
+  "tag.item.c.ingots.bronze": "Bronze ingots",
+  "tag.item.c.ingots.chrome_steel": "Chrome steel ingots"
 }
