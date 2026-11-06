@@ -1,0 +1,6 @@
+{
+  "type": "sanupcraft:crafting_boss_tier",
+  "summoner": "sanupcraft:warden_summoner",
+  "material": "sanupcraft:warden_heart",
+  "count": 1
+}

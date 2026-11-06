@@ -8,6 +8,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -25,12 +26,14 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 
+import io.github.yhyeop.sanupcraft.config.SanupcraftConfig;
+
 /**
  * 수호자 제단. 소환석을 들고 우클릭하면 제단 위에 보스가 나온다.
  * 수호자 소환석 → 녹슨 수호자, 파수꾼 소환석 → 용광로 파수꾼. 근처에 보스가 있거나, 위 공간이 막혔거나,
  * 평화로움이면 부르지 않고 소환석도 쓰지 않는다.
  * 용광로 파수꾼은 네더의 열기에서만 깨어난다 (제단을 네더에 지어야 함).
- * 부를 때 주변 인원수로 보스 체력을 늘린다 ({@link BossParty}).
+ * 부를 때 주변 인원수로 보스 체력을 늘린다 ({@link BossParty}). 강화 소환석이면 단계만큼 더 세진다 ({@link BossTier}).
  */
 public class GuardianAltarBlock extends Block {
 	/** 이 거리 안에 보스가 이미 있으면 소환하지 않는다. */
@@ -65,7 +68,8 @@ public class GuardianAltarBlock extends Block {
 			player.sendOverlayMessage(Component.translatable("block.sanupcraft.guardian_altar.no_room"));
 			return InteractionResult.FAIL;
 		}
-		Monster summoned = summon(serverLevel, pos, boss);
+		int tier = BossTier.of(stack);
+		Monster summoned = summon(serverLevel, pos, boss, tier);
 		if (summoned == null) {
 			player.sendOverlayMessage(Component.translatable("block.sanupcraft.guardian_altar.busy"));
 			return InteractionResult.FAIL;
@@ -74,6 +78,15 @@ public class GuardianAltarBlock extends Block {
 			int size = partyBoss.party().size();
 			player.sendOverlayMessage(Component.translatable("block.sanupcraft.guardian_altar.party",
 					size, String.format(Locale.ROOT, "%.1f", BossParty.healthScale(size))));
+		}
+		if (tier > 0) {
+			if (!(player instanceof ServerPlayer tierPlayer) || tierPlayer.connection != null) {
+				player.sendSystemMessage(Component.translatable("block.sanupcraft.guardian_altar.tier", summoned.getDisplayName(), tier,
+					Math.round(SanupcraftConfig.current().bossTierHealthPerTier * tier * 100), Math.round(SanupcraftConfig.current().bossTierDamagePerTier * tier * 100)));
+			}
+			if (tier >= BossTier.MAX && player instanceof ServerPlayer serverPlayer) {
+				BossTier.awardMaxSummon(serverPlayer);
+			}
 		}
 		stack.consume(1, player);
 		return InteractionResult.SUCCESS_SERVER;
@@ -112,6 +125,11 @@ public class GuardianAltarBlock extends Block {
 
 	/** 제단 위에 보스를 부른다. 깨어날 수 없는 차원이거나 근처에 보스가 있으면 null. */
 	public static <T extends Monster> @Nullable T summon(ServerLevel level, BlockPos altarPos, EntityType<T> type) {
+		return summon(level, altarPos, type, 0);
+	}
+
+	/** 강화 단계 {@code tier}(0 ~ 3, {@link BossTier})인 보스를 부른다. */
+	public static <T extends Monster> @Nullable T summon(ServerLevel level, BlockPos altarPos, EntityType<T> type, int tier) {
 		if (!canWakeHere(level, type)) {
 			return null;
 		}
@@ -125,6 +143,9 @@ public class GuardianAltarBlock extends Block {
 		boss.snapTo(altarPos.getX() + 0.5, altarPos.getY() + 1.0, altarPos.getZ() + 0.5, level.getRandom().nextFloat() * 360.0F, 0.0F);
 		if (boss instanceof PartyBoss partyBoss) {
 			partyBoss.party().scale(boss, BossParty.countPlayers(level, boss.position()));
+			if (tier > 0) {
+				partyBoss.party().setTier(boss, tier);
+			}
 		}
 		level.addFreshEntity(boss);
 		level.playSound(null, altarPos, SoundEvents.WITHER_SPAWN, SoundSource.HOSTILE, 1.0F, 1.2F);

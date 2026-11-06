@@ -568,5 +568,13 @@
   "advancements.sanupcraft.abandoned_furnace.title": "식어 버린 용광로",
   "advancements.sanupcraft.abandoned_furnace.description": "네더 황무지 · 현무암 삼각주에서 버려진 용광로를 찾는다. 상자에 파수꾼 소환석이 들어 있을 때가 있다.",
   "gui.sanupcraft.machine.steam_hp": "고압 증기 %s/%s",
-  "jei.sanupcraft.machine_time_hp": "%s초 · 고압 증기"
+  "jei.sanupcraft.machine_time_hp": "%s초 · 고압 증기",
+  "item.sanupcraft.boss_tier.name": "%1$s +%2$s",
+  "item.sanupcraft.boss_tier.tooltip": "강화 +%1$s: 보스 체력 +%2$s%% · 피해 +%3$s%% · 보상 핵 · 심장 +%1$s개 + 기계 업그레이드 하나",
+  "item.sanupcraft.guardian_summoner.tooltip2": "작업대에서 핵 조각 4개와 함께 놓으면 한 단계 강화 (+3까지)",
+  "item.sanupcraft.warden_summoner.tooltip2": "작업대에서 파수꾼의 심장 1개와 함께 놓으면 한 단계 강화 (+3까지)",
+  "block.sanupcraft.guardian_altar.tier": "%1$s +%2$s 단계 — 체력 +%3$s%% · 피해 +%4$s%%",
+  "entity.sanupcraft.boss.reward_tier": "%1$s 처치 보상: %2$s ×%3$s + %4$s",
+  "advancements.sanupcraft.stronger_foe.title": "더 강한 적",
+  "advancements.sanupcraft.stronger_foe.description": "+3까지 강화한 소환석으로 보스를 불러내자. 소환석을 작업대에서 핵 조각 4개(수호자) · 파수꾼의 심장(파수꾼)과 함께 놓으면 한 단계씩 오른다."
 }

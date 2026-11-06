@@ -78,6 +78,13 @@ public final class BossRecords extends SavedData {
 		return List.copyOf(list.subList(0, Math.min(n, list.size())));
 	}
 
+	/** 그 보스의 기록을 모두 지운다 (시험용: 시험 월드는 실행마다 이어 쓴다). */
+	public void clear(String bossId) {
+		if (bosses.remove(bossId) != null) {
+			setDirty();
+		}
+	}
+
 	/**
 	 * 기록을 넣는다. 돌려주는 값은 순위(1부터), 상위 {@link #KEEP}에 못 들면 0.
 	 * 같은 시간이면 먼저 세운 기록이 위.

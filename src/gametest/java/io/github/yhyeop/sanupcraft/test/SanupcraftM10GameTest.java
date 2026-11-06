@@ -184,6 +184,8 @@ public class SanupcraftM10GameTest {
 	@GameTest
 	public void bossKillIsRecorded(GameTestHelper helper) {
 		MinecraftServer server = helper.getLevel().getServer();
+		// 시험 월드는 실행마다 이어 쓰여 0틱 기록이 쌓인다 → 이 시험은 한 틱 안에 끝나니 먼저 비운다
+		BossRecords.get(server).clear("sanupcraft:rusty_guardian");
 		String killerName = "rk" + (System.nanoTime() % 100000);
 		String helperName = "rh" + (System.nanoTime() % 100000);
 		ServerPlayer killer = player(helper, killerName);

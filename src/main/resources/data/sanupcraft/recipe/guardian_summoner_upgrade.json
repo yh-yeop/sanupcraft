@@ -1,0 +1,6 @@
+{
+  "type": "sanupcraft:crafting_boss_tier",
+  "summoner": "sanupcraft:guardian_summoner",
+  "material": "sanupcraft:core_shard",
+  "count": 4
+}

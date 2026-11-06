@@ -26,7 +26,8 @@
 			"io.github.yhyeop.sanupcraft.test.SanupcraftM9bGameTest",
 			"io.github.yhyeop.sanupcraft.test.SanupcraftM8aGameTest",
 			"io.github.yhyeop.sanupcraft.test.SanupcraftStorageGameTest",
-			"io.github.yhyeop.sanupcraft.test.SanupcraftM5GameTest"
+			"io.github.yhyeop.sanupcraft.test.SanupcraftM5GameTest",
+			"io.github.yhyeop.sanupcraft.test.SanupcraftC3GameTest"
 		],
 		"fabric-client-gametest": [
 			"io.github.yhyeop.sanupcraft.test.SanupcraftClientGameTest",

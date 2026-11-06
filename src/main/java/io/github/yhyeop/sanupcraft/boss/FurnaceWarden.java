@@ -445,6 +445,7 @@ public class FurnaceWarden extends Monster implements PartyBoss {
 	public boolean hitWithHeat(ServerLevel level, LivingEntity target, float damage, boolean pattern) {
 		if (pattern) {
 			breakShield(level, target);
+			damage *= (float) party.damageScale(); // 강화 단계 (근접은 공격력 속성에 이미 들어 있다)
 		}
 		boolean heatproof = HeatproofGear.wearsFullSet(target);
 		boolean hurt = target.hurtServer(level, damageSources().mobAttack(this), heatproof ? damage : damage * HEAT_MULTIPLIER);
@@ -563,6 +564,7 @@ public class FurnaceWarden extends Monster implements PartyBoss {
 	protected void readAdditionalSaveData(ValueInput input) {
 		super.readAdditionalSaveData(input);
 		party.load(input);
+		refreshBossBar();
 	}
 
 	@Override
@@ -603,7 +605,12 @@ public class FurnaceWarden extends Monster implements PartyBoss {
 	@Override
 	public void setCustomName(@Nullable Component name) {
 		super.setCustomName(name);
-		bossEvent.setName(getDisplayName());
+		refreshBossBar();
+	}
+
+	@Override
+	public void refreshBossBar() {
+		bossEvent.setName(BossTier.barName(getDisplayName(), party.tier()));
 	}
 
 	@Override

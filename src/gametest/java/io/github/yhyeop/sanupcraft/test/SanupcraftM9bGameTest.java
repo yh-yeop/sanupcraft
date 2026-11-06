@@ -151,14 +151,14 @@ public class SanupcraftM9bGameTest {
 
 		helper.assertValueEqual(grinder.grind(level, abs), 1, "벤 몹 수");
 		helper.assertTrue(zombie.isDeadOrDying(), "좀비가 안 죽음");
-		helper.runAfterDelay(2, () -> {
+		((Runnable) () -> { // 같은 틱에 바로 모은다 (기다리면 남은 가짜 플레이어에게 구슬이 날아간다)
 			int collected = grinder.collectExperience(level, abs);
 			helper.assertTrue(collected >= 5, "모은 경험치: " + collected);
 			helper.assertValueEqual(tank.points(), collected, "탱크의 경험치");
 			helper.assertValueEqual(grinder.bufferPoints(), 0, "분쇄기 안에 쌓임");
 			helper.assertValueEqual(tank.fluidAmount(), collected * FluidKind.MB_PER_XP, "탱크의 mB");
 			helper.succeed();
-		});
+		}).run();
 	}
 
 	/** 탱크가 없으면 안 저장고에 모으고, 탱크를 붙이면 옮겨 간다. 빈손 우클릭으로 받는다. */
@@ -170,7 +170,7 @@ public class SanupcraftM9bGameTest {
 		ServerLevel level = helper.getLevel();
 		BlockPos abs = helper.absolutePos(GRINDER);
 		ExperienceOrb.award(level, Vec3.atCenterOf(abs.above()), 12);
-		helper.runAfterDelay(2, () -> {
+		((Runnable) () -> { // 같은 틱에 바로 모은다 (기다리면 남은 가짜 플레이어에게 구슬이 날아간다)
 			helper.assertValueEqual(grinder.collectExperience(level, abs), 12, "모은 경험치");
 			helper.assertValueEqual(grinder.bufferPoints(), 12, "저장고");
 			helper.setBlock(GRINDER.west(), ModGrinder.EXPERIENCE_TANK);
@@ -181,7 +181,7 @@ public class SanupcraftM9bGameTest {
 
 			ExperienceOrb.award(level, Vec3.atCenterOf(abs.above()), 4);
 			helper.setBlock(GRINDER.west(), net.minecraft.world.level.block.Blocks.AIR);
-			helper.runAfterDelay(2, () -> {
+			((Runnable) () -> { // 같은 틱에 바로 모은다 (기다리면 남은 가짜 플레이어에게 구슬이 날아간다)
 				grinder.collectExperience(level, abs);
 				helper.assertValueEqual(grinder.bufferPoints(), 4, "탱크를 떼고 다시 저장고");
 				Player player = helper.makeMockPlayer(GameType.SURVIVAL);
@@ -191,8 +191,8 @@ public class SanupcraftM9bGameTest {
 				helper.assertValueEqual(grinder.bufferPoints(), 0, "받고 남음");
 				helper.assertValueEqual(player.totalExperience, 4, "받은 경험치");
 				helper.succeed();
-			});
-		});
+			}).run();
+		}).run();
 	}
 
 	// ---- P2 경험치 탱크 ----

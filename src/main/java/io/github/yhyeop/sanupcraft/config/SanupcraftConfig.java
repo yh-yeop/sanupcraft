@@ -22,6 +22,7 @@ import net.fabricmc.loader.api.FabricLoader;
 
 import io.github.yhyeop.sanupcraft.Sanupcraft;
 import io.github.yhyeop.sanupcraft.boss.BossParty;
+import io.github.yhyeop.sanupcraft.boss.BossTier;
 import io.github.yhyeop.sanupcraft.factory.MachineUpgrade;
 import io.github.yhyeop.sanupcraft.fluid.PumpBlockEntity;
 import io.github.yhyeop.sanupcraft.gear.ChainsawItem;
@@ -161,6 +162,11 @@ public final class SanupcraftConfig {
 	public int goldDispenserTicksPerThrow = io.github.yhyeop.sanupcraft.nether.GoldDispenserBlockEntity.TICKS_PER_THROW;
 	/** 잔해 탐지기: 한 번에 드는 증기. */
 	public int debrisSonarSteam = io.github.yhyeop.sanupcraft.nether.DebrisSonarItem.STEAM_COST;
+	// C3 강화 소환석
+	/** 강화 소환석: 단계당 보스 최대 체력 증가 (0.5 = +50%, 인원 배율 위에 곱). */
+	public double bossTierHealthPerTier = BossTier.HEALTH_PER_TIER;
+	/** 강화 소환석: 단계당 보스 피해 증가 (0.25 = +25%). */
+	public double bossTierDamagePerTier = BossTier.DAMAGE_PER_TIER;
 
 	/** float 상수를 0.05F -> 0.05처럼 보이는 그대로의 double로 (파일에 0.0500000007...이 안 찍히게). */
 	private static double asDouble(float value) {
@@ -271,7 +277,12 @@ public final class SanupcraftConfig {
 			new Option("goldDispenser", "ticksPerThrow", io.github.yhyeop.sanupcraft.nether.GoldDispenserBlockEntity.TICKS_PER_THROW, 1, 1200, true,
 					c -> c.goldDispenserTicksPerThrow, (c, v) -> c.goldDispenserTicksPerThrow = (int) v),
 			new Option("debrisSonar", "steamCost", io.github.yhyeop.sanupcraft.nether.DebrisSonarItem.STEAM_COST, 0, io.github.yhyeop.sanupcraft.nether.DebrisSonarItem.CAPACITY, true,
-					c -> c.debrisSonarSteam, (c, v) -> c.debrisSonarSteam = (int) v));
+					c -> c.debrisSonarSteam, (c, v) -> c.debrisSonarSteam = (int) v),
+			// C3 강화 소환석
+			new Option("bossTier", "healthPerTier", BossTier.HEALTH_PER_TIER, 0.0, 5.0, false,
+					c -> c.bossTierHealthPerTier, (c, v) -> c.bossTierHealthPerTier = v),
+			new Option("bossTier", "damagePerTier", BossTier.DAMAGE_PER_TIER, 0.0, 5.0, false,
+					c -> c.bossTierDamagePerTier, (c, v) -> c.bossTierDamagePerTier = v));
 
 	/** 읽은 결과: 설정, 경고 문구, 파일에 빠진 키가 있었는지, 파일을 새로 썼는지. */
 	public record Loaded(SanupcraftConfig config, List<String> warnings, boolean missingKeys, boolean wroteFile) {
