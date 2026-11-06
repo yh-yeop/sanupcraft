@@ -12,7 +12,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
 /**
- * 폭 3 다중 블록 모양 도우미 (M8 묶음 B, 대형 보일러 {@link BigBoilerShape}와 같은 방식). 제어기는 앞면 가운데 맨 아랫줄.
+ * 폭 3 다중 블록 모양 도우미 (M8: 대형 보일러 {@link BigBoilerControllerBlockEntity#SHAPE} · 용광로 탑 {@link FurnaceTowerControllerBlockEntity#SHAPE}). 제어기는 앞면 가운데 맨 아랫줄.
  * 칸 좌표: 옆 {@code side} -1..1 (제어기 기준 오른쪽이 +), 깊이 {@code depth} 0..depth-1 (앞면이 0), 높이 {@code up} 0..height-1.
  * 칸마다 와야 하는 것은 {@link Layout}이 정하고, 외벽인지는 {@code isCasing}이 본다. 빈칸은 공기여야 한다.
  */

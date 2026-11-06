@@ -27,7 +27,7 @@ public class BigBoilerCasingBlock extends Block {
 
 	/** 이 칸을 쓸 수 있는 제어기 (가로 ±2, 아래로 0..3칸)에 다시 확인하라고 알린다. */
 	static void notifyControllers(ServerLevel level, BlockPos pos) {
-		for (BlockPos near : BlockPos.betweenClosed(pos.offset(-2, -(BigBoilerShape.HEIGHT - 1), -2), pos.offset(2, 0, 2))) {
+		for (BlockPos near : BlockPos.betweenClosed(pos.offset(-2, -(BigBoilerControllerBlockEntity.SHAPE.height() - 1), -2), pos.offset(2, 0, 2))) {
 			if (level.getBlockEntity(near) instanceof BigBoilerControllerBlockEntity controller) {
 				controller.requestCheck();
 			}

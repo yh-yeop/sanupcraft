@@ -24,8 +24,8 @@ import io.github.yhyeop.sanupcraft.factory.ModMachines;
 import io.github.yhyeop.sanupcraft.fluid.FluidKind;
 import io.github.yhyeop.sanupcraft.industry.BigBoilerCasingBlock;
 import io.github.yhyeop.sanupcraft.industry.BigBoilerControllerBlockEntity;
-import io.github.yhyeop.sanupcraft.industry.BigBoilerShape;
 import io.github.yhyeop.sanupcraft.industry.ModIndustry;
+import io.github.yhyeop.sanupcraft.industry.MultiblockShape;
 import io.github.yhyeop.sanupcraft.playtest.PlaytestCommand;
 import io.github.yhyeop.sanupcraft.power.BoilerBlock;
 import io.github.yhyeop.sanupcraft.power.BoilerBlockEntity;
@@ -52,19 +52,21 @@ public class SanupcraftM8aGameTest {
 		ServerLevel level = helper.getLevel();
 		BlockPos abs = helper.absolutePos(CONTROLLER);
 		BlockState state = level.getBlockState(abs);
+		helper.assertValueEqual(BigBoilerControllerBlockEntity.SHAPE.casings(CONTROLLER, FACING).size(), 33, "외벽 칸 수");
+		helper.assertValueEqual(BigBoilerControllerBlockEntity.SHAPE.positions(CONTROLLER, FACING).size(), 36, "모양 칸 수");
 
 		BlockPos corner = new BlockPos(3, 4, 3);
 		helper.setBlock(corner, Blocks.AIR);
 		helper.assertFalse(controller.check(level, abs, state), "외벽 하나가 빠졌는데 모양이 섬");
 		helper.assertValueEqual(controller.problem().pos(), helper.absolutePos(corner), "알려 준 틀린 칸");
-		helper.assertValueEqual(controller.problem().expected(), BigBoilerShape.Part.CASING, "틀린 칸에 와야 하는 것");
+		helper.assertValueEqual(controller.problem().expected(), MultiblockShape.Part.CASING, "틀린 칸에 와야 하는 것");
 
 		helper.setBlock(corner, ModIndustry.BIG_BOILER_CASING);
 		BlockPos hollow = new BlockPos(2, 3, 2);
 		helper.setBlock(hollow, Blocks.STONE);
 		helper.assertFalse(controller.check(level, abs, state), "가운데가 막혔는데 모양이 섬");
 		helper.assertValueEqual(controller.problem().pos(), helper.absolutePos(hollow), "막힌 빈칸");
-		helper.assertValueEqual(controller.problem().expected(), BigBoilerShape.Part.HOLLOW, "빈칸이어야 함");
+		helper.assertValueEqual(controller.problem().expected(), MultiblockShape.Part.HOLLOW, "빈칸이어야 함");
 
 		helper.setBlock(hollow, Blocks.AIR);
 		helper.assertTrue(controller.check(level, abs, state), "모양이 맞는데 서지 않음: " + controller.problem());
@@ -243,7 +245,7 @@ public class SanupcraftM8aGameTest {
 	/** 제어기 (북쪽을 봄) + 외벽 33칸을 쌓는다. 모양 확인은 하지 않은 채로 돌려준다. */
 	static BigBoilerControllerBlockEntity buildBigBoiler(GameTestHelper helper) {
 		helper.setBlock(CONTROLLER, ModIndustry.BIG_BOILER_CONTROLLER.defaultBlockState().setValue(BoilerBlock.FACING, FACING));
-		for (BlockPos casing : BigBoilerShape.casings(CONTROLLER, FACING)) {
+		for (BlockPos casing : BigBoilerControllerBlockEntity.SHAPE.casings(CONTROLLER, FACING)) {
 			helper.setBlock(casing, ModIndustry.BIG_BOILER_CASING);
 		}
 		return helper.getBlockEntity(CONTROLLER, BigBoilerControllerBlockEntity.class);

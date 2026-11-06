@@ -58,9 +58,9 @@ public class BigBoilerControllerBlock extends BoilerBlock {
 	/** 상태 한 줄: 모양이 맞으면 물 · 증기 · 연료 + 힌트, 틀리면 첫 틀린 칸. */
 	static Component status(ServerLevel level, BlockPos pos, BlockState state, BigBoilerControllerBlockEntity controller) {
 		if (!controller.check(level, pos, state)) {
-			BigBoilerShape.Problem problem = controller.problem();
+			MultiblockShape.Problem problem = controller.problem();
 			BlockPos at = problem.pos();
-			String key = problem.expected() == BigBoilerShape.Part.CASING
+			String key = problem.expected() == MultiblockShape.Part.CASING
 					? "block.sanupcraft.big_boiler_controller.need_casing"
 					: "block.sanupcraft.big_boiler_controller.need_hollow";
 			return Component.translatable(key, at.getX(), at.getY(), at.getZ(), level.getBlockState(at).getBlock().getName());
@@ -116,7 +116,7 @@ public class BigBoilerControllerBlock extends BoilerBlock {
 		if (!state.getValue(LIT)) {
 			return;
 		}
-		BlockPos top = BigBoilerShape.at(pos, state.getValue(FACING), 0, 1, BigBoilerShape.HEIGHT - 1);
+		BlockPos top = MultiblockShape.at(pos, state.getValue(FACING), 0, 1, BigBoilerControllerBlockEntity.SHAPE.height() - 1);
 		double x = top.getX() + 0.5;
 		double z = top.getZ() + 0.5;
 		for (int i = 0; i < 2; i++) {
