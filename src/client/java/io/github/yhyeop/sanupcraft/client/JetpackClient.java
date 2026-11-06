@@ -8,9 +8,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 
-import io.github.yhyeop.sanupcraft.config.SanupcraftConfig;
 import io.github.yhyeop.sanupcraft.gear.Jetpack;
-import io.github.yhyeop.sanupcraft.gear.SteamCharge;
 
 /**
  * 증기 제트팩의 클라이언트 쪽: 점프 키를 누르고 있고 제트팩에 증기가 있으면
@@ -34,7 +32,7 @@ final class JetpackClient {
 		if (pack.isEmpty() || !Jetpack.canThrust(player) || player.onGround() || player.isInWater() || player.isInLava()) {
 			return;
 		}
-		if (SteamCharge.get(pack) < Math.max(SanupcraftConfig.current().jetpackSteamPerTick, 1) || !ClientPlayNetworking.canSend(Jetpack.ThrustPayload.TYPE)) {
+		if (!Jetpack.hasThrustSteam(pack) || !ClientPlayNetworking.canSend(Jetpack.ThrustPayload.TYPE)) {
 			return;
 		}
 		Vec3 motion = player.getDeltaMovement();
