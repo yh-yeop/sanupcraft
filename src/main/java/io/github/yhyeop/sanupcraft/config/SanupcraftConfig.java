@@ -167,6 +167,13 @@ public final class SanupcraftConfig {
 	public double bossTierHealthPerTier = BossTier.HEALTH_PER_TIER;
 	/** 강화 소환석: 단계당 보스 피해 증가 (0.25 = +25%). */
 	public double bossTierDamagePerTier = BossTier.DAMAGE_PER_TIER;
+	// M8 묶음 B: 용광로 탑 · 세척기
+	/** 세척기: 한 번 만들 때 쓰는 물 (mB). */
+	public int washerWaterPerItem = io.github.yhyeop.sanupcraft.factory.MachineBlockEntity.WATER_PER_ITEM;
+	/** 용광로 탑: 한 번에 굽는 최대 개수. */
+	public int furnaceTowerBatchSize = io.github.yhyeop.sanupcraft.industry.FurnaceTowerControllerBlockEntity.BATCH_SIZE;
+	/** 용광로 탑: 아이템 하나를 굽는 데 드는 고압 증기. */
+	public int furnaceTowerSteamPerItem = io.github.yhyeop.sanupcraft.industry.FurnaceTowerControllerBlockEntity.STEAM_PER_ITEM;
 
 	/** float 상수를 0.05F -> 0.05처럼 보이는 그대로의 double로 (파일에 0.0500000007...이 안 찍히게). */
 	private static double asDouble(float value) {
@@ -282,7 +289,14 @@ public final class SanupcraftConfig {
 			new Option("bossTier", "healthPerTier", BossTier.HEALTH_PER_TIER, 0.0, 5.0, false,
 					c -> c.bossTierHealthPerTier, (c, v) -> c.bossTierHealthPerTier = v),
 			new Option("bossTier", "damagePerTier", BossTier.DAMAGE_PER_TIER, 0.0, 5.0, false,
-					c -> c.bossTierDamagePerTier, (c, v) -> c.bossTierDamagePerTier = v));
+					c -> c.bossTierDamagePerTier, (c, v) -> c.bossTierDamagePerTier = v),
+			// M8 묶음 B
+			new Option("washer", "waterPerItem", io.github.yhyeop.sanupcraft.factory.MachineBlockEntity.WATER_PER_ITEM, 0, io.github.yhyeop.sanupcraft.factory.MachineBlockEntity.WATER_CAPACITY, true,
+					c -> c.washerWaterPerItem, (c, v) -> c.washerWaterPerItem = (int) v),
+			new Option("furnaceTower", "batchSize", io.github.yhyeop.sanupcraft.industry.FurnaceTowerControllerBlockEntity.BATCH_SIZE, 1, 64, true,
+					c -> c.furnaceTowerBatchSize, (c, v) -> c.furnaceTowerBatchSize = (int) v),
+			new Option("furnaceTower", "steamPerItem", io.github.yhyeop.sanupcraft.industry.FurnaceTowerControllerBlockEntity.STEAM_PER_ITEM, 0, 10_000, true,
+					c -> c.furnaceTowerSteamPerItem, (c, v) -> c.furnaceTowerSteamPerItem = (int) v));
 
 	/** 읽은 결과: 설정, 경고 문구, 파일에 빠진 키가 있었는지, 파일을 새로 썼는지. */
 	public record Loaded(SanupcraftConfig config, List<String> warnings, boolean missingKeys, boolean wroteFile) {

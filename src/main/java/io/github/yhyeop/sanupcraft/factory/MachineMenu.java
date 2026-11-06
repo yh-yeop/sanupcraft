@@ -176,6 +176,11 @@ public class MachineMenu extends AbstractContainerMenu {
 		return data.get(MachineBlockEntity.DATA_STEAM);
 	}
 
+	/** 물을 쓰는 기계(세척기)의 물 (mB, 최대 MachineBlockEntity.WATER_CAPACITY). */
+	public int water() {
+		return data.get(MachineBlockEntity.DATA_WATER);
+	}
+
 	/** 결과 · 부산물 칸: 꺼내기만 한다. */
 	private static class OutputSlot extends Slot {
 		OutputSlot(Container container, int slot, int x, int y) {

@@ -10,8 +10,10 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.Containers;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
@@ -29,6 +31,9 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
+
+import io.github.yhyeop.sanupcraft.fluid.FluidBuckets;
+import io.github.yhyeop.sanupcraft.fluid.FluidKind;
 
 /** 화로처럼 재료 · 연료 · 결과 칸이 있는 기계. 종류만 다르고 동작은 같다. */
 public class MachineBlock extends BaseEntityBlock {
@@ -65,6 +70,15 @@ public class MachineBlock extends BaseEntityBlock {
 			player.openMenu(machine);
 		}
 		return InteractionResult.SUCCESS;
+	}
+
+	/** 세척기 (M8): 물 양동이를 들고 우클릭하면 물을 붓는다. 다른 것은 화면 열기로. */
+	@Override
+	protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+		if (kind.usesWater() && FluidKind.ofBucket(stack) == FluidKind.WATER && level.getBlockEntity(pos) instanceof MachineBlockEntity machine) {
+			return FluidBuckets.use(machine, true, stack, level, pos, player, hand);
+		}
+		return InteractionResult.TRY_WITH_EMPTY_HAND;
 	}
 
 	@Override

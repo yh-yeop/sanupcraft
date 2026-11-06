@@ -55,9 +55,12 @@ public class SanupcraftJeiPlugin implements IModPlugin {
 			MachineKind.ASSEMBLER, ModMachines.ASSEMBLER,
 			MachineKind.ALLOY, ModMachines.ALLOY_SMELTER,
 			MachineKind.FORGE, ModMachines.HEART_FORGE,
-			MachineKind.PRECISION, ModMachines.PRECISION_ASSEMBLER);
+			MachineKind.PRECISION, ModMachines.PRECISION_ASSEMBLER,
+			MachineKind.WASHER, ModMachines.WASHER, // M8 묶음 B
+			MachineKind.REFINER, ModMachines.HP_REFINER);
 	/** JEI 목록에 나오는 순서 (진행 순서). */
-	private static final MachineKind[] ORDER = {MachineKind.CRUSHER, MachineKind.PRESS, MachineKind.ALLOY, MachineKind.ASSEMBLER, MachineKind.FORGE, MachineKind.PRECISION};
+	private static final MachineKind[] ORDER = {MachineKind.CRUSHER, MachineKind.PRESS, MachineKind.ALLOY, MachineKind.ASSEMBLER, MachineKind.FORGE, MachineKind.PRECISION,
+			MachineKind.WASHER, MachineKind.REFINER};
 
 	@Override
 	public Identifier getPluginUid() {

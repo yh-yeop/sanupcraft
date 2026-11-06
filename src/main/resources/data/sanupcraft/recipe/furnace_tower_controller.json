@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "sanupcraft:heatproof_bricks",
+    "X": "sanupcraft:precision_part",
+    "F": "minecraft:blast_furnace",
+    "H": "sanupcraft:high_pressure_pipe"
+  },
+  "pattern": [
+    "BXB",
+    "HFH",
+    "BBB"
+  ],
+  "result": {
+    "id": "sanupcraft:furnace_tower_controller"
+  }
+}

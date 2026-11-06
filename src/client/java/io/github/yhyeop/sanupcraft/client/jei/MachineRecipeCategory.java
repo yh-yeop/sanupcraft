@@ -61,7 +61,8 @@ public class MachineRecipeCategory extends AbstractRecipeCategory<MachineRecipe>
 	public void createRecipeExtras(IRecipeExtrasBuilder builder, MachineRecipe recipe, IFocusGroup focuses) {
 		int arrowX = kind.twoInputs() ? 40 : 30;
 		builder.addAnimatedRecipeArrow(recipe.time()).setPosition(arrowX, 5);
-		Component time = Component.translatable(kind.highPressure() ? "jei.sanupcraft.machine_time_hp" : "jei.sanupcraft.machine_time",
+		String timeKey = kind.highPressure() ? "jei.sanupcraft.machine_time_hp" : kind.usesWater() ? "jei.sanupcraft.machine_time_water" : "jei.sanupcraft.machine_time";
+		Component time = Component.translatable(timeKey,
 				String.format(Locale.ROOT, "%.1f", recipe.time() / 20.0F));
 		builder.addText(time, WIDTH, 10).setPosition(0, 26).setColor(0xFF808080);
 	}

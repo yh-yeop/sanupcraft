@@ -19,6 +19,8 @@ import io.github.yhyeop.sanupcraft.factory.MachineMenu;
 public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
 	private static final Identifier TEXTURE = Sanupcraft.id("textures/gui/machine.png");
 	private static final Identifier ALLOY_TEXTURE = Sanupcraft.id("textures/gui/alloy_smelter.png");
+	/** M8 세척기: 기본 화면 + 왼쪽에 물 눈금 틀. */
+	private static final Identifier WASHER_TEXTURE = Sanupcraft.id("textures/gui/washer.png");
 	private static final Identifier LIT_PROGRESS_SPRITE = Identifier.withDefaultNamespace("container/furnace/lit_progress");
 	private static final Identifier BURN_PROGRESS_SPRITE = Identifier.withDefaultNamespace("container/furnace/burn_progress");
 
@@ -26,6 +28,11 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
 	private static final int FLAME_X = 56;
 	private static final int FLAME_Y = 36;
 	private static final int FLAME_SIZE = 14;
+	/** 세척기 물 눈금 안쪽 (화면 안 좌표, 텍스처의 틀과 맞춘다). */
+	private static final int WATER_X = 35;
+	private static final int WATER_Y = 17;
+	private static final int WATER_W = 10;
+	private static final int WATER_H = 52;
 
 	public MachineScreen(MachineMenu menu, Inventory inventory, Component title) {
 		super(menu, inventory, title);
@@ -49,6 +56,8 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
 			if (key != null) {
 				graphics.setTooltipForNextFrame(font, Component.translatable(key), mouseX, mouseY);
 			}
+		} else if (hoveredSlot == null && menu.kind().usesWater() && isHovering(WATER_X, WATER_Y, WATER_W, WATER_H, mouseX, mouseY)) {
+			graphics.setTooltipForNextFrame(font, Component.translatable("gui.sanupcraft.machine.water", menu.water(), MachineBlockEntity.WATER_CAPACITY), mouseX, mouseY);
 		} else if (hoveredSlot == null && isHovering(FLAME_X, FLAME_Y, FLAME_SIZE, FLAME_SIZE, mouseX, mouseY)) {
 			graphics.setTooltipForNextFrame(font, Component.translatable(menu.kind().highPressure() ? "gui.sanupcraft.machine.steam_hp" : "gui.sanupcraft.machine.steam", menu.steam(), MachineBlockEntity.STEAM_CAPACITY), mouseX, mouseY);
 		}
@@ -71,7 +80,16 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
 		super.extractBackground(graphics, mouseX, mouseY, a);
 		int xo = leftPos;
 		int yo = topPos;
-		graphics.blit(RenderPipelines.GUI_TEXTURED, menu.twoInputs() ? ALLOY_TEXTURE : TEXTURE, xo, yo, 0.0F, 0.0F, imageWidth, imageHeight, 256, 256);
+		Identifier texture = menu.twoInputs() ? ALLOY_TEXTURE : menu.kind().usesWater() ? WASHER_TEXTURE : TEXTURE;
+		graphics.blit(RenderPipelines.GUI_TEXTURED, texture, xo, yo, 0.0F, 0.0F, imageWidth, imageHeight, 256, 256);
+		if (menu.kind().usesWater()) {
+			int level = Mth.clamp(menu.water() * WATER_H / MachineBlockEntity.WATER_CAPACITY, 0, WATER_H);
+			if (level > 0) {
+				int top = yo + WATER_Y + WATER_H - level;
+				graphics.fill(xo + WATER_X, top, xo + WATER_X + WATER_W, yo + WATER_Y + WATER_H, 0xFF3F76E4);
+				graphics.fill(xo + WATER_X, top, xo + WATER_X + WATER_W, top + 1, 0xFF7FA8F0);
+			}
+		}
 		if (menu.isLit()) {
 			int litHeight = Mth.ceil(menu.litProgress() * 13.0F) + 1;
 			graphics.blitSprite(RenderPipelines.GUI_TEXTURED, LIT_PROGRESS_SPRITE, 14, 14, 0, 14 - litHeight, xo + FLAME_X, yo + FLAME_Y + FLAME_SIZE - litHeight, 14, litHeight);

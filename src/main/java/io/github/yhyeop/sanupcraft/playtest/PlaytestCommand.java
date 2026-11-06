@@ -77,7 +77,9 @@ public final class PlaytestCommand {
 		// M5 네더 심화 2
 		NETHER2("네더 심화: 영혼 화로 · 고압 증기 · 정밀 조립기 · 터빈 · 피글린 교역 · 잔해 탐지기 · 용암 증기선", Level.NETHER, PlaytestCommand::kitNether2),
 		// C3 강화 소환석
-		TIERS("강화 소환석: +1 ~ +3 소환석 · 재료 · 강철 · 내열 한 벌", null, PlaytestCommand::kitTiers);
+		TIERS("강화 소환석: +1 ~ +3 소환석 · 재료 · 강철 · 내열 한 벌", null, PlaytestCommand::kitTiers),
+		// M8 묶음 B
+		INDUSTRY2("산업 규모 2: 용광로 탑 · 세척기 · 고압 정련기 · 정제 가루", null, PlaytestCommand::kitIndustry2);
 
 		final String description;
 		final ResourceKey<Level> dimension;
@@ -517,6 +519,35 @@ public final class PlaytestCommand {
 		give(p, ModItems.CORE_SHARD, 12);
 		give(p, ModItems.WARDEN_HEART, 3);
 		give(p, Items.CRAFTING_TABLE, 1);
+		food(p);
+	}
+
+	/** M8 묶음 B: 용광로 탑 한 벌 + 영혼 화로 · 고압 파이프, 세척기 + 펌프 · 탱크 · 물, 고압 정련기, 원석. */
+	private static void kitIndustry2(ServerPlayer p) {
+		give(p, io.github.yhyeop.sanupcraft.industry.ModFoundry.FURNACE_TOWER_CONTROLLER.asItem(), 1);
+		give(p, io.github.yhyeop.sanupcraft.industry.ModFoundry.HEATPROOF_BRICKS.asItem(), 23);
+		give(p, io.github.yhyeop.sanupcraft.nether.ModNether.SOUL_FURNACE.asItem(), 2);
+		give(p, Items.SOUL_SOIL, 4);
+		give(p, Items.BLAZE_POWDER, 64);
+		give(p, io.github.yhyeop.sanupcraft.nether.ModNether.HIGH_PRESSURE_PIPE.asItem(), 16);
+		give(p, ModMachines.WASHER.asItem(), 1);
+		give(p, ModMachines.HP_REFINER.asItem(), 1);
+		give(p, ModFluid.PUMP.asItem(), 1);
+		give(p, ModFluid.TANK.asItem(), 1);
+		give(p, Items.WATER_BUCKET, 2);
+		give(p, ModPower.BOILER.asItem(), 1);
+		give(p, ModPower.STEAM_PIPE.asItem(), 8);
+		give(p, Items.COAL, 32);
+		give(p, Items.RAW_IRON, 64);
+		give(p, Items.RAW_COPPER, 32);
+		give(p, Items.RAW_GOLD, 32);
+		give(p, ModItems.IRON_DUST, 16);
+		give(p, ModItems.COAL_DUST, 16);
+		give(p, io.github.yhyeop.sanupcraft.nether.ModNether.PRECISION_PART, 2);
+		give(p, Items.HOPPER, 4);
+		give(p, Items.CHEST, 2);
+		give(p, Items.COMPARATOR, 1);
+		give(p, ModPower.STEAM_GAUGE.asItem(), 1);
 		food(p);
 	}
 }

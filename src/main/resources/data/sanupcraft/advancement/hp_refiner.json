@@ -1,0 +1,32 @@
+{
+  "parent": "sanupcraft:ore_washer",
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:hp_refiner"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:hp_refiner"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.hp_refiner.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.hp_refiner.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ]
+}
