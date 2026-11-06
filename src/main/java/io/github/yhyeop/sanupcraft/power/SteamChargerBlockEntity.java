@@ -7,7 +7,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.Containers;
 import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.Container;
 import net.minecraft.world.WorldlyContainer;
@@ -34,8 +33,6 @@ public class SteamChargerBlockEntity extends BlockEntity implements WorldlyConta
 	private final NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
 	private int steam;
 	private final SteamFlowMeter flow = new SteamFlowMeter();
-	/** 이 틱에 채웠나 (연기 표시용, 저장하지 않음). */
-	private boolean charging;
 
 	public SteamChargerBlockEntity(BlockPos pos, BlockState state) {
 		super(ModPower.STEAM_CHARGER_BLOCK_ENTITY, pos, state);
@@ -60,12 +57,7 @@ public class SteamChargerBlockEntity extends BlockEntity implements WorldlyConta
 				setChanged();
 			}
 		}
-		charging = moved > 0;
 		return moved;
-	}
-
-	public boolean isCharging() {
-		return charging;
 	}
 
 	public ItemStack stored() {
@@ -171,15 +163,6 @@ public class SteamChargerBlockEntity extends BlockEntity implements WorldlyConta
 	@Override
 	public void clearContent() {
 		items.set(0, ItemStack.EMPTY);
-	}
-
-	/** 부서질 때 칸의 아이템을 떨군다. */
-	@Override
-	public void preRemoveSideEffects(BlockPos pos, BlockState state) {
-		super.preRemoveSideEffects(pos, state);
-		if (level instanceof ServerLevel serverLevel) {
-			Containers.dropContents(serverLevel, pos, this);
-		}
 	}
 
 	@Override

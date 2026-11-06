@@ -55,7 +55,6 @@ public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer, 
 	private int steam;
 	private final SteamFlowMeter flow = new SteamFlowMeter();
 	private int litTime;
-	private int litDuration;
 	/** 증기를 만들지 못한 연속 틱 수 (저장하지 않음). */
 	private int idleTicks = LIT_HOLD_TICKS;
 	private final SteamOutlet outlet = new SteamOutlet();
@@ -91,7 +90,6 @@ public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer, 
 			int burn = burnDuration(level, this, fuel);
 			if (burn > 0) {
 				litTime = burn;
-				litDuration = burn;
 				ItemStack remainder = MachineBlockEntity.consumeFuel(fuel);
 				if (!remainder.isEmpty()) {
 					// 용암 양동이 → 빈 양동이: 보일러에는 빼낼 칸이 없으니 위에 떨군다
@@ -311,7 +309,6 @@ public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer, 
 		water = input.getIntOr("water", 0);
 		steam = input.getIntOr("steam", 0);
 		litTime = input.getIntOr("lit_time", 0);
-		litDuration = input.getIntOr("lit_duration", 0);
 	}
 
 	@Override
@@ -321,7 +318,6 @@ public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer, 
 		output.putInt("water", water);
 		output.putInt("steam", steam);
 		output.putInt("lit_time", litTime);
-		output.putInt("lit_duration", litDuration);
 	}
 
 	// ---- 연료 칸 (깔때기 · 우클릭) ----
