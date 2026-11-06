@@ -37,6 +37,7 @@ public class SanupcraftClient implements ClientModInitializer {
 		EntityRendererRegistry.register(io.github.yhyeop.sanupcraft.nether.ModNether.LAVA_STEAMBOAT_ENTITY, LavaSteamboatRenderer::new); // M5
 		ItemTooltipCallback.EVENT.register((stack, context, flag, lines) -> addGuideTooltip(stack, lines));
 		JetpackClient.init(); // 확장 M9a
+		io.github.yhyeop.sanupcraft.client.combat.DownedClient.init(); // M13 C5 쓰러짐 자세
 		// M7 보관 · 제작
 		StorageClient.init();
 		io.github.yhyeop.sanupcraft.client.boss.BossModelLayers.init(); // 확장 M11a: 보스 전용 모델

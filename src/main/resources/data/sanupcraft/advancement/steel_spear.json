@@ -1,0 +1,32 @@
+{
+  "parent": "sanupcraft:steel",
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:steel_spear"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:steel_spear"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.steel_spear.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.steel_spear.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ]
+}

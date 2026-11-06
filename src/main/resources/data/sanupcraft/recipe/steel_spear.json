@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "P": "sanupcraft:steel_plate",
+    "I": "sanupcraft:steel_ingot",
+    "T": "minecraft:stick"
+  },
+  "pattern": [
+    "  P",
+    " I ",
+    "T  "
+  ],
+  "result": {
+    "id": "sanupcraft:steel_spear"
+  }
+}

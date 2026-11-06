@@ -53,6 +53,7 @@ public class Sanupcraft implements ModInitializer {
 		SteamGear.init();
 		ModBoss.init();
 		ModWorld.init();
+		io.github.yhyeop.sanupcraft.combat.ModCombat.init(); // M13 전투 (C1 무기 · C5 협동)
 		io.github.yhyeop.sanupcraft.wrench.ModWrench.init(); // M8 I4 렌치 · 면 설정
 		io.github.yhyeop.sanupcraft.sound.ModSounds.init(); // M11 X2 효과음
 		BossTier.init(); // C3 강화 소환석

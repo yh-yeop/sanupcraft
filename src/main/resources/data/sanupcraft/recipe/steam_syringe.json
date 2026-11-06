@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "N": "minecraft:iron_nugget",
+    "B": "minecraft:glass_bottle",
+    "P": "sanupcraft:steam_pipe",
+    "M": "minecraft:glistering_melon_slice"
+  },
+  "pattern": [
+    "  N",
+    " B ",
+    "PM "
+  ],
+  "result": {
+    "id": "sanupcraft:steam_syringe"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "parent": "sanupcraft:combat_beacon",
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:steam_syringe"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:steam_syringe"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.steam_syringe.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.steam_syringe.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ]
+}

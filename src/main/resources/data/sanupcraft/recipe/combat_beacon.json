@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "P": "sanupcraft:steel_plate",
+    "G": "minecraft:gold_ingot",
+    "C": "sanupcraft:guardian_core",
+    "S": "sanupcraft:steam_pipe"
+  },
+  "pattern": [
+    "PGP",
+    "GCG",
+    "PSP"
+  ],
+  "result": {
+    "id": "sanupcraft:combat_beacon"
+  }
+}

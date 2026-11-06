@@ -1,0 +1,32 @@
+{
+  "parent": "sanupcraft:steel_spear",
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:combat_beacon"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:combat_beacon"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.combat_beacon.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.combat_beacon.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ]
+}

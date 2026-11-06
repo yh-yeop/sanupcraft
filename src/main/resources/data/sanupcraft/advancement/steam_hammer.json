@@ -1,0 +1,32 @@
+{
+  "parent": "sanupcraft:steel_spear",
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:steam_hammer"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:steam_hammer"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.steam_hammer.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.steam_hammer.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ]
+}
