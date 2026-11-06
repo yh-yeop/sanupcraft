@@ -1,0 +1,32 @@
+{
+  "parent": "sanupcraft:soul_furnace",
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:precision_part"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:precision_part"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.precision_part.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.precision_part.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ]
+}

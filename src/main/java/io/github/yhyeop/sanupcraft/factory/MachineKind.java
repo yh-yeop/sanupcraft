@@ -15,7 +15,9 @@ public enum MachineKind {
 	/** 심장 제련로 (3단계): 고대 잔해 → 네더라이트 파편 2, 블레이즈 막대 → 가루 4. */
 	FORGE("forging"),
 	/** 합금로: 재료 두 가지 → 합금 (철가루 2 + 석탄 가루 2 → 강철). */
-	ALLOY("alloying");
+	ALLOY("alloying"),
+	/** 정밀 조립기 (M5): 고압 증기로만 돈다 (연료 칸 없음). 재료 두 가지 → 정밀 부품 등. */
+	PRECISION("precision");
 
 	private final String recipeName;
 	private RecipeType<MachineRecipe> recipeType;
@@ -32,7 +34,12 @@ public enum MachineKind {
 
 	/** 재료 칸이 두 개인 기계인가. */
 	public boolean twoInputs() {
-		return this == ALLOY;
+		return this == ALLOY || this == PRECISION;
+	}
+
+	/** 고압 증기 전용 기계인가 (M5). 보통 증기 · 연료를 받지 않고, 고압 파이프로만 증기를 받는다. */
+	public boolean highPressure() {
+		return this == PRECISION;
 	}
 
 	public RecipeType<MachineRecipe> recipeType() {

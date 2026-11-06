@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "sanupcraft:block/steam_turbine"
+    },
+    "lit=true": {
+      "model": "sanupcraft:block/steam_turbine_on"
+    }
+  }
+}

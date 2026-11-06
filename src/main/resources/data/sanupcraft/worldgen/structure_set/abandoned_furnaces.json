@@ -1,0 +1,18 @@
+{
+  "placement": {
+    "type": "minecraft:random_spread",
+    "exclusion_zone": {
+      "chunk_count": 3,
+      "other_set": "minecraft:nether_complexes"
+    },
+    "salt": 582039471,
+    "separation": 6,
+    "spacing": 20
+  },
+  "structures": [
+    {
+      "structure": "sanupcraft:abandoned_furnace",
+      "weight": 1
+    }
+  ]
+}

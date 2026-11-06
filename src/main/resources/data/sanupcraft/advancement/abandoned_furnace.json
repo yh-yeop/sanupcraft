@@ -1,0 +1,36 @@
+{
+  "parent": "sanupcraft:heatproof",
+  "criteria": {
+    "found": {
+      "trigger": "minecraft:location",
+      "conditions": {
+        "player": {
+          "type": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "minecraft:location": {
+              "structures": "sanupcraft:abandoned_furnace"
+            }
+          }
+        }
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:guardian_altar"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.abandoned_furnace.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.abandoned_furnace.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "found"
+    ]
+  ]
+}

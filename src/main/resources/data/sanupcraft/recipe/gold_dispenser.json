@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "sanupcraft:iron_plate",
+    "G": "minecraft:gold_ingot",
+    "D": "minecraft:dispenser",
+    "R": "minecraft:redstone"
+  },
+  "pattern": [
+    "PGP",
+    "PDP",
+    "PRP"
+  ],
+  "result": {
+    "id": "sanupcraft:gold_dispenser"
+  }
+}

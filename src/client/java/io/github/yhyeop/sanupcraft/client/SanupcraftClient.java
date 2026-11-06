@@ -27,6 +27,7 @@ public class SanupcraftClient implements ClientModInitializer {
 		EntityRendererRegistry.register(ModBoss.RUSTY_GUARDIAN, RustyGuardianRenderer::new);
 		EntityRendererRegistry.register(ModBoss.FURNACE_WARDEN, FurnaceWardenRenderer::new);
 		EntityRendererRegistry.register(SteamGear.RIVET_ENTITY, ThrownItemRenderer::new);
+		EntityRendererRegistry.register(io.github.yhyeop.sanupcraft.nether.ModNether.LAVA_STEAMBOAT_ENTITY, LavaSteamboatRenderer::new); // M5
 		ItemTooltipCallback.EVENT.register((stack, context, flag, lines) -> addGuideTooltip(stack, lines));
 	}
 

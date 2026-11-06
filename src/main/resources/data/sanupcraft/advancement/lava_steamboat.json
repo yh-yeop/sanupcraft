@@ -1,0 +1,32 @@
+{
+  "parent": "sanupcraft:heatproof",
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:lava_steamboat"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:lava_steamboat"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.lava_steamboat.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.lava_steamboat.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ]
+}

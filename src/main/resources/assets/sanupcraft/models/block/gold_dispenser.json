@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "sanupcraft:block/gold_dispenser_top",
+    "side": "sanupcraft:block/gold_dispenser_side",
+    "bottom": "sanupcraft:block/gold_dispenser_bottom"
+  }
+}

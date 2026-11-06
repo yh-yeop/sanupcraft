@@ -1,0 +1,9 @@
+{
+  "type": "sanupcraft:precision",
+  "ingredient": "sanupcraft:steel_plate",
+  "ingredient2": "sanupcraft:gilded_quartz",
+  "result": {
+    "id": "sanupcraft:precision_part"
+  },
+  "time": 300
+}

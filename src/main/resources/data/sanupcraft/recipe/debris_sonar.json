@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "Q": "minecraft:quartz",
+    "G": "minecraft:gold_ingot",
+    "C": "minecraft:compass",
+    "S": "sanupcraft:steel_plate",
+    "P": "sanupcraft:steam_pipe"
+  },
+  "pattern": [
+    " Q ",
+    "GCG",
+    "SPS"
+  ],
+  "result": {
+    "id": "sanupcraft:debris_sonar"
+  }
+}

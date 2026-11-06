@@ -1,0 +1,32 @@
+{
+  "parent": "sanupcraft:heart_forge",
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:debris_sonar"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:debris_sonar"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.debris_sonar.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.debris_sonar.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ]
+}

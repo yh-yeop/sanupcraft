@@ -49,7 +49,13 @@ public class MachineMenu extends AbstractContainerMenu {
 		addSlot(new Slot(container, MachineBlockEntity.SLOT_FUEL, INPUT_X, FUEL_Y) {
 			@Override
 			public boolean mayPlace(ItemStack stack) {
-				return MachineBlockEntity.isFuel(stack);
+				return MachineBlockEntity.isFuel(stack) && !kind().highPressure();
+			}
+
+			/** 고압 기계(정밀 조립기)는 연료 칸이 없다. */
+			@Override
+			public boolean isActive() {
+				return !kind().highPressure();
 			}
 		});
 		addSlot(new OutputSlot(container, MachineBlockEntity.SLOT_RESULT, RESULT_X, RESULT_Y));
@@ -138,7 +144,7 @@ public class MachineMenu extends AbstractContainerMenu {
 			int start = MachineBlockEntity.SLOT_UPGRADE;
 			return moveItemStackTo(stack, start, start + MachineBlockEntity.UPGRADE_SLOTS, false);
 		}
-		if (MachineBlockEntity.isFuel(stack) && moveItemStackTo(stack, MachineBlockEntity.SLOT_FUEL, MachineBlockEntity.SLOT_FUEL + 1, false)) {
+		if (MachineBlockEntity.isFuel(stack) && !kind().highPressure() && moveItemStackTo(stack, MachineBlockEntity.SLOT_FUEL, MachineBlockEntity.SLOT_FUEL + 1, false)) {
 			return true;
 		}
 		if (moveItemStackTo(stack, MachineBlockEntity.SLOT_INPUT, MachineBlockEntity.SLOT_INPUT + 1, false)) {

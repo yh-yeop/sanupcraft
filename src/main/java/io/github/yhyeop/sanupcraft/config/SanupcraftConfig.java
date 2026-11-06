@@ -89,6 +89,17 @@ public final class SanupcraftConfig {
 	public int pumpSteamPerBucket = PumpBlockEntity.STEAM_PER_BUCKET;
 	/** 펌프: 원천 하나를 빨아들이는 간격(틱). */
 	public int pumpTicksPerBucket = PumpBlockEntity.TICKS_PER_BUCKET;
+	// M5 네더 심화 2
+	/** 영혼 화로: 블레이즈 가루 하나가 내는 고압 증기. */
+	public int soulFurnaceSteamPerPowder = io.github.yhyeop.sanupcraft.power.SoulFurnaceBlockEntity.STEAM_PER_POWDER;
+	/** 영혼 화로: 틱당 고압 증기. */
+	public int soulFurnaceSteamPerTick = io.github.yhyeop.sanupcraft.power.SoulFurnaceBlockEntity.STEAM_PER_TICK;
+	/** 증기 터빈: 고압 증기 1이 되는 보통 증기. */
+	public int turbineMultiplier = io.github.yhyeop.sanupcraft.power.SteamTurbineBlockEntity.MULTIPLIER;
+	/** 금 분배기: 금괴를 던지는 간격(틱). */
+	public int goldDispenserTicksPerThrow = io.github.yhyeop.sanupcraft.nether.GoldDispenserBlockEntity.TICKS_PER_THROW;
+	/** 잔해 탐지기: 한 번에 드는 증기. */
+	public int debrisSonarSteam = io.github.yhyeop.sanupcraft.nether.DebrisSonarItem.STEAM_COST;
 
 	/** float 상수를 0.05F -> 0.05처럼 보이는 그대로의 double로 (파일에 0.0500000007...이 안 찍히게). */
 	private static double asDouble(float value) {
@@ -142,7 +153,18 @@ public final class SanupcraftConfig {
 			new Option("pump", "steamPerBucket", PumpBlockEntity.STEAM_PER_BUCKET, 0, PumpBlockEntity.STEAM_CAPACITY, true,
 					c -> c.pumpSteamPerBucket, (c, v) -> c.pumpSteamPerBucket = (int) v),
 			new Option("pump", "ticksPerBucket", PumpBlockEntity.TICKS_PER_BUCKET, 1, 1200, true,
-					c -> c.pumpTicksPerBucket, (c, v) -> c.pumpTicksPerBucket = (int) v));
+					c -> c.pumpTicksPerBucket, (c, v) -> c.pumpTicksPerBucket = (int) v),
+			// M5 네더 심화 2
+			new Option("soulFurnace", "steamPerPowder", io.github.yhyeop.sanupcraft.power.SoulFurnaceBlockEntity.STEAM_PER_POWDER, 1, 100_000, true,
+					c -> c.soulFurnaceSteamPerPowder, (c, v) -> c.soulFurnaceSteamPerPowder = (int) v),
+			new Option("soulFurnace", "steamPerTick", io.github.yhyeop.sanupcraft.power.SoulFurnaceBlockEntity.STEAM_PER_TICK, 1, 1000, true,
+					c -> c.soulFurnaceSteamPerTick, (c, v) -> c.soulFurnaceSteamPerTick = (int) v),
+			new Option("turbine", "multiplier", io.github.yhyeop.sanupcraft.power.SteamTurbineBlockEntity.MULTIPLIER, 1, 20, true,
+					c -> c.turbineMultiplier, (c, v) -> c.turbineMultiplier = (int) v),
+			new Option("goldDispenser", "ticksPerThrow", io.github.yhyeop.sanupcraft.nether.GoldDispenserBlockEntity.TICKS_PER_THROW, 1, 1200, true,
+					c -> c.goldDispenserTicksPerThrow, (c, v) -> c.goldDispenserTicksPerThrow = (int) v),
+			new Option("debrisSonar", "steamCost", io.github.yhyeop.sanupcraft.nether.DebrisSonarItem.STEAM_COST, 0, io.github.yhyeop.sanupcraft.nether.DebrisSonarItem.CAPACITY, true,
+					c -> c.debrisSonarSteam, (c, v) -> c.debrisSonarSteam = (int) v));
 
 	/** 읽은 결과: 설정, 경고 문구, 파일에 빠진 키가 있었는지, 파일을 새로 썼는지. */
 	public record Loaded(SanupcraftConfig config, List<String> warnings, boolean missingKeys, boolean wroteFile) {

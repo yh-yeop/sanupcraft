@@ -44,6 +44,7 @@ public class Sanupcraft implements ModInitializer {
 		SteamGear.init();
 		ModBoss.init();
 		ModWorld.init();
+		io.github.yhyeop.sanupcraft.nether.ModNether.init(); // M5 네더 심화 2
 		ModTab.init();
 		CorpseGravesCompat.init();
 		PlaytestCommand.init();

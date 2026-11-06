@@ -47,7 +47,8 @@ public class SteamPipeBlock extends PipeBlock {
 		return state.getBlock() instanceof SteamPipeBlock
 				|| state.getBlock() instanceof BoilerBlock
 				|| state.getBlock() instanceof GeothermalVentBlock
-				|| level.getBlockEntity(pos) instanceof SteamConsumer;
+				|| state.getBlock() instanceof SteamTurbineBlock
+				|| level.getBlockEntity(pos) instanceof SteamConsumer consumer && consumer.takesNormalSteam();
 	}
 
 	@Override

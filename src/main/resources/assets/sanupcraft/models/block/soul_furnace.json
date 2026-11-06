@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "sanupcraft:block/soul_furnace_front",
+    "side": "sanupcraft:block/soul_furnace_side",
+    "top": "sanupcraft:block/soul_furnace_top"
+  }
+}

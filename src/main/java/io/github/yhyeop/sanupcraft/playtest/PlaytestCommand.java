@@ -56,7 +56,9 @@ public final class PlaytestCommand {
 		FORGE("심장 제련로 · 고대 잔해", Level.NETHER, PlaytestCommand::kitForge),
 		OUTPOST("네더 전초기지: 지열 분출구 · 내열 드릴 굴착기 · 엔더 닻", Level.NETHER, PlaytestCommand::kitOutpost),
 		HOME("오버월드로 돌아오기", Level.OVERWORLD, PlaytestCommand::kitHome),
-		END("엔드 · 엔더 운반기", Level.END, PlaytestCommand::kitEnd);
+		END("엔드 · 엔더 운반기", Level.END, PlaytestCommand::kitEnd),
+		// M5 네더 심화 2
+		NETHER2("네더 심화: 영혼 화로 · 고압 증기 · 정밀 조립기 · 터빈 · 피글린 교역 · 잔해 탐지기 · 용암 증기선", Level.NETHER, PlaytestCommand::kitNether2);
 
 		final String description;
 		final ResourceKey<Level> dimension;
@@ -329,5 +331,31 @@ public final class PlaytestCommand {
 			}
 			p.setItemSlot(slots.get(i), new ItemStack(items.get(i)));
 		}
+	}
+
+	/**
+	 * M5 네더 심화 2: 영혼 흙 위 영혼 화로 → 고압 파이프 → 정밀 조립기 · 증기 터빈 → 보통 파이프 → 보통 기계,
+	 * 금 분배기 · 교역 수집판(피글린 근처), 잔해 탐지기(가득 채움), 용암 증기선.
+	 */
+	private static void kitNether2(ServerPlayer p) {
+		kitNether(p);
+		give(p, io.github.yhyeop.sanupcraft.nether.ModNether.SOUL_FURNACE.asItem(), 2);
+		give(p, Items.SOUL_SOIL, 8);
+		give(p, Items.BLAZE_POWDER, 32);
+		give(p, io.github.yhyeop.sanupcraft.nether.ModNether.HIGH_PRESSURE_PIPE.asItem(), 32);
+		give(p, ModMachines.PRECISION_ASSEMBLER.asItem(), 1);
+		give(p, ModItems.STEEL_PLATE, 8);
+		give(p, io.github.yhyeop.sanupcraft.nether.ModNether.GILDED_QUARTZ, 8);
+		give(p, io.github.yhyeop.sanupcraft.nether.ModNether.STEAM_TURBINE.asItem(), 1);
+		give(p, ModPower.STEAM_PIPE.asItem(), 16);
+		give(p, ModMachines.CRUSHER.asItem(), 1);
+		give(p, io.github.yhyeop.sanupcraft.nether.ModNether.GOLD_DISPENSER.asItem(), 1);
+		give(p, io.github.yhyeop.sanupcraft.nether.ModNether.BARTER_COLLECTOR.asItem(), 1);
+		give(p, Items.GOLD_INGOT, 32);
+		give(p, Items.HOPPER, 2);
+		give(p, Items.CHEST, 2);
+		give(p, charged(io.github.yhyeop.sanupcraft.nether.ModNether.DEBRIS_SONAR));
+		give(p, io.github.yhyeop.sanupcraft.nether.ModNether.LAVA_STEAMBOAT, 1);
+		give(p, ModPower.STEAM_GAUGE.asItem(), 1);
 	}
 }

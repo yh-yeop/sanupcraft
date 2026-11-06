@@ -4,6 +4,7 @@
 
 녹슨 사당 (rusted_shrine): 오버월드 평지 · 숲에 생기는 무너진 석재 사당. 가운데 수호자 제단, 상자에 소환석과 재료.
 바닥(y=0)은 지면 높이에 묻히도록 놓인다 (structure 의 start_height -1).
+버려진 용광로 (abandoned_furnace, M5): 네더 바닥의 무너진 공방. 수호자 제단 · 부서진 심장 제련로 · 상자.
 """
 import gzip
 import io
@@ -141,9 +142,67 @@ def rusted_shrine() -> Template:
     return t
 
 
+def abandoned_furnace() -> Template:
+    """버려진 용광로 (M5, 네더): 무너진 흑암 벽돌 공방. 가운데 수호자 제단, 안쪽에 부서진(꺼진) 심장 제련로와 굴뚝, 상자.
+
+    바닥(y=0)은 네더 바닥 블록 자리에 놓인다 (구조물 종류 sanupcraft:nether_floor). 크기 11 x 8 x 11.
+    """
+    rnd = random.Random(20261107)
+    t = Template((11, 8, 11))
+    for x in range(11):
+        for z in range(11):
+            for y in range(1, 8):
+                t.set(x, y, z, "air")
+    # 바닥: 네더 벽돌 · 금 간 네더 벽돌 · 흑암 · 마그마, 가운데 3x3은 매끈한 현무암
+    for x in range(11):
+        for z in range(11):
+            if 4 <= x <= 6 and 4 <= z <= 6:
+                t.set(x, 0, z, "polished_basalt", {"axis": "y"})
+                continue
+            r = rnd.random()
+            name = ("nether_bricks" if r < 0.4 else "cracked_nether_bricks" if r < 0.65
+                    else "polished_blackstone_bricks" if r < 0.85 else "cracked_polished_blackstone_bricks" if r < 0.95 else "magma_block")
+            t.set(x, 0, z, name)
+    # 무너진 벽: 둘레, 높이가 제각각 (앞쪽 z=0은 입구로 낮게)
+    for i in range(11):
+        for (x, z) in ((i, 0), (i, 10), (0, i), (10, i)):
+            front = z == 0 and 3 <= x <= 7
+            h = 0 if front else rnd.choice((1, 1, 2, 2, 3, 4))
+            for y in range(1, h + 1):
+                t.set(x, y, z, "polished_blackstone_bricks" if rnd.random() < 0.6 else "cracked_polished_blackstone_bricks")
+            if h and rnd.random() < 0.35:
+                t.set(x, h + 1, z, "polished_blackstone_brick_slab", {"type": "bottom", "waterlogged": "false"})
+    # 뒤쪽 왼편 굴뚝 (벽돌, 위에 꺼지지 않는 영혼 모닥불 연기)
+    for y in range(1, 7):
+        for (x, z) in ((1, 8), (2, 8), (1, 9), (2, 9)):
+            if y < 6 or (x, z) == (1, 9):
+                t.set(x, y, z, "bricks" if (x + y + z) % 3 else "nether_bricks")
+    t.set(2, 6, 8, "soul_campfire", {"facing": "south", "lit": "true", "signal_fire": "false", "waterlogged": "false"})
+    # 부서진 심장 제련로: 굴뚝 앞, 꺼진 채 둘레에 금 간 벽돌 · 거미줄
+    t.set(2, 1, 7, "sanupcraft:heart_forge", {"facing": "south", "lit": "false"})
+    t.set(3, 1, 7, "blast_furnace", {"facing": "south", "lit": "false"})
+    t.set(3, 2, 7, "cracked_nether_bricks")
+    t.set(1, 1, 7, "magma_block")
+    t.set(2, 2, 7, "cobweb")
+    # 가운데 수호자 제단, 뒤쪽 오른편 상자
+    t.set(5, 1, 5, "sanupcraft:guardian_altar")
+    t.set(8, 1, 9, "chest", {"facing": "north", "type": "single", "waterlogged": "false"},
+          {"id": "minecraft:chest", "LootTable": "sanupcraft:chests/abandoned_furnace"})
+    # 녹슨 쇠창살 · 사슬 · 금 블록 부스러기
+    for (x, z) in ((10, 4), (0, 6), (6, 10)):
+        t.set(x, 2, z, "iron_bars")
+    t.set(9, 3, 9, "iron_chain", {"axis": "y", "waterlogged": "false"})
+    t.set(9, 2, 9, "iron_chain", {"axis": "y", "waterlogged": "false"})
+    t.set(7, 1, 8, "gilded_blackstone")
+    t.set(8, 1, 3, "cobweb")
+    return t
+
+
 def main():
     n = rusted_shrine().save(OUT / "rusted_shrine.nbt")
     print(f"rusted_shrine.nbt: 블록 {n}개")
+    n = abandoned_furnace().save(OUT / "abandoned_furnace.nbt")
+    print(f"abandoned_furnace.nbt: 블록 {n}개")
 
 
 if __name__ == "__main__":
