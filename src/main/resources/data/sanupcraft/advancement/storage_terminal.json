@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:storage_terminal"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:storage_terminal"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.storage_terminal.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.storage_terminal.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ],
+  "parent": "sanupcraft:storage_drawer"
+}

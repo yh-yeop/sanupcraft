@@ -41,6 +41,12 @@ import io.github.yhyeop.sanupcraft.production.TreeFellerBlockEntity;
 import io.github.yhyeop.sanupcraft.industry.BigBoilerControllerBlockEntity;
 import io.github.yhyeop.sanupcraft.transport.CargoStationBlockEntity;
 import io.github.yhyeop.sanupcraft.transport.SteamLocomotive;
+import io.github.yhyeop.sanupcraft.storage.AutocrafterBlockEntity;
+import io.github.yhyeop.sanupcraft.storage.DrawerBlockEntity;
+import io.github.yhyeop.sanupcraft.storage.PortableTerminalItem;
+import io.github.yhyeop.sanupcraft.storage.StockerBlockEntity;
+import io.github.yhyeop.sanupcraft.storage.StorageNetwork;
+import io.github.yhyeop.sanupcraft.storage.TerminalBlockEntity;
 
 /**
  * 서버 설정 파일 {@code config/sanupcraft.json}. 서버(싱글은 내장 서버)가 시작될 때 읽고, 파일이 없으면 기본값으로 만든다.
@@ -127,6 +133,23 @@ public final class SanupcraftConfig {
 	public double locomotiveMaxSpeed = SteamLocomotive.MAX_SPEED;
 	/** 적재 · 하역 역: 한 번(2틱)에 옮기는 아이템 수. */
 	public int stationItemsPerTransfer = CargoStationBlockEntity.ITEMS_PER_TRANSFER;
+	// ---- M7 보관 · 제작 ----
+	/** 철 서랍: 업그레이드 전 더미 수. */
+	public int ironDrawerStacks = DrawerBlockEntity.IRON_STACKS;
+	/** 강철 서랍: 업그레이드 전 더미 수. */
+	public int steelDrawerStacks = DrawerBlockEntity.STEEL_STACKS;
+	/** 창고 네트워크: 따라가는 관 · 네트워크 블록 수 한도. */
+	public int storageMaxNodes = StorageNetwork.MAX_NODES;
+	/** 창고 단말: 화면이 열려 있는 동안 틱당 쓰는 증기. */
+	public int terminalSteamPerTick = TerminalBlockEntity.STEAM_PER_TICK;
+	/** 휴대 단말 (기본판): 같은 차원에서 열 수 있는 거리. */
+	public int portableTerminalRange = PortableTerminalItem.RANGE;
+	/** 자동 제작대: 한 번 만들 때 드는 증기. */
+	public int autocrafterSteamPerCraft = AutocrafterBlockEntity.STEAM_PER_CRAFT;
+	/** 자동 제작대: 만들어 보는 간격(틱). */
+	public int autocrafterTicksPerCraft = AutocrafterBlockEntity.TICKS_PER_CRAFT;
+	/** 재고 유지기: 거두고 채우는 간격(틱). */
+	public int stockerTicksPerCycle = StockerBlockEntity.TICKS_PER_CYCLE;
 
 	/** float 상수를 0.05F -> 0.05처럼 보이는 그대로의 double로 (파일에 0.0500000007...이 안 찍히게). */
 	private static double asDouble(float value) {
@@ -209,7 +232,24 @@ public final class SanupcraftConfig {
 			new Option("locomotive", "maxSpeed", SteamLocomotive.MAX_SPEED, 0.05, 0.4, false,
 					c -> c.locomotiveMaxSpeed, (c, v) -> c.locomotiveMaxSpeed = v),
 			new Option("cargoStation", "itemsPerTransfer", CargoStationBlockEntity.ITEMS_PER_TRANSFER, 1, 64, true,
-					c -> c.stationItemsPerTransfer, (c, v) -> c.stationItemsPerTransfer = (int) v));
+					c -> c.stationItemsPerTransfer, (c, v) -> c.stationItemsPerTransfer = (int) v),
+			// ---- M7 보관 · 제작 ----
+			new Option("drawer", "ironStacks", DrawerBlockEntity.IRON_STACKS, 1, 4096, true,
+					c -> c.ironDrawerStacks, (c, v) -> c.ironDrawerStacks = (int) v),
+			new Option("drawer", "steelStacks", DrawerBlockEntity.STEEL_STACKS, 1, 4096, true,
+					c -> c.steelDrawerStacks, (c, v) -> c.steelDrawerStacks = (int) v),
+			new Option("storage", "maxNodes", StorageNetwork.MAX_NODES, 1, 8192, true,
+					c -> c.storageMaxNodes, (c, v) -> c.storageMaxNodes = (int) v),
+			new Option("storage", "terminalSteamPerTick", TerminalBlockEntity.STEAM_PER_TICK, 0, 100, true,
+					c -> c.terminalSteamPerTick, (c, v) -> c.terminalSteamPerTick = (int) v),
+			new Option("storage", "portableTerminalRange", PortableTerminalItem.RANGE, 1, 4096, true,
+					c -> c.portableTerminalRange, (c, v) -> c.portableTerminalRange = (int) v),
+			new Option("autocrafter", "steamPerCraft", AutocrafterBlockEntity.STEAM_PER_CRAFT, 0, AutocrafterBlockEntity.STEAM_CAPACITY, true,
+					c -> c.autocrafterSteamPerCraft, (c, v) -> c.autocrafterSteamPerCraft = (int) v),
+			new Option("autocrafter", "ticksPerCraft", AutocrafterBlockEntity.TICKS_PER_CRAFT, 1, 1200, true,
+					c -> c.autocrafterTicksPerCraft, (c, v) -> c.autocrafterTicksPerCraft = (int) v),
+			new Option("stocker", "ticksPerCycle", StockerBlockEntity.TICKS_PER_CYCLE, 1, 1200, true,
+					c -> c.stockerTicksPerCycle, (c, v) -> c.stockerTicksPerCycle = (int) v));
 
 	/** 읽은 결과: 설정, 경고 문구, 파일에 빠진 키가 있었는지, 파일을 새로 썼는지. */
 	public record Loaded(SanupcraftConfig config, List<String> warnings, boolean missingKeys, boolean wroteFile) {

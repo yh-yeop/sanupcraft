@@ -18,10 +18,12 @@ import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
 
 import mezz.jei.api.IModPlugin;
+import mezz.jei.api.constants.RecipeTypes;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.registration.IRecipeCatalystRegistration;
 import mezz.jei.api.registration.IRecipeCategoryRegistration;
 import mezz.jei.api.registration.IRecipeRegistration;
+import mezz.jei.api.registration.IRecipeTransferRegistration;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
@@ -85,6 +87,14 @@ public class SanupcraftJeiPlugin implements IModPlugin {
 		for (MachineKind kind : ORDER) {
 			registration.addCraftingStation(MachineRecipeCategory.type(kind), MACHINES.get(kind));
 		}
+		// M7: 제작 단말 · 자동 제작대
+		TerminalRecipeTransfer.addCatalysts(registration);
+	}
+
+	/** M7: JEI 제작 레시피 + 버튼 → 제작 단말. */
+	@Override
+	public void registerRecipeTransferHandlers(IRecipeTransferRegistration registration) {
+		registration.addRecipeTransferHandler(new TerminalRecipeTransfer(registration.getTransferHelper()), RecipeTypes.CRAFTING);
 	}
 
 	/** 이 기계의 레시피들. 이름순으로 정렬한다. */

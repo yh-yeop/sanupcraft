@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "sanupcraft:steel_plate",
+    "G": "sanupcraft:gear_part",
+    "C": "minecraft:chest"
+  },
+  "pattern": [
+    "PGP",
+    "GCG",
+    "PGP"
+  ],
+  "result": {
+    "id": "sanupcraft:drawer_upgrade"
+  }
+}

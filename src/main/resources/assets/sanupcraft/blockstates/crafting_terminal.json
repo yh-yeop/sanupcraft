@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "sanupcraft:block/crafting_terminal"
+    },
+    "facing=east": {
+      "model": "sanupcraft:block/crafting_terminal",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "sanupcraft:block/crafting_terminal",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "sanupcraft:block/crafting_terminal",
+      "y": 270
+    }
+  }
+}

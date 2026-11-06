@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "O": "minecraft:obsidian",
+    "P": "sanupcraft:iron_plate",
+    "L": "minecraft:lava_bucket"
+  },
+  "pattern": [
+    "OPO",
+    "PLP",
+    "OPO"
+  ],
+  "result": {
+    "id": "sanupcraft:drawer_void_upgrade"
+  }
+}

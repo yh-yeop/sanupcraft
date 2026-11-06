@@ -16,6 +16,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemStack;
 
 import io.github.yhyeop.sanupcraft.boss.ModBoss;
+import io.github.yhyeop.sanupcraft.client.storage.StorageClient;
 import io.github.yhyeop.sanupcraft.factory.ModMachines;
 import io.github.yhyeop.sanupcraft.gear.SteamGear;
 import io.github.yhyeop.sanupcraft.logistics.ModLogistics;
@@ -35,6 +36,8 @@ public class SanupcraftClient implements ClientModInitializer {
 		EntityRendererRegistry.register(ModTransport.CARGO_WAGON, context -> new MinecartRenderer(context, ModelLayers.CHEST_MINECART));
 		ItemTooltipCallback.EVENT.register((stack, context, flag, lines) -> addGuideTooltip(stack, lines));
 		JetpackClient.init(); // 확장 M9a
+		// M7 보관 · 제작
+		StorageClient.init();
 	}
 
 	/**

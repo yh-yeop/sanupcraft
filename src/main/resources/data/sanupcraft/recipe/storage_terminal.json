@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "sanupcraft:steel_plate",
+    "G": "minecraft:glass",
+    "R": "minecraft:redstone",
+    "F": "sanupcraft:reinforced_machine_frame",
+    "C": "minecraft:chest"
+  },
+  "pattern": [
+    "PGP",
+    "RFR",
+    "PCP"
+  ],
+  "result": {
+    "id": "sanupcraft:storage_terminal"
+  }
+}

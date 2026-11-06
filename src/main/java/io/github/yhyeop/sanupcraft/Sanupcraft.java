@@ -29,6 +29,7 @@ import io.github.yhyeop.sanupcraft.power.ModPower;
 import io.github.yhyeop.sanupcraft.server.ModServer;
 import io.github.yhyeop.sanupcraft.production.ModProduction;
 import io.github.yhyeop.sanupcraft.transport.ModTransport;
+import io.github.yhyeop.sanupcraft.storage.ModStorage;
 import io.github.yhyeop.sanupcraft.world.ModWorld;
 
 public class Sanupcraft implements ModInitializer {
@@ -59,6 +60,8 @@ public class Sanupcraft implements ModInitializer {
 		// M8 묶음 A: 대형 보일러 · 증기 기관차
 		ModIndustry.init();
 		ModTransport.init();
+		// M7 보관 · 제작
+		ModStorage.init();
 		ModTab.init();
 		CorpseGravesCompat.init();
 		PlaytestCommand.init();

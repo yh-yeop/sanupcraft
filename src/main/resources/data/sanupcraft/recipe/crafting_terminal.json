@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "sanupcraft:storage_terminal",
+    "minecraft:crafting_table",
+    "sanupcraft:steel_plate"
+  ],
+  "result": {
+    "id": "sanupcraft:crafting_terminal"
+  }
+}

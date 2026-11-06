@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:ender_portable_terminal"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:ender_portable_terminal"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.portable_terminal.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.portable_terminal.description"
+    },
+    "frame": "challenge"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ],
+  "parent": "sanupcraft:storage_terminal"
+}

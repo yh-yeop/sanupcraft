@@ -47,6 +47,7 @@ import io.github.yhyeop.sanupcraft.server.ModServer;
 import io.github.yhyeop.sanupcraft.production.ModProduction;
 import io.github.yhyeop.sanupcraft.industry.ModIndustry;
 import io.github.yhyeop.sanupcraft.transport.ModTransport;
+import io.github.yhyeop.sanupcraft.storage.ModStorage;
 
 /**
  * 싱글 실테스트용: {@code /sanupcraft playtest <단계>} (OP). 그 단계를 시험하는 데 필요한 장비 · 재료를 주고,
@@ -70,7 +71,8 @@ public final class PlaytestCommand {
 		PRODUCTION("생산 · 장비: 작물 수확기 · 벌목기 · 증기 드릴 · 전기톱 · 제트팩", null, PlaytestCommand::kitProduction),
 		// M9b 몹 분쇄기 · 경험치 탱크 · 배낭
 		PRODUCTION2("생산 2: 몹 분쇄기 · 경험치 탱크 · 배낭", null, PlaytestCommand::kitProduction2),
-		INDUSTRY("산업 규모: 대형 보일러 · 증기 기관차 · 화물 열차", null, PlaytestCommand::kitIndustry);
+		INDUSTRY("산업 규모: 대형 보일러 · 증기 기관차 · 화물 열차", null, PlaytestCommand::kitIndustry),
+		STORAGE("보관 · 제작: 서랍 · 창고 네트워크 · 자동 제작", null, PlaytestCommand::kitStorage);
 
 		final String description;
 		final ResourceKey<Level> dimension;
@@ -434,4 +436,22 @@ public final class PlaytestCommand {
 		give(p, Items.IRON_SWORD, 1);
 		food(p);
 	}
+
+	/** M7 보관 · 제작: 서랍 · 업그레이드 · 창고 네트워크 · 단말 · 자동 제작대 · 재고 유지기 · 휴대 단말. */
+	private static void kitStorage(ServerPlayer p) {
+		give(p, ModStorage.IRON_DRAWER.asItem(), 4);
+		give(p, ModStorage.STEEL_DRAWER.asItem(), 2);
+		give(p, ModStorage.DRAWER_UPGRADE, 4);
+		give(p, ModStorage.DRAWER_VOID_UPGRADE, 1);
+		give(p, ModStorage.STORAGE_CABLE.asItem(), 32);
+		give(p, ModStorage.STORAGE_TERMINAL.asItem(), 1);
+		give(p, ModStorage.CRAFTING_TERMINAL.asItem(), 1);
+		give(p, ModStorage.AUTOCRAFTER.asItem(), 2);
+		give(p, ModStorage.STOCKER.asItem(), 1);
+		give(p, ModStorage.PORTABLE_TERMINAL, 1);
+		give(p, ModStorage.ENDER_PORTABLE_TERMINAL, 1);
+		give(p, ModLogistics.ENDER_ANCHOR.asItem(), 1);
+		give(p, Items.POPPED_CHORUS_FRUIT, 8);
+		give(p, Items.OAK_LOG, 64);
+		give(p, Items.COBBLESTONE, 256);
 }

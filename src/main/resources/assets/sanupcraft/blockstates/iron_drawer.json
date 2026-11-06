@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "sanupcraft:block/iron_drawer"
+    },
+    "facing=east": {
+      "model": "sanupcraft:block/iron_drawer",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "sanupcraft:block/iron_drawer",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "sanupcraft:block/iron_drawer",
+      "y": 270
+    }
+  }
+}

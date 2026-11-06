@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "sanupcraft:iron_plate",
+    "C": "minecraft:chest",
+    "S": "sanupcraft:steel_ingot"
+  },
+  "pattern": [
+    "PPP",
+    "PCP",
+    "PSP"
+  ],
+  "result": {
+    "id": "sanupcraft:iron_drawer"
+  }
+}

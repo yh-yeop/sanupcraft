@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "sanupcraft:iron_plate",
+    "R": "minecraft:redstone",
+    "G": "minecraft:gold_ingot"
+  },
+  "pattern": [
+    "PPP",
+    "RGR",
+    "PPP"
+  ],
+  "result": {
+    "id": "sanupcraft:storage_cable",
+    "count": 8
+  }
+}
