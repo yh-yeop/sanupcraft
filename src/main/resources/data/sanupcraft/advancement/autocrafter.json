@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:autocrafter"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:autocrafter"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.autocrafter.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.autocrafter.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ],
+  "parent": "sanupcraft:storage_terminal"
+}

@@ -22,6 +22,8 @@
     "sanupcraft:steel_drawer",
     "sanupcraft:storage_cable",
     "sanupcraft:storage_terminal",
-    "sanupcraft:crafting_terminal"
+    "sanupcraft:crafting_terminal",
+    "sanupcraft:autocrafter",
+    "sanupcraft:stocker"
   ]
 }

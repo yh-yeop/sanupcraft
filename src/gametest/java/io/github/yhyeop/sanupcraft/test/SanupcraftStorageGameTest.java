@@ -10,6 +10,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerInput;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
@@ -23,15 +24,20 @@ import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.state.properties.ChestType;
 
 import io.github.yhyeop.sanupcraft.config.SanupcraftConfig;
+import io.github.yhyeop.sanupcraft.core.ModItems;
+import io.github.yhyeop.sanupcraft.factory.MachineBlockEntity;
+import io.github.yhyeop.sanupcraft.factory.ModMachines;
+import io.github.yhyeop.sanupcraft.storage.AutocrafterBlockEntity;
 import io.github.yhyeop.sanupcraft.storage.DrawerBlock;
 import io.github.yhyeop.sanupcraft.storage.DrawerBlockEntity;
 import io.github.yhyeop.sanupcraft.storage.DrawerContents;
 import io.github.yhyeop.sanupcraft.storage.ModStorage;
+import io.github.yhyeop.sanupcraft.storage.StockerBlockEntity;
 import io.github.yhyeop.sanupcraft.storage.StorageNetwork;
 import io.github.yhyeop.sanupcraft.storage.TerminalBlockEntity;
 import io.github.yhyeop.sanupcraft.storage.TerminalMenu;
 
-/** M7 보관 · 제작 검사: 저장 서랍 (S1), 창고 네트워크 · 단말 · 제작 단말 (S2 · S3). */
+/** M7 보관 · 제작 검사: 저장 서랍 (S1), 창고 네트워크 · 단말 · 제작 단말 (S2 · S3), 자동 제작대 · 재고 유지기 (S4 · S5). */
 public class SanupcraftStorageGameTest {
 	// ---- S1 서랍 ----
 
@@ -271,6 +277,127 @@ public class SanupcraftStorageGameTest {
 		BlockEntity copy = BlockEntity.loadStatic(terminal.getBlockPos(), terminal.getBlockState(), terminal.saveWithFullMetadata(registries), registries);
 		helper.assertTrue(copy instanceof TerminalBlockEntity t && t.steamStored() == TerminalBlockEntity.STEAM_CAPACITY && t.lock().isLocked()
 				&& t.lock().isOwner(owner), "증기 · 잠금이 저장되지 않음");
+		helper.succeed();
+	}
+
+	// ---- S4 · S5 자동 제작대 · 재고 유지기 ----
+
+	private static AutocrafterBlockEntity autocrafter(GameTestHelper helper, BlockPos pos, Item... grid) {
+		helper.setBlock(pos, ModStorage.AUTOCRAFTER);
+		AutocrafterBlockEntity crafter = helper.getBlockEntity(pos, AutocrafterBlockEntity.class);
+		for (int i = 0; i < grid.length; i++) {
+			if (grid[i] != null) {
+				crafter.pattern().setSample(i, new ItemStack(grid[i]));
+			}
+		}
+		return crafter;
+	}
+
+	/** 견본(원목 → 판자): 증기가 없으면 안 만들고, 증기 20씩 써서 만든다. 견본에 안 맞는 재료는 안 받는다. */
+	@GameTest
+	public void autocrafterCraftsWithSteam(GameTestHelper helper) {
+		AutocrafterBlockEntity crafter = autocrafter(helper, new BlockPos(1, 1, 1), Items.OAK_LOG);
+		helper.assertTrue(crafter.patternResult().is(Items.OAK_PLANKS) && crafter.patternResult().getCount() == 4, "견본 결과: " + crafter.patternResult());
+		helper.assertFalse(crafter.canPlaceItem(0, new ItemStack(Items.DIRT)), "견본과 다른 재료를 받음");
+		helper.assertFalse(crafter.canPlaceItem(1, new ItemStack(Items.OAK_LOG)), "견본이 빈 칸에 재료를 받음");
+		helper.assertTrue(crafter.canPlaceItem(0, new ItemStack(Items.OAK_LOG)), "맞는 재료를 안 받음");
+		crafter.setItem(0, new ItemStack(Items.OAK_LOG, 2));
+		helper.assertFalse(crafter.tryCraft(helper.getLevel()), "증기 없이 만듦");
+		crafter.acceptSteam(30);
+		helper.assertTrue(crafter.tryCraft(helper.getLevel()), "증기가 있는데 못 만듦");
+		helper.assertValueEqual(crafter.output().getCount(), 4, "판자 수");
+		helper.assertValueEqual(crafter.steamStored(), 10, "쓴 증기");
+		helper.assertFalse(crafter.tryCraft(helper.getLevel()), "증기 20 없이 만듦");
+		crafter.acceptSteam(100);
+		// 틱으로도 돈다
+		helper.succeedWhen(() -> {
+			helper.assertValueEqual(crafter.output().getCount(), 8, "틱으로 만든 판자");
+			helper.assertTrue(crafter.getItem(0).isEmpty(), "원목이 남음");
+		});
+	}
+
+	/** 같은 재료 칸이 여럿이면 깔때기는 가장 적은 칸에만 넣는다 (판자 2x2 → 작업대). 아래로는 결과만 뺀다. */
+	@GameTest
+	public void autocrafterSpreadsInputs(GameTestHelper helper) {
+		Item p = Items.OAK_PLANKS;
+		AutocrafterBlockEntity crafter = autocrafter(helper, new BlockPos(1, 1, 1), p, p, null, p, p);
+		helper.assertTrue(crafter.patternResult().is(Items.CRAFTING_TABLE), "견본 결과: " + crafter.patternResult());
+		crafter.setItem(0, new ItemStack(p, 1));
+		helper.assertFalse(crafter.canPlaceItem(0, new ItemStack(p)), "많은 칸에 또 받음");
+		helper.assertTrue(crafter.canPlaceItem(1, new ItemStack(p)), "적은 칸이 안 받음");
+		helper.assertValueEqual(crafter.getSlotsForFace(Direction.DOWN).length, 1, "아래 면 칸 수");
+		helper.assertFalse(crafter.canTakeItemThroughFace(0, new ItemStack(p), Direction.DOWN), "재료를 아래로 뺌");
+		helper.assertValueEqual(crafter.loadedSets(), 0, "한 칸만 찼는데 몫이 있음");
+		for (int slot : new int[] {1, 3, 4}) {
+			crafter.setItem(slot, new ItemStack(p, 1));
+		}
+		helper.assertValueEqual(crafter.loadedSets(), 1, "몫");
+		crafter.acceptSteam(20);
+		helper.assertTrue(crafter.tryCraft(helper.getLevel()) && crafter.output().is(Items.CRAFTING_TABLE), "작업대를 못 만듦");
+		helper.succeed();
+	}
+
+	/** 재고 유지기 (1,1,1) + 관 (2,1,1) + 상자 (3,1,1). 옆(남쪽) 자동 제작대가 원목으로 판자를 만들어 8개를 채운다. */
+	@GameTest(maxTicks = 400)
+	public void stockerRefillsWithAutocrafter(GameTestHelper helper) {
+		BlockPos stockerPos = new BlockPos(1, 1, 1);
+		helper.setBlock(stockerPos, ModStorage.STOCKER);
+		helper.setBlock(new BlockPos(2, 1, 1), ModStorage.STORAGE_CABLE);
+		helper.setBlock(new BlockPos(3, 1, 1), Blocks.CHEST);
+		ChestBlockEntity chest = helper.getBlockEntity(new BlockPos(3, 1, 1), ChestBlockEntity.class);
+		chest.setItem(0, new ItemStack(Items.OAK_LOG, 16));
+		AutocrafterBlockEntity crafter = autocrafter(helper, new BlockPos(1, 1, 2), Items.OAK_LOG);
+		crafter.acceptSteam(AutocrafterBlockEntity.STEAM_CAPACITY);
+		StockerBlockEntity stocker = helper.getBlockEntity(stockerPos, StockerBlockEntity.class);
+		stocker.target().setSample(0, new ItemStack(Items.OAK_PLANKS));
+		stocker.setTargetCount(8);
+		helper.succeedWhen(() -> {
+			helper.assertTrue(chest.countItem(Items.OAK_PLANKS) >= 8, "판자가 모자람: " + chest.countItem(Items.OAK_PLANKS));
+			helper.assertValueEqual(stocker.status(), StockerBlockEntity.Status.STOCKED, "상태");
+			helper.assertTrue(chest.countItem(Items.OAK_LOG) >= 16 - 4, "원목을 너무 많이 씀: " + chest.countItem(Items.OAK_LOG));
+		});
+	}
+
+	/** 재고 유지기 옆 분쇄기: 철가루가 모자라면 네트워크의 원석 철을 넣고, 나온 가루를 거둔다. 재료가 없으면 MISSING. */
+	@GameTest(maxTicks = 600)
+	public void stockerFeedsMachine(GameTestHelper helper) {
+		BlockPos stockerPos = new BlockPos(1, 1, 1);
+		helper.setBlock(stockerPos, ModStorage.STOCKER);
+		helper.setBlock(new BlockPos(2, 1, 1), ModStorage.STORAGE_CABLE);
+		helper.setBlock(new BlockPos(3, 1, 1), Blocks.CHEST);
+		ChestBlockEntity chest = helper.getBlockEntity(new BlockPos(3, 1, 1), ChestBlockEntity.class);
+		helper.setBlock(new BlockPos(1, 1, 2), ModMachines.CRUSHER);
+		MachineBlockEntity crusher = helper.getBlockEntity(new BlockPos(1, 1, 2), MachineBlockEntity.class);
+		crusher.setItem(MachineBlockEntity.SLOT_FUEL, new ItemStack(Items.COAL, 8));
+		StockerBlockEntity stocker = helper.getBlockEntity(stockerPos, StockerBlockEntity.class);
+		stocker.target().setSample(0, new ItemStack(ModItems.IRON_DUST));
+		stocker.setTargetCount(4);
+		stocker.cycle(helper.getLevel());
+		helper.assertValueEqual(stocker.status(), StockerBlockEntity.Status.MISSING, "재료 없을 때 상태");
+		chest.setItem(0, new ItemStack(Items.RAW_IRON, 8));
+		helper.succeedWhen(() -> {
+			helper.assertTrue(chest.countItem(ModItems.IRON_DUST) >= 4, "철가루가 모자람: " + chest.countItem(ModItems.IRON_DUST));
+			helper.assertTrue(chest.countItem(Items.RAW_IRON) < 8, "원석을 안 씀");
+		});
+	}
+
+	/** 자동 제작대 · 재고 유지기 저장 · 읽기 (견본 · 재료 · 증기 · 목표 수). 자동 제작대는 네트워크 보관함이 아니다. */
+	@GameTest
+	public void autocrafterAndStockerSaveLoad(GameTestHelper helper) {
+		AutocrafterBlockEntity crafter = autocrafter(helper, new BlockPos(1, 1, 1), Items.OAK_LOG);
+		crafter.setItem(0, new ItemStack(Items.OAK_LOG, 5));
+		crafter.acceptSteam(123);
+		helper.setBlock(new BlockPos(3, 1, 1), ModStorage.STOCKER);
+		StockerBlockEntity stocker = helper.getBlockEntity(new BlockPos(3, 1, 1), StockerBlockEntity.class);
+		stocker.target().setSample(0, new ItemStack(Items.TORCH));
+		stocker.setTargetCount(321);
+		var registries = helper.getLevel().registryAccess();
+		BlockEntity c = BlockEntity.loadStatic(crafter.getBlockPos(), crafter.getBlockState(), crafter.saveWithFullMetadata(registries), registries);
+		BlockEntity s = BlockEntity.loadStatic(stocker.getBlockPos(), stocker.getBlockState(), stocker.saveWithFullMetadata(registries), registries);
+		helper.assertTrue(c instanceof AutocrafterBlockEntity a && a.pattern().getItem(0).is(Items.OAK_LOG) && a.getItem(0).getCount() == 5
+				&& a.steamStored() == 123, "자동 제작대가 다름");
+		helper.assertTrue(s instanceof StockerBlockEntity st && st.target().getItem(0).is(Items.TORCH) && st.targetCount() == 321, "재고 유지기가 다름");
+		helper.assertFalse(StorageNetwork.isStorage(crafter), "자동 제작대가 보관함으로 보임");
 		helper.succeed();
 	}
 }

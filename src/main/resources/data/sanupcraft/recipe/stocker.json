@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "sanupcraft:steel_plate",
+    "C": "minecraft:comparator",
+    "O": "minecraft:observer",
+    "W": "sanupcraft:warden_heart",
+    "H": "minecraft:hopper"
+  },
+  "pattern": [
+    "PCP",
+    "OWO",
+    "PHP"
+  ],
+  "result": {
+    "id": "sanupcraft:stocker"
+  }
+}

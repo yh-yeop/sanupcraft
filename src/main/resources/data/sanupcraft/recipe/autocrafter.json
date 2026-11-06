@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "sanupcraft:steel_plate",
+    "C": "minecraft:crafting_table",
+    "G": "sanupcraft:gear_part",
+    "F": "sanupcraft:reinforced_machine_frame",
+    "H": "minecraft:hopper"
+  },
+  "pattern": [
+    "PCP",
+    "GFG",
+    "PHP"
+  ],
+  "result": {
+    "id": "sanupcraft:autocrafter"
+  }
+}

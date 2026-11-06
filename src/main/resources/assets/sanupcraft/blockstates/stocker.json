@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "sanupcraft:block/stocker"
+    },
+    "facing=east": {
+      "model": "sanupcraft:block/stocker",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "sanupcraft:block/stocker",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "sanupcraft:block/stocker",
+      "y": 270
+    }
+  }
+}

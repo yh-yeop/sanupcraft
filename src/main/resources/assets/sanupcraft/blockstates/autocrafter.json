@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "sanupcraft:block/autocrafter"
+    },
+    "facing=east": {
+      "model": "sanupcraft:block/autocrafter",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "sanupcraft:block/autocrafter",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "sanupcraft:block/autocrafter",
+      "y": 270
+    }
+  }
+}

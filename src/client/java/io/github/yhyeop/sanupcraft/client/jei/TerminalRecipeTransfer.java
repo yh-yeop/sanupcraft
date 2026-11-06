@@ -42,7 +42,7 @@ public class TerminalRecipeTransfer implements IRecipeTransferHandler<TerminalMe
 
 	/** 제작 단말 · 자동 제작대를 JEI 제작 레시피의 작업대 목록에 넣는다. */
 	public static void addCatalysts(IRecipeCatalystRegistration registration) {
-		registration.addCraftingStation(RecipeTypes.CRAFTING, ModStorage.CRAFTING_TERMINAL);
+		registration.addCraftingStation(RecipeTypes.CRAFTING, ModStorage.CRAFTING_TERMINAL, ModStorage.AUTOCRAFTER);
 	}
 
 	@Override

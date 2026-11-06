@@ -11,6 +11,8 @@ import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -21,7 +23,9 @@ import net.minecraft.world.level.material.MapColor;
 import io.github.yhyeop.sanupcraft.Sanupcraft;
 import io.github.yhyeop.sanupcraft.core.ModRegistry;
 
-/** M7 보관 · 제작 편의: 저장 서랍 (S1), 창고 관 · 창고 단말 · 제작 단말 (S2 · S3). */
+/**
+ * M7 보관 · 제작 편의: 저장 서랍 (S1), 창고 관 · 창고 단말 · 제작 단말 (S2 · S3),
+ * 자동 제작대 · 재고 유지기 (S4 · S5). */
 public final class ModStorage {
 	/** 부순 서랍에 남는 내용물. */
 	public static final DataComponentType<DrawerContents> DRAWER_CONTENTS = Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE,
@@ -58,6 +62,24 @@ public final class ModStorage {
 
 	public static final ExtendedMenuType<TerminalMenu, TerminalMenu.OpenData> TERMINAL_MENU = Registry.register(
 			BuiltInRegistries.MENU, Sanupcraft.id("storage_terminal"), new ExtendedMenuType<>(TerminalMenu::new, TerminalMenu.OpenData.STREAM_CODEC));
+
+	// ---- S4 · S5 자동 제작 ----
+	public static final StorageMachineBlock<AutocrafterBlockEntity> AUTOCRAFTER = ModRegistry.block("autocrafter",
+			p -> new StorageMachineBlock<>(AutocrafterBlockEntity::new, () -> ModStorage.AUTOCRAFTER_BLOCK_ENTITY, AutocrafterBlockEntity::serverTick, p),
+			machineProperties());
+	public static final StorageMachineBlock<StockerBlockEntity> STOCKER = ModRegistry.block("stocker",
+			p -> new StorageMachineBlock<>(StockerBlockEntity::new, () -> ModStorage.STOCKER_BLOCK_ENTITY, StockerBlockEntity::serverTick, p),
+			machineProperties());
+
+	public static final BlockEntityType<AutocrafterBlockEntity> AUTOCRAFTER_BLOCK_ENTITY = Registry.register(
+			BuiltInRegistries.BLOCK_ENTITY_TYPE, Sanupcraft.id("autocrafter"), new BlockEntityType<>(AutocrafterBlockEntity::new, Set.of(AUTOCRAFTER)));
+	public static final BlockEntityType<StockerBlockEntity> STOCKER_BLOCK_ENTITY = Registry.register(
+			BuiltInRegistries.BLOCK_ENTITY_TYPE, Sanupcraft.id("stocker"), new BlockEntityType<>(StockerBlockEntity::new, Set.of(STOCKER)));
+
+	public static final MenuType<AutocrafterMenu> AUTOCRAFTER_MENU = Registry.register(
+			BuiltInRegistries.MENU, Sanupcraft.id("autocrafter"), new MenuType<>(AutocrafterMenu::new, FeatureFlags.VANILLA_SET));
+	public static final MenuType<StockerMenu> STOCKER_MENU = Registry.register(
+			BuiltInRegistries.MENU, Sanupcraft.id("stocker"), new MenuType<>(StockerMenu::new, FeatureFlags.VANILLA_SET));
 
 	private ModStorage() {
 	}

@@ -25,6 +25,8 @@ public final class StorageClient {
 		BlockEntityRenderers.register(ModStorage.DRAWER_BLOCK_ENTITY, DrawerRenderer::new);
 		ItemTooltipCallback.EVENT.register((stack, context, flag, lines) -> addDrawerTooltip(stack, lines));
 		MenuScreens.register(ModStorage.TERMINAL_MENU, TerminalScreen::new);
+		MenuScreens.register(ModStorage.AUTOCRAFTER_MENU, AutocrafterScreen::new);
+		MenuScreens.register(ModStorage.STOCKER_MENU, StockerScreen::new);
 		ClientPlayNetworking.registerGlobalReceiver(StoragePayloads.Contents.TYPE, (payload, context) -> {
 			if (context.player().containerMenu instanceof TerminalMenu menu && menu.containerId == payload.containerId()) {
 				menu.setClientEntries(payload.entries());

@@ -30,8 +30,10 @@ import io.github.yhyeop.sanupcraft.logistics.FilterHopperBlockEntity;
 import io.github.yhyeop.sanupcraft.mining.QuarryBlockEntity;
 import io.github.yhyeop.sanupcraft.power.GeothermalVentBlockEntity;
 import io.github.yhyeop.sanupcraft.power.SteamChargerBlockEntity;
+import io.github.yhyeop.sanupcraft.storage.AutocrafterBlockEntity;
 import io.github.yhyeop.sanupcraft.storage.DrawerBlockEntity;
 import io.github.yhyeop.sanupcraft.storage.PortableTerminalItem;
+import io.github.yhyeop.sanupcraft.storage.StockerBlockEntity;
 import io.github.yhyeop.sanupcraft.storage.StorageNetwork;
 import io.github.yhyeop.sanupcraft.storage.TerminalBlockEntity;
 
@@ -90,6 +92,12 @@ public final class SanupcraftConfig {
 	public int terminalSteamPerTick = TerminalBlockEntity.STEAM_PER_TICK;
 	/** 휴대 단말 (기본판): 같은 차원에서 열 수 있는 거리. */
 	public int portableTerminalRange = PortableTerminalItem.RANGE;
+	/** 자동 제작대: 한 번 만들 때 드는 증기. */
+	public int autocrafterSteamPerCraft = AutocrafterBlockEntity.STEAM_PER_CRAFT;
+	/** 자동 제작대: 만들어 보는 간격(틱). */
+	public int autocrafterTicksPerCraft = AutocrafterBlockEntity.TICKS_PER_CRAFT;
+	/** 재고 유지기: 거두고 채우는 간격(틱). */
+	public int stockerTicksPerCycle = StockerBlockEntity.TICKS_PER_CYCLE;
 
 	/** float 상수를 0.05F -> 0.05처럼 보이는 그대로의 double로 (파일에 0.0500000007...이 안 찍히게). */
 	private static double asDouble(float value) {
@@ -142,7 +150,13 @@ public final class SanupcraftConfig {
 			new Option("storage", "terminalSteamPerTick", TerminalBlockEntity.STEAM_PER_TICK, 0, 100, true,
 					c -> c.terminalSteamPerTick, (c, v) -> c.terminalSteamPerTick = (int) v),
 			new Option("storage", "portableTerminalRange", PortableTerminalItem.RANGE, 1, 4096, true,
-					c -> c.portableTerminalRange, (c, v) -> c.portableTerminalRange = (int) v));
+					c -> c.portableTerminalRange, (c, v) -> c.portableTerminalRange = (int) v),
+			new Option("autocrafter", "steamPerCraft", AutocrafterBlockEntity.STEAM_PER_CRAFT, 0, AutocrafterBlockEntity.STEAM_CAPACITY, true,
+					c -> c.autocrafterSteamPerCraft, (c, v) -> c.autocrafterSteamPerCraft = (int) v),
+			new Option("autocrafter", "ticksPerCraft", AutocrafterBlockEntity.TICKS_PER_CRAFT, 1, 1200, true,
+					c -> c.autocrafterTicksPerCraft, (c, v) -> c.autocrafterTicksPerCraft = (int) v),
+			new Option("stocker", "ticksPerCycle", StockerBlockEntity.TICKS_PER_CYCLE, 1, 1200, true,
+					c -> c.stockerTicksPerCycle, (c, v) -> c.stockerTicksPerCycle = (int) v));
 
 	/** 읽은 결과: 설정, 경고 문구, 파일에 빠진 키가 있었는지, 파일을 새로 썼는지. */
 	public record Loaded(SanupcraftConfig config, List<String> warnings, boolean missingKeys, boolean wroteFile) {

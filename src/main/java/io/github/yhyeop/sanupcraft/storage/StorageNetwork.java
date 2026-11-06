@@ -106,7 +106,7 @@ public final class StorageNetwork {
 
 	/** 네트워크가 보관함으로 보는 블록인가 (관이 이어지는 모양에도 쓴다). */
 	public static boolean isStorage(@Nullable BlockEntity be) {
-		return be instanceof DrawerBlockEntity || be instanceof Container;
+		return be instanceof DrawerBlockEntity || (be instanceof Container && !(be instanceof AutocrafterBlockEntity));
 	}
 
 	private static void addStore(Level level, BlockPos pos, Direction face, List<Store> stores) {
