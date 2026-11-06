@@ -11,30 +11,32 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.control.FlyingMoveControl;
 import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
-import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomFlyingGoal;
 import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
+import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
+import net.minecraft.world.entity.ai.navigation.PathNavigation;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.throwableitemprojectile.Snowball;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * 잿불 정령 (확장 3 C2): 네더 현무암 삼각주 · 황무지에 떠다니는 불꽃 핵. 블레이즈처럼 천천히 떨어지고 땅에서 조금 떠 있으며,
- * 대상이 높으면 따라 오른다. 불씨({@link EmberBolt}) 셋을 연달아 쏜다 (과열 I). 불에 안 타고, 물 · 비에 닿으면 다치며,
+ * 잿불 정령 (확장 3 C2): 네더 현무암 삼각주 · 황무지에 떠다니는 불꽃 핵. 벌 · 알레이처럼 날아다니고 (멈추면 제자리에 뜸),
+ * 대상과 거리를 두고 불씨({@link EmberBolt}) 셋을 연달아 쏜다 (과열 I). 불에 안 타고, 물 · 비에 닿으면 다치며,
  * 눈덩이는 {@link #SNOWBALL_DAMAGE} 피해를 준다.
  */
 public class EmberWisp extends EliteMonster {
 	public static final int OVERHEAT_TICKS = 100;
 	public static final int OVERHEAT_LEVEL = 1;
 	public static final float SNOWBALL_DAMAGE = 4.0F;
-	/** 땅에서 이만큼(칸) 떠 있으려 한다. */
-	private static final double HOVER_HEIGHT = 1.4;
 
 	public EmberWisp(EntityType<? extends EmberWisp> type, Level level) {
 		super(type, level);
@@ -42,6 +44,7 @@ public class EmberWisp extends EliteMonster {
 		setPathfindingMalus(PathType.LAVA, 8.0F);
 		setPathfindingMalus(PathType.FIRE_IN_NEIGHBOR, 0.0F);
 		setPathfindingMalus(PathType.FIRE, 0.0F);
+		this.moveControl = new FlyingMoveControl<>(this, 20, true);
 		this.xpReward = 8;
 	}
 
@@ -50,13 +53,14 @@ public class EmberWisp extends EliteMonster {
 				.add(Attributes.MAX_HEALTH, 14.0)
 				.add(Attributes.ATTACK_DAMAGE, 3.0)
 				.add(Attributes.MOVEMENT_SPEED, 0.25)
+				.add(Attributes.FLYING_SPEED, 0.5)
 				.add(Attributes.FOLLOW_RANGE, 32.0);
 	}
 
 	@Override
 	protected void registerGoals() {
 		goalSelector.addGoal(4, new BoltAttackGoal(this));
-		goalSelector.addGoal(7, new WaterAvoidingRandomStrollGoal(this, 1.0, 0.0F));
+		goalSelector.addGoal(7, new WaterAvoidingRandomFlyingGoal(this, 1.0));
 		goalSelector.addGoal(8, new LookAtPlayerGoal(this, Player.class, 8.0F));
 		goalSelector.addGoal(8, new RandomLookAroundGoal(this));
 		targetSelector.addGoal(1, new HurtByTargetGoal(this).setAlertOthers());
@@ -78,15 +82,16 @@ public class EmberWisp extends EliteMonster {
 	}
 
 	@Override
+	protected PathNavigation createNavigation(Level level) {
+		FlyingPathNavigation navigation = new FlyingPathNavigation(this, level);
+		navigation.setCanOpenDoors(false);
+		navigation.setCanFloat(false);
+		return navigation;
+	}
+
+	@Override
 	public void aiStep() {
-		// 천천히 떨어지고, 땅 가까이면 떠오른다
-		Vec3 motion = getDeltaMovement();
-		if (!onGround() && motion.y < 0.0) {
-			setDeltaMovement(motion.multiply(1.0, 0.6, 1.0));
-		}
-		if (!level().isClientSide() && !isNoAi() && heightAboveGround() < HOVER_HEIGHT) {
-			setDeltaMovement(getDeltaMovement().add(0.0, (0.12 - getDeltaMovement().y) * 0.25, 0.0));
-		}
+		super.aiStep();
 		if (level().isClientSide()) {
 			if (random.nextInt(3) == 0) {
 				level().addParticle(ParticleTypes.FLAME, getRandomX(0.4), getY() + 0.1 + random.nextDouble() * 0.6, getRandomZ(0.4), 0.0, 0.01, 0.0);
@@ -95,30 +100,10 @@ public class EmberWisp extends EliteMonster {
 				level().addParticle(ParticleTypes.SMOKE, getRandomX(0.3), getY() + 1.0, getRandomZ(0.3), 0.0, 0.02, 0.0);
 			}
 		}
-		super.aiStep();
-	}
-
-	/** 바로 아래 단단한 블록까지 거리 (3칸까지만 본다). */
-	private double heightAboveGround() {
-		BlockPos.MutableBlockPos pos = blockPosition().mutable();
-		for (int i = 0; i <= 3; i++) {
-			if (!level().getBlockState(pos).getCollisionShape(level(), pos).isEmpty()) {
-				return getY() - (pos.getY() + 1.0);
-			}
-			pos.move(0, -1, 0);
-		}
-		return 4.0;
 	}
 
 	@Override
-	protected void customServerAiStep(ServerLevel level) {
-		LivingEntity target = getTarget();
-		if (target != null && target.getEyeY() > getEyeY() + 1.0 && canAttack(target)) {
-			Vec3 motion = getDeltaMovement();
-			setDeltaMovement(motion.add(0.0, (0.3 - motion.y) * 0.3, 0.0));
-			needsSync = true;
-		}
-		super.customServerAiStep(level);
+	protected void checkFallDamage(double ya, boolean onGround, BlockState onState, BlockPos pos) {
 	}
 
 	/** 눈덩이에 약하다 (바닐라 눈덩이는 블레이즈가 아니면 피해 0). */
@@ -224,9 +209,9 @@ public class EmberWisp extends EliteMonster {
 					}
 				}
 				wisp.getLookControl().setLookAt(target, 10.0F, 10.0F);
-				// 너무 붙지 않게 6칸 밖에서 맴돈다
+				// 8칸 안에서는 제자리에 떠서 쏘고, 멀면 대상 머리 위쪽으로 다가간다
 				if (distance > 64.0) {
-					wisp.getMoveControl().setWantedPosition(target.getX(), target.getY() + 1.0, target.getZ(), 1.0);
+					wisp.getMoveControl().setWantedPosition(target.getX(), target.getY() + 2.0, target.getZ(), 1.0);
 				}
 			} else if (lastSeen < 5) {
 				wisp.getMoveControl().setWantedPosition(target.getX(), target.getY(), target.getZ(), 1.0);

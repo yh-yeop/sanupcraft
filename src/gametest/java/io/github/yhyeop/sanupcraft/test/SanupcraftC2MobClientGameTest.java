@@ -39,11 +39,11 @@ public class SanupcraftC2MobClientGameTest implements FabricClientGameTest {
 
 			server.runCommand("tp @a 0.5 -57.5 9.5 180 10");
 			shot(context, singleplayer, "front");
-			server.runCommand("tp @a -5.0 -58.0 3.6 180 8");
+			server.runCommand("tp @a -5.0 -57.9 5.2 180 14");
 			shot(context, singleplayer, "automaton");
-			server.runCommand("tp @a 0.75 -58.6 2.8 180 6");
+			server.runCommand("tp @a 0.75 -58.4 3.6 180 12");
 			shot(context, singleplayer, "wisp");
-			server.runCommand("tp @a 6.25 -57.6 4.3 180 4");
+			server.runCommand("tp @a 6.25 -57.3 5.8 180 10");
 			shot(context, singleplayer, "shade");
 			server.runCommand("tp @a -9.5 -57.8 4.0 225 10");
 			shot(context, singleplayer, "side");
@@ -66,7 +66,7 @@ public class SanupcraftC2MobClientGameTest implements FabricClientGameTest {
 			context.waitTicks(2);
 			hideHud(context);
 			context.takeScreenshot(TestScreenshotOptions.of("sanupcraft-c2-attack").withSize(1280, 720).disableCounterPrefix());
-			server.runCommand("tp @a -5.0 -58.0 3.6 180 8");
+			server.runCommand("tp @a -5.0 -57.9 5.2 180 14");
 			shot(context, singleplayer, "automaton-aggressive");
 
 			// 밤: 빛나는 부분 (정예는 더 밝고 테두리가 빛난다)

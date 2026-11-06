@@ -3351,21 +3351,21 @@ def rust_automaton_textures():
     torso.put("front", 5, 9, RA_IRON[4])
     torso.vline("top", 5, RA_IRON[1])
 
-    # 가슴 계기판 8x5x1: 놋쇠 테 안에 둥근 계기 둘 (바늘이 빛남)
+    # 가슴 계기판 8x5x1: 놋쇠 판, 왼쪽에 둥근 압력계 하나 (바늘이 빛남), 오른쪽은 환기 창살
     plate = M11aBox(im, rnd, 32, 16, 8, 5, 1)
     plate.fill(["#2e2210", "#4a3818", "#6e5524", "#94733a", "#b89350"])
-    for cx in (2, 5):
-        for y in range(5):
-            for x in range(cx - 1, cx + 2):
-                dd = math.hypot(x - cx, y - 2)
-                if dd < 1.6:
-                    plate.put("front", x, y, "#150f06" if dd > 0.9 else RA_GLOW[0])
-                    if dd < 0.9:
-                        c2_glow_px(glow, plate, "front", x, y, RA_GLOW[2])
-        plate.put("front", cx, 1, RA_GLOW[3])
-        c2_glow_px(glow, plate, "front", cx, 1, RA_GLOW[4])
-    plate.vline("front", 7, "#2e2210")
-    plate.vline("front", 0, "#2e2210")
+    for y in range(5):
+        for x in range(0, 4):
+            dd = math.hypot(x - 1.5, y - 2)
+            if dd < 1.9:
+                plate.put("front", x, y, "#150f06" if dd > 1.2 else "#d8c9a0")
+    for x, y in ((1, 2), (2, 1)):
+        plate.put("front", x, y, RA_GLOW[1])
+        c2_glow_px(glow, plate, "front", x, y, RA_GLOW[2])
+    for x in (4, 5, 6):
+        plate.vline("front", x, "#150f06" if x % 2 == 0 else "#94733a", 1, 3)
+    plate.put("front", 6, 4, RA_GLOW[2])
+    c2_glow_px(glow, plate, "front", 6, 4, RA_GLOW[3])
 
     # 굴뚝 2x4x2: 그을린 끝, 안에 불씨
     stack = box(50, 16, 2, 4, 2, 0.25)

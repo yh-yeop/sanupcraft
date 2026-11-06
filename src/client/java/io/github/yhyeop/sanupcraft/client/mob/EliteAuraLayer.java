@@ -33,7 +33,7 @@ public class EliteAuraLayer extends RenderLayer<MobRenderState, EntityModel<MobR
 			return;
 		}
 		float t = state.ageInTicks;
-		float shimmer = 0.55F + 0.2F * Mth.sin(t * 0.25F);
+		float shimmer = 0.32F + 0.12F * Mth.sin(t * 0.25F);
 		if (state.deathTime > 0) {
 			shimmer *= Math.max(0.0F, 1.0F - state.deathTime / 20.0F);
 		}

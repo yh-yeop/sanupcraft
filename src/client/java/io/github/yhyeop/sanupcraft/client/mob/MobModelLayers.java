@@ -40,7 +40,7 @@ public final class MobModelLayers {
 		// 자동인형: 외눈 · 가슴 계기 · 굴뚝 불씨가 천천히 깜박인다
 		EntityRendererRegistry.register(ModMobs.RUST_AUTOMATON, context -> new EliteMobRenderer<>(context, RustAutomatonModel::new,
 				RUST_AUTOMATON, RUST_AUTOMATON_AURA, "rust_automaton", 0.55F, 1.0F, false,
-				state -> 0.55 + 0.25 * Mth.sin(state.ageInTicks * 0.15F) + (Mth.sin(state.ageInTicks * 1.7F) > 0.93F ? -0.4 : 0.0)));
+				state -> 0.8 + 0.15 * Mth.sin(state.ageInTicks * 0.15F) + (Mth.sin(state.ageInTicks * 1.7F) > 0.95F ? -0.35 : 0.0)));
 		// 정령: 불꽃이라 늘 밝고 빠르게 일렁인다 (블레이즈처럼 어둠에서도 밝게 그린다)
 		EntityRendererRegistry.register(ModMobs.EMBER_WISP, context -> new EliteMobRenderer<>(context, EmberWispModel::new,
 				EMBER_WISP, EMBER_WISP_AURA, "ember_wisp", 0.35F, 1.0F, true,

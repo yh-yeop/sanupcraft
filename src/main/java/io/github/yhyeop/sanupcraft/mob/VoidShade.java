@@ -146,13 +146,13 @@ public class VoidShade extends EliteMonster {
 	@Override
 	public void aiStep() {
 		super.aiStep();
-		// 그림자가 흩날린다: 발치에 보라 입자, 몸에서 검은 연기
+		// 그림자가 흩날린다: 발치에 보라 입자, 몸에서 옅은 연기
 		if (level().isClientSide()) {
 			if (random.nextInt(2) == 0) {
 				level().addParticle(ParticleTypes.REVERSE_PORTAL, getRandomX(0.4), getY() + random.nextDouble() * 0.6, getRandomZ(0.4), 0.0, 0.02, 0.0);
 			}
-			if (random.nextInt(3) == 0) {
-				level().addParticle(ParticleTypes.SQUID_INK, getRandomX(0.35), getY() + 0.2 + random.nextDouble() * 1.8, getRandomZ(0.35), 0.0, 0.0, 0.0);
+			if (random.nextInt(4) == 0) {
+				level().addParticle(ParticleTypes.SMOKE, getRandomX(0.35), getY() + 0.2 + random.nextDouble() * 1.8, getRandomZ(0.35), 0.0, 0.01, 0.0);
 			}
 		}
 	}
