@@ -92,6 +92,8 @@ JDK를 따로 깔 필요 없다. Gradle이 Java 25를 `~/.gradle/jdks`에 받아
 ./gradlew runServer      # 개발용 서버 실행
 ./gradlew runClientGameTest  # 진짜 클라이언트를 띄워 스크린샷 (build/run/clientGameTest/screenshots/)
 python tools/make_textures.py --sheet  # 임시 도트 텍스처 다시 만들기 + 미리보기
+SANUPCRAFT_PROMO=1 ./gradlew runClientGameTest  # 소개 페이지용 스크린샷(HUD 없이 1600x900, promo-*.png)까지 찍기
+python tools/promo_crop.py build/run/clientGameTest/screenshots ../yh-yeop.github.io/assets/sanupcraft  # 사이트 이미지로
 ```
 
 `runClientGameTest`는 창을 띄우므로 Actions의 `build`에는 넣지 않았다. 화면에 보이는 것을 바꿨을 때 손으로 돌린다.
