@@ -88,8 +88,14 @@ public abstract class PartyBossMonster extends Monster implements PartyBoss {
 		return bossEvent.getName();
 	}
 
+	/** 화났나: 2페이즈이거나 체력이 절반({@link #PHASE_TWO_HEALTH}) 이하 ({@link #checkPhaseTwo}와 같은 기준, 한 번 2페이즈면 체력이 차도 화난 채). */
 	public boolean isEnraged() {
-		return getHealth() < getMaxHealth() / 2.0F;
+		return isPhaseTwo() || halfHealthOrLess();
+	}
+
+	/** 체력이 절반({@link #PHASE_TWO_HEALTH}) 이하인가 (2페이즈 여부와 상관없이 지금 체력만 본다). */
+	private boolean halfHealthOrLess() {
+		return getHealth() <= getMaxHealth() * PHASE_TWO_HEALTH;
 	}
 
 	/** 2페이즈인가 (서버 · 클라이언트, 한 번 들어가면 체력이 차도 그대로). */
@@ -107,7 +113,7 @@ public abstract class PartyBossMonster extends Monster implements PartyBoss {
 	 * AI 틱마다 부르고, 시험이 직접 부를 수도 있다. 들어갔으면 true.
 	 */
 	public boolean checkPhaseTwo(ServerLevel level) {
-		if (isPhaseTwo() || getHealth() > getMaxHealth() * PHASE_TWO_HEALTH) {
+		if (isPhaseTwo() || !halfHealthOrLess()) {
 			return false;
 		}
 		entityData.set(DATA_PHASE_TWO, true);
@@ -161,7 +167,7 @@ public abstract class PartyBossMonster extends Monster implements PartyBoss {
 		party.load(input);
 		refreshBossBar();
 		// 예전 저장(키 없음)은 화남을 이미 알렸는지 = 체력이 절반 아래인지로 본다
-		entityData.set(DATA_PHASE_TWO, input.getBooleanOr("phase_two", isEnraged()));
+		entityData.set(DATA_PHASE_TWO, input.getBooleanOr("phase_two", halfHealthOrLess()));
 	}
 
 	/** 공격 동작을 시작하고 클라이언트에 알린다. */

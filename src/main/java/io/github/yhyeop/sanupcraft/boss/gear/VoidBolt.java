@@ -20,6 +20,7 @@ public class VoidBolt extends ThrowableItemProjectile {
 	public static final float DAMAGE = 6.0F;
 	public static final float SPEED = 2.0F;
 	public static final int MAX_AGE = 40;
+	/** 효과 수치는 보스 설정(statusEffect.*)과 일부러 따로 둔 장비 수치 (툴팁이 이 수치를 적는다). */
 	public static final int EROSION_TICKS = 200;
 	public static final int EROSION_LEVEL = 1;
 

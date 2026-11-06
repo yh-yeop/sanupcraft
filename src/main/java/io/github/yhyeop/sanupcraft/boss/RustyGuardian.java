@@ -58,7 +58,7 @@ import io.github.yhyeop.sanupcraft.sound.ModSounds;
  *       8초 동안 녹 장판 ({@link BossHazard}, 안에 서 있으면 녹 II). 고리 밖으로 나가면 된다.</li>
  * </ul>
  * 녹 공격: 강철(또는 내열) 갑옷 한 벌을 다 입지 않은 대상은 피해 1.5배 + 구속 + 녹 II(방어 −4, 5초, 확장 3 C3). 패턴 타격은 방패를 깨고 들어간다.
- * 강철 검 · 내열 검으로 때리면 피해 1.5배. 거미줄에 걸리지 않고 구속이 안 걸린다.
+ * 강철 · 내열 · 크롬강 검으로 때리면 피해 1.5배. 거미줄에 걸리지 않고 구속이 안 걸린다. 낙하 · 익사 피해를 받지 않는다.
  * 체력이 절반 아래면 패턴 간격이 짧아진다. 여러 명이면 체력 · 졸개 수가 늘고, 기여자 각자 핵을 받는다 ({@link BossParty}).
  */
 public class RustyGuardian extends PartyBossMonster {

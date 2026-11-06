@@ -1385,5 +1385,12 @@ Opus 샘플링(직접 읽음, Haiku 담당 영역): `boss/gear/VoidStaffItem` ·
 2. **#25** `Downed.goDown`에 `LAST_HIT.remove(player.getUUID());`(쓰러질 때마다 새로). `SERVER_STARTING` 훅은 넣지 않는다. 시험 없음
 3. 주석: **#27** `FlamethrowerItem` 클래스 문서에 "물속에서는 증기 · 연료를 쓰고 거품만 난다 (불이 안 붙는다)". **#37** `ToxicGasPocketFeature` "불 · 용암 · 횃불 옆 칸" → "불씨({@link ToxicGasBlock#isIgnitionSource}: 불 · 용암 · 횃불 · 켜진 모닥불) 옆 칸". **#40** `MultiblockShape.unform` 문서 "안 불러온 청크는 건드리지 않는다" → "안 불러온 청크의 이웃 제어기는 못 보므로, 그 제어기가 가진 공유 외벽은 잠시 꺼졌다가 그 제어기의 다음 확인에서 다시 켜진다". **#44** `kitIndustry` 문서 "외벽 33 + 제어기로" → "외벽 33(여분 포함 40개) + 제어기로". **#45** `ModSounds.machine` 문서 "40틱에 한 번쯤" → "40틱(분쇄기 30틱)에 한 번쯤"
 
+#### L1 수정 기록 (보스 · 몹)
+- **#4**: `PartyBossMonster.isEnraged()` → `isPhaseTwo() || halfHealthOrLess()` (`getHealth() <= max × PHASE_TWO_HEALTH`, `checkPhaseTwo`와 같은 비공개 도우미). 불러오기의 `phase_two` 기본값은 `isEnraged()`가 아니라 도우미를 직접 쓴다 — 이미 2페이즈인 보스에 예전 저장을 다시 읽으면 기본값이 참이 되어 `phaseTwoSurvivesSaveAndLoad`가 실패했다(8-5의 "그 시점 `isPhaseTwo()`가 거짓" 가정은 재사용된 개체에선 틀림). 시험 `enragedAtExactlyHalfHealthAndAfterHealing`(C4), 고치기 전 "정확히 절반인데 화나지 않음"으로 실패.
+- **#7**: `BossHazard.lifetime()` 삭제.
+- **#32**: `VoidShade.customServerAiStep` 6 ~ 16칸 안에서 `teleportBehind` 실패 시 `ambushCooldown = 20`.
+- **#2 · #10 · #3 · #33 · #1**: 주석만(수호자 · 파수꾼 문서, `VoidColossus.volley`, `EliteMonster` · `EliteAbility` 반사, 장비 상수 셋 "보스 설정과 일부러 따로").
+- 검증: `./gradlew build` GameTest 410개 통과(409 + 새 1), `runClientGameTest` 통과.
+
 ### 8-7. 2단계 계획
 **2단계 없음.** 8-2에서 올린 셋은 반론으로 모두 닫았다: 1은 설계상 장비 상수(주석 한 줄, L1), 5 · 6은 #62 기준 오탐. 3단계도 없음. 다음 라운드 후보는 보류 11(렌더러 기반 클래스, 보스가 넷이 될 때)과 보류 메모 17b · 27b · 28b.

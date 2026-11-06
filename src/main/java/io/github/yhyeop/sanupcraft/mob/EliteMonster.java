@@ -122,7 +122,7 @@ public abstract class EliteMonster extends Monster {
 		return hit;
 	}
 
-	/** 반사 능력: 때린 쪽에 받은 피해의 30%를 가시 피해로 돌려준다 (가시 피해 · 자기 자신에게는 안 돌려준다). */
+	/** 반사 능력: 때린 쪽에 들어온 피해(방어 전)의 30%를 가시 피해로 돌려준다 (가시 피해 · 자기 자신에게는 안 돌려준다). */
 	@Override
 	public boolean hurtServer(ServerLevel level, DamageSource source, float damage) {
 		boolean hurt = super.hurtServer(level, source, damage);

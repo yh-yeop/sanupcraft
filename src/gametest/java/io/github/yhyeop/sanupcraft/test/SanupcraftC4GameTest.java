@@ -96,6 +96,24 @@ public class SanupcraftC4GameTest {
 		helper.succeed();
 	}
 
+	/** 정확히 절반 체력에서 화남이고, 2페이즈에 한 번 들어간 뒤에는 체력이 차도 화난 채(2페이즈 패턴 · 쿨다운 · 렌더와 같은 기준). */
+	@GameTest
+	public void enragedAtExactlyHalfHealthAndAfterHealing(GameTestHelper helper) {
+		ServerLevel level = helper.getLevel();
+		RustyGuardian boss = helper.spawn(ModBoss.RUSTY_GUARDIAN, new BlockPos(3, 1, 3));
+		boss.setNoAi(true);
+		helper.assertFalse(boss.isEnraged(), "처음부터 화남");
+		boss.setHealth(boss.getMaxHealth() * 0.51F);
+		helper.assertFalse(boss.isEnraged(), "51%에서 화남");
+		boss.setHealth(boss.getMaxHealth() * PartyBossMonster.PHASE_TWO_HEALTH);
+		helper.assertTrue(boss.isEnraged(), "정확히 절반인데 화나지 않음");
+		helper.assertTrue(boss.checkPhaseTwo(level), "절반에서 2페이즈로 안 들어감");
+		boss.setHealth(boss.getMaxHealth());
+		helper.assertTrue(boss.isEnraged(), "체력을 채우니 2페이즈인데 화남이 풀림");
+		boss.discard();
+		helper.succeed();
+	}
+
 	/** 2페이즈는 저장된다: 읽은 보스는 체력이 차 있어도 2페이즈이고 다시 들어가지 않는다. 예전 저장(키 없음)은 체력으로 정한다. */
 	@GameTest
 	public void phaseTwoSurvivesSaveAndLoad(GameTestHelper helper) {

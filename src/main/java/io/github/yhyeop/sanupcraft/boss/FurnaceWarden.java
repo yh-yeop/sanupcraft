@@ -52,7 +52,7 @@ import io.github.yhyeop.sanupcraft.sound.ModSounds;
  * 과열: 내열 갑옷 한 벌을 다 입지 않은 대상은 피해 1.5배 + 과열 효과(1초마다 피해 1, 5초, 물에 들어가면 풀림 — 확장 3 C3, 전에는 불 붙음).
  * 패턴 타격은 방패를 깨고 들어간다.
  * 내열 검으로 때리면 피해 1.5배. 거미줄에 걸리지 않고 구속이 안 걸린다.
- * 불 · 낙하 피해를 받지 않는다. 체력이 절반 아래면 패턴 간격이 짧아진다.
+ * 불 · 낙하 · 익사 피해를 받지 않는다. 체력이 절반 아래면 패턴 간격이 짧아진다.
  * 여러 명이면 체력이 늘고, 기여자 각자 심장을 받는다 ({@link BossParty}).
  */
 public class FurnaceWarden extends PartyBossMonster {

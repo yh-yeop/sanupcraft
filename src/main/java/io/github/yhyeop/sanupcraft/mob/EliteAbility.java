@@ -11,7 +11,7 @@ import net.minecraft.util.RandomSource;
  * 정예 몹의 능력 하나 (확장 3 C2). 이름표 색으로 어떤 능력인지 알 수 있다.
  * <ul>
  *   <li>가속: 이동 속도 +{@link #SPEED_BONUS}.</li>
- *   <li>반사: 때린 쪽에 받은 피해의 {@link #REFLECT_SHARE}를 가시처럼 돌려준다.</li>
+ *   <li>반사: 때린 쪽에 들어온 피해(방어 전)의 {@link #REFLECT_SHARE}를 가시처럼 돌려준다.</li>
  *   <li>재생: {@link #REGEN_INTERVAL}틱마다 체력 1.</li>
  * </ul>
  */
