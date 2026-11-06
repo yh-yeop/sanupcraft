@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:blasting",
+  "category": "misc",
+  "cookingtime": 100,
+  "experience": 0.7,
+  "ingredient": "sanupcraft:deepslate_chromite_ore",
+  "result": {
+    "id": "sanupcraft:chromium_ingot"
+  }
+}

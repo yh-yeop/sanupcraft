@@ -83,7 +83,9 @@ public final class PlaytestCommand {
 		// M6 엔드 최종
 		END2("엔드 최종: 공허 거상 · 공허 응축기 · 공허 장비 · 후렴 수확기 · 차원 창고 · 겉날개 가속 · 숨결 수집기", Level.END, PlaytestCommand::kitEnd2),
 		// M8 I4
-		WRENCH("렌치 · 면 설정: 돌리기 · 내용물째 집기 · 기계 면마다 넣기 / 빼기 / 막기", null, PlaytestCommand::kitWrench);
+		WRENCH("렌치 · 면 설정: 돌리기 · 내용물째 집기 · 기계 면마다 넣기 / 빼기 / 막기", null, PlaytestCommand::kitWrench),
+		// 확장 3 D1 새 광석
+		ORES("새 광석: 크롬철석 · 보크사이트 · 원석 · 블록 · 가공 기계", null, PlaytestCommand::kitOres);
 
 		final String description;
 		final ResourceKey<Level> dimension;
@@ -614,6 +616,37 @@ public final class PlaytestCommand {
 		give(p, Items.COAL, 32);
 		give(p, io.github.yhyeop.sanupcraft.logistics.ModLogistics.ENDER_RECEIVER.asItem(), 1);
 		give(p, io.github.yhyeop.sanupcraft.logistics.ModLogistics.BELT.asItem(), 8);
+		food(p);
+	}
+
+	/** 확장 3 D1: 새 광석 · 원석 · 블록, 가공 기계(분쇄기 · 세척기 · 고압 정련기)와 물 · 증기 설비, 곡괭이 둘. */
+	private static void kitOres(ServerPlayer p) {
+		give(p, Items.IRON_PICKAXE, 1);
+		give(p, Items.STONE_PICKAXE, 1);
+		give(p, io.github.yhyeop.sanupcraft.resource.ModResources.DEEPSLATE_CHROMITE_ORE.asItem(), 8);
+		give(p, io.github.yhyeop.sanupcraft.resource.ModResources.BAUXITE_ORE.asItem(), 8);
+		give(p, io.github.yhyeop.sanupcraft.resource.ModResources.RAW_CHROMIUM, 32);
+		give(p, io.github.yhyeop.sanupcraft.resource.ModResources.RAW_ALUMINIUM, 32);
+		give(p, io.github.yhyeop.sanupcraft.resource.ModResources.RAW_CHROMIUM_BLOCK.asItem(), 2);
+		give(p, io.github.yhyeop.sanupcraft.resource.ModResources.RAW_ALUMINIUM_BLOCK.asItem(), 2);
+		give(p, io.github.yhyeop.sanupcraft.resource.ModResources.CHROMIUM_BLOCK.asItem(), 2);
+		give(p, io.github.yhyeop.sanupcraft.resource.ModResources.ALUMINIUM_BLOCK.asItem(), 2);
+		give(p, ModMachines.CRUSHER.asItem(), 1);
+		give(p, ModMachines.WASHER.asItem(), 1);
+		give(p, ModMachines.HP_REFINER.asItem(), 1);
+		give(p, io.github.yhyeop.sanupcraft.nether.ModNether.HIGH_PRESSURE_PIPE.asItem(), 16);
+		give(p, io.github.yhyeop.sanupcraft.nether.ModNether.SOUL_FURNACE.asItem(), 1);
+		give(p, Items.SOUL_SOIL, 4);
+		give(p, Items.BLAZE_POWDER, 32);
+		give(p, ModFluid.PUMP.asItem(), 1);
+		give(p, ModFluid.TANK.asItem(), 1);
+		give(p, Items.WATER_BUCKET, 2);
+		give(p, Items.FURNACE, 2);
+		give(p, Items.BLAST_FURNACE, 1);
+		give(p, Items.COAL, 64);
+		give(p, io.github.yhyeop.sanupcraft.logistics.ModLogistics.ORE_MARKER, 1);
+		give(p, Items.HOPPER, 4);
+		give(p, Items.CHEST, 2);
 		food(p);
 	}
 }

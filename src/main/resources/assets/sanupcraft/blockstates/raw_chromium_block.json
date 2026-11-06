@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "sanupcraft:block/raw_chromium_block"
+    }
+  }
+}

@@ -49,6 +49,12 @@
     "sanupcraft:void_condenser",
     "sanupcraft:chorus_harvester",
     "sanupcraft:dimensional_vault",
-    "sanupcraft:breath_collector"
+    "sanupcraft:breath_collector",
+    "sanupcraft:deepslate_chromite_ore",
+    "sanupcraft:bauxite_ore",
+    "sanupcraft:raw_chromium_block",
+    "sanupcraft:raw_aluminium_block",
+    "sanupcraft:chromium_block",
+    "sanupcraft:aluminium_block"
   ]
 }

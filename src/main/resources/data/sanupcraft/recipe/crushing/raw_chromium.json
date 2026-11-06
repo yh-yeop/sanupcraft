@@ -1,0 +1,15 @@
+{
+  "type": "sanupcraft:crushing",
+  "ingredient": "sanupcraft:raw_chromium",
+  "result": {
+    "id": "sanupcraft:chromium_dust",
+    "count": 2
+  },
+  "byproduct": {
+    "item": {
+      "id": "sanupcraft:iron_dust"
+    },
+    "chance": 0.1
+  },
+  "time": 150
+}

@@ -105,6 +105,7 @@
 | `end` | M6 엔드 최종 (`ModEnd`): 공허 응축기, 후렴 수확기, 차원 창고(`VaultData` = 서버 전체 채널 저장), 숨결 수집기, 공허 장비 · 세트 효과, 겉날개 가속, 버려진 정거장(엔드 섬 구조물 종류). 공허 거상 · 공허 수정 엔티티는 `boss` |
 | `wrench` (M8 I4) | 렌치: 돌리기 · 내용물째 집기 · 기계 면 설정 (면 설정 자체는 `factory/MachineFaces`) |
 | `sound` (M11 X2) | 효과음 등록 · 기계 작동음 (`ModSounds`, 정의는 `assets/sanupcraft/sounds.json`) |
+| `resource` (확장 3 D1) | 새 광석 2종 (`ModResources`): 크롬철석(심층암) · 보크사이트(사바나 · 메사 · 사막), 원석 · 가루 · 정제 가루 · 주괴 · 블록. 광석 배치는 `data/sanupcraft/worldgen`, 바이옴 연결은 Fabric `BiomeModifications` |
 
 `src/main` 공통 · 서버, `src/client` 클라이언트 전용(렌더링), `src/gametest` 자동 검사.
 
