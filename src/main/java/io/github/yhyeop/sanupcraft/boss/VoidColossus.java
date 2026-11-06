@@ -494,7 +494,12 @@ public class VoidColossus extends Monster implements PartyBoss {
 	@Override
 	public void setCustomName(@Nullable Component name) {
 		super.setCustomName(name);
-		bossEvent.setName(getDisplayName());
+		refreshBossBar();
+	}
+
+	@Override
+	public void refreshBossBar() {
+		bossEvent.setName(BossTier.barName(getDisplayName(), party().tier()));
 	}
 
 	@Override
