@@ -15,7 +15,8 @@
 			"io.github.yhyeop.sanupcraft.test.SanupcraftFixBossGameTest",
 			"io.github.yhyeop.sanupcraft.test.SanupcraftFixGuideGameTest",
 			"io.github.yhyeop.sanupcraft.test.SanupcraftStage2GameTest",
-			"io.github.yhyeop.sanupcraft.test.SanupcraftNetherEndGameTest"
+			"io.github.yhyeop.sanupcraft.test.SanupcraftNetherEndGameTest",
+			"io.github.yhyeop.sanupcraft.test.SanupcraftWorldGameTest"
 		],
 		"fabric-client-gametest": [
 			"io.github.yhyeop.sanupcraft.test.SanupcraftClientGameTest",

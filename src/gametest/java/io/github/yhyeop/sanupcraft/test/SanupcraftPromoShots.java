@@ -10,8 +10,16 @@ import net.fabricmc.fabric.api.client.gametest.v1.screenshot.TestScreenshotOptio
 
 import net.minecraft.client.gui.screens.advancements.AdvancementsScreen;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.levelgen.structure.Structure;
 
+import io.github.yhyeop.sanupcraft.Sanupcraft;
+import io.github.yhyeop.sanupcraft.boss.ModBoss;
 import io.github.yhyeop.sanupcraft.client.MachineScreen;
+import io.github.yhyeop.sanupcraft.world.ModWorld;
 
 /**
  * 소개 페이지용 스크린샷. 환경 변수 SANUPCRAFT_PROMO=1 일 때만 돈다 (평소 runClientGameTest에는 안 낀다).
@@ -51,6 +59,56 @@ public class SanupcraftPromoShots implements FabricClientGameTest {
 			screens(context, server);
 			nether(context, server, singleplayer);
 			end(context, server, singleplayer);
+		}
+		shrine(context);
+	}
+
+	/** 일반 지형 월드에서 가장 가까운 녹슨 사당을 찾아 찍는다 (월드 생성에 실제로 나오는지도 이걸로 본다). */
+	private static void shrine(ClientGameTestContext context) {
+		try (TestSingleplayerContext singleplayer = context.worldBuilder().setUseConsistentSettings(false)
+				.adjustSettings(s -> s.setSeed("sanupcraft")).create()) {
+			TestServerContext server = singleplayer.getServer();
+			singleplayer.getConnection().waitForChunksRender();
+			server.runCommand("gamerule advance_time false");
+			server.runCommand("gamerule advance_weather false");
+			server.runCommand("time set 1000");
+			server.runCommand("weather clear");
+			BlockPos found = server.computeOnServer(s -> {
+				ServerLevel level = s.overworld();
+				Holder<Structure> shrine = level.registryAccess().lookupOrThrow(Registries.STRUCTURE).getOrThrow(ModWorld.RUSTED_SHRINE);
+				var pair = level.getChunkSource().getGenerator().findNearestMapStructure(level, HolderSet.direct(shrine), BlockPos.ZERO, 100, false);
+				return pair == null ? null : pair.getFirst();
+			});
+			if (found == null) {
+				throw new AssertionError("녹슨 사당을 찾지 못함");
+			}
+			Sanupcraft.LOGGER.info("녹슨 사당: {}", found);
+			server.runCommand("gamemode spectator @a");
+			server.runCommand("tp @a " + found.getX() + " 140 " + found.getZ());
+			context.waitTicks(100);
+			singleplayer.getConnection().waitForChunksRender();
+			BlockPos altar = server.computeOnServer(s -> {
+				ServerLevel level = s.overworld();
+				for (BlockPos p : BlockPos.betweenClosed(found.offset(-20, 0, -20).atY(level.getMinY()), found.offset(20, 0, 20).atY(200))) {
+					if (level.getBlockState(p).is(ModBoss.GUARDIAN_ALTAR)) {
+						return p.immutable();
+					}
+				}
+				return null;
+			});
+			if (altar == null) {
+				throw new AssertionError("사당 근처에 제단이 없음: " + found);
+			}
+			Sanupcraft.LOGGER.info("녹슨 사당 제단: {}", altar);
+			// 카메라와 사당 사이의 나뭇잎을 걷어 낸다 (숲에 생기면 잎에 가린다)
+			int ax = altar.getX();
+			int ay = altar.getY();
+			int az = altar.getZ();
+			server.runCommand("fill " + (ax - 7) + " " + (ay - 1) + " " + (az - 6) + " " + (ax + 7) + " " + (ay + 12) + " " + (az + 12) + " air replace #minecraft:leaves");
+			server.runCommand("tp @a " + (ax + 0.5) + " " + (ay + 6) + " " + (az + 10.5) + " 180 28");
+			context.waitTicks(40);
+			singleplayer.getConnection().waitForChunksRender();
+			shot(context, "shrine");
 		}
 	}
 

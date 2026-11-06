@@ -53,6 +53,7 @@
 3. **심장 제련로**: 파수꾼의 심장으로 만든다. 고대 잔해 1 → 네더라이트 파편 2, 블레이즈 막대 1 → 가루 4 (엔더의 눈 → 엔드).
 4. **엔드에서**: 셜커 껍데기로 엔더 송신기 · 수신기 (송신기에는 파수꾼의 심장 1개). 같은 염료 색끼리 차원을 넘어 아이템을 보낸다 (네더 채굴장 → 오버월드 공장). 수신기 쪽이 로드돼 있어야 한다.
 5. **길잡이**: 발전 과제 "산업크래프트" 탭에 다음 할 일이 적혀 있다. 기계 · 장비 아이템에 마우스를 올리면 쓰임새 설명이 뜬다.
+6. **탐험으로 만나는 보스**: 평원 · 숲의 **녹슨 사당**에는 제단과 수호자 소환석이 든 상자가 있다. 네더 요새 상자에서 파수꾼 소환석 · 핵 조각, 보루 상자에서 핵 조각이 나온다.
 
 자세한 수치는 [ROADMAP.md](ROADMAP.md)의 M1 · M2 · M3 표. 혼자 시험하는 방법은 [docs/PLAYTEST.md](docs/PLAYTEST.md).
 
@@ -76,6 +77,7 @@
 | `gear` | 모험대 장비 (강철 · 내열), 3x3 해머 · 굴삭 삽 |
 | `mining` | 증기 굴착기 |
 | `compat` | 모드팩 편의 모드 맞춤 (시체 모드) |
+| `world` | 월드 구조물(녹슨 사당) · 바닐라 상자 전리품 더하기 (요새 · 보루) |
 | `playtest` | `/sanupcraft playtest <단계>` 실테스트 꾸러미 |
 
 `src/main` 공통 · 서버, `src/client` 클라이언트 전용(렌더링), `src/gametest` 자동 검사.
@@ -92,6 +94,7 @@ JDK를 따로 깔 필요 없다. Gradle이 Java 25를 `~/.gradle/jdks`에 받아
 ./gradlew runServer      # 개발용 서버 실행
 ./gradlew runClientGameTest  # 진짜 클라이언트를 띄워 스크린샷 (build/run/clientGameTest/screenshots/)
 python tools/make_textures.py --sheet  # 임시 도트 텍스처 다시 만들기 + 미리보기
+python tools/make_structures.py        # 월드 구조물(.nbt) 다시 만들기 (녹슨 사당)
 SANUPCRAFT_PROMO=1 ./gradlew runClientGameTest  # 소개 페이지용 스크린샷(HUD 없이 1600x900, promo-*.png)까지 찍기
 python tools/promo_crop.py build/run/clientGameTest/screenshots ../yh-yeop.github.io/assets/sanupcraft  # 사이트 이미지로
 ```

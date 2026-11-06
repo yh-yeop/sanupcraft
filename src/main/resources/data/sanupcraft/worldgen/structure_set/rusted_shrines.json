@@ -1,0 +1,18 @@
+{
+  "placement": {
+    "type": "minecraft:random_spread",
+    "exclusion_zone": {
+      "chunk_count": 4,
+      "other_set": "minecraft:villages"
+    },
+    "salt": 741852963,
+    "separation": 8,
+    "spacing": 28
+  },
+  "structures": [
+    {
+      "structure": "sanupcraft:rusted_shrine",
+      "weight": 1
+    }
+  ]
+}

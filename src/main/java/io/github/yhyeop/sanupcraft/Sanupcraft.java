@@ -18,6 +18,7 @@ import io.github.yhyeop.sanupcraft.logistics.ModLogistics;
 import io.github.yhyeop.sanupcraft.mining.ModMining;
 import io.github.yhyeop.sanupcraft.playtest.PlaytestCommand;
 import io.github.yhyeop.sanupcraft.power.ModPower;
+import io.github.yhyeop.sanupcraft.world.ModWorld;
 
 public class Sanupcraft implements ModInitializer {
 	public static final String MOD_ID = "sanupcraft";
@@ -34,6 +35,7 @@ public class Sanupcraft implements ModInitializer {
 		SteelGear.init();
 		HeatproofGear.init();
 		ModBoss.init();
+		ModWorld.init();
 		ModTab.init();
 		CorpseGravesCompat.init();
 		PlaytestCommand.init();

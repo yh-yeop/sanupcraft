@@ -214,12 +214,18 @@ public class QuarryBlockEntity extends BlockEntity implements SteamConsumer {
 		return drill;
 	}
 
-	/** 내열 드릴을 끼운다. 이미 있으면 false. 끼우면 다 판 층부터 다시 볼 필요는 없다 (지나간 층의 남은 블록은 그대로). */
+	/**
+	 * 내열 드릴을 끼운다. 이미 있으면 false.
+	 * 끼우면 맨 위층부터 다시 훑어서, 철 곡괭이로 못 캐 남겨 둔 흑요석 · 고대 잔해도 캔다 (이미 판 층은 공기라 빨리 지나간다).
+	 */
 	public boolean installDrill() {
 		if (drill) {
 			return false;
 		}
 		drill = true;
+		started = false;
+		finished = false;
+		cursor = 0;
 		setChanged();
 		return true;
 	}

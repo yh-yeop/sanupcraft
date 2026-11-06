@@ -1,0 +1,36 @@
+{
+  "parent": "sanupcraft:root",
+  "criteria": {
+    "found": {
+      "trigger": "minecraft:location",
+      "conditions": {
+        "player": {
+          "type": "minecraft:entity_properties",
+          "entity": "this",
+          "predicate": {
+            "minecraft:location": {
+              "structures": "sanupcraft:rusted_shrine"
+            }
+          }
+        }
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:guardian_altar"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.rusted_shrine.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.rusted_shrine.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "found"
+    ]
+  ]
+}
