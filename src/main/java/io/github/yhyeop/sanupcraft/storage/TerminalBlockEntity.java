@@ -4,9 +4,9 @@ import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.Container;
+import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -82,7 +82,7 @@ public class TerminalBlockEntity extends BlockEntity implements StorageNetwork.M
 	}
 
 	/** 잠금 · 증기를 확인하고 연다. 못 열면 까닭을 알린다. */
-	public boolean tryOpen(Player player, net.minecraft.world.MenuProvider provider) {
+	public boolean tryOpen(Player player, MenuProvider provider) {
 		if (!lock.canUse(player)) {
 			player.sendOverlayMessage(Component.translatable("block.sanupcraft.storage_terminal.locked", lock.ownerName()));
 			return false;
@@ -150,10 +150,5 @@ public class TerminalBlockEntity extends BlockEntity implements StorageNetwork.M
 		super.saveAdditional(output);
 		output.putInt("steam", steam);
 		lock.save(output);
-	}
-
-	/** 테스트용: 서버 월드 (없으면 null). */
-	ServerLevel serverLevel() {
-		return level instanceof ServerLevel server ? server : null;
 	}
 }

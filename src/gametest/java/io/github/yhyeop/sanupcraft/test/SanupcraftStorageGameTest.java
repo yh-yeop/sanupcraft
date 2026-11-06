@@ -6,14 +6,18 @@ import net.fabricmc.fabric.api.gametest.v1.GameTest;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.GlobalPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.ChestBlock;
@@ -22,6 +26,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
 import net.minecraft.world.level.block.state.properties.ChestType;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
 
 import io.github.yhyeop.sanupcraft.config.SanupcraftConfig;
 import io.github.yhyeop.sanupcraft.core.ModItems;
@@ -32,12 +38,13 @@ import io.github.yhyeop.sanupcraft.storage.DrawerBlock;
 import io.github.yhyeop.sanupcraft.storage.DrawerBlockEntity;
 import io.github.yhyeop.sanupcraft.storage.DrawerContents;
 import io.github.yhyeop.sanupcraft.storage.ModStorage;
+import io.github.yhyeop.sanupcraft.storage.PortableTerminalItem;
 import io.github.yhyeop.sanupcraft.storage.StockerBlockEntity;
 import io.github.yhyeop.sanupcraft.storage.StorageNetwork;
 import io.github.yhyeop.sanupcraft.storage.TerminalBlockEntity;
 import io.github.yhyeop.sanupcraft.storage.TerminalMenu;
 
-/** M7 보관 · 제작 검사: 저장 서랍 (S1), 창고 네트워크 · 단말 · 제작 단말 (S2 · S3), 자동 제작대 · 재고 유지기 (S4 · S5). */
+/** M7 보관 · 제작 검사: 저장 서랍 (S1), 창고 네트워크 · 단말 · 제작 단말 (S2 · S3), 자동 제작대 · 재고 유지기 (S4 · S5), 휴대 단말 (S6). */
 public class SanupcraftStorageGameTest {
 	// ---- S1 서랍 ----
 
@@ -398,6 +405,49 @@ public class SanupcraftStorageGameTest {
 				&& a.steamStored() == 123, "자동 제작대가 다름");
 		helper.assertTrue(s instanceof StockerBlockEntity st && st.target().getItem(0).is(Items.TORCH) && st.targetCount() == 321, "재고 유지기가 다름");
 		helper.assertFalse(StorageNetwork.isStorage(crafter), "자동 제작대가 보관함으로 보임");
+		helper.succeed();
+	}
+
+	// ---- S6 휴대 단말 ----
+
+	/** 거리 규칙: 기본판은 같은 차원 64칸 안, 셜커판은 어디서나. */
+	@GameTest
+	public void portableTerminalRangeRule(GameTestHelper helper) {
+		GlobalPos link = GlobalPos.of(Level.OVERWORLD, new BlockPos(0, 64, 0));
+		Vec3 near = new Vec3(60.5, 64.5, 0.5);
+		Vec3 far = new Vec3(70.5, 64.5, 0.5);
+		helper.assertTrue(PortableTerminalItem.inRange(false, Level.OVERWORLD, near, link, 64), "64칸 안인데 안 됨");
+		helper.assertFalse(PortableTerminalItem.inRange(false, Level.OVERWORLD, far, link, 64), "64칸 밖인데 됨");
+		helper.assertFalse(PortableTerminalItem.inRange(false, Level.NETHER, near, link, 64), "다른 차원인데 됨");
+		helper.assertTrue(PortableTerminalItem.inRange(true, Level.NETHER, far, link, 64), "셜커판이 다른 차원에서 안 됨");
+		helper.succeed();
+	}
+
+	/** 단말에 우클릭하면 연결되고, 열 수 있는지 따진다 (거리 · 차원 · 불러온 청크 · 단말이 남아 있는지). */
+	@GameTest
+	public void portableTerminalLinksAndChecks(GameTestHelper helper) {
+		helper.setBlock(TERMINAL, ModStorage.STORAGE_TERMINAL);
+		ServerPlayer player = helper.makeMockServerPlayerInLevel();
+		BlockPos abs = helper.absolutePos(TERMINAL);
+		player.snapTo(abs.getX() + 2.5, abs.getY(), abs.getZ() + 0.5);
+		ItemStack stack = new ItemStack(ModStorage.PORTABLE_TERMINAL);
+		player.setItemInHand(InteractionHand.MAIN_HAND, stack);
+		BlockHitResult hit = new BlockHitResult(Vec3.atCenterOf(abs), Direction.UP, abs, false);
+		helper.assertTrue(stack.useOn(new UseOnContext(player, InteractionHand.MAIN_HAND, hit)).consumesAction(), "연결을 안 함");
+		GlobalPos link = stack.get(ModStorage.TERMINAL_LINK);
+		helper.assertTrue(link != null && link.pos().equals(abs) && link.dimension() == helper.getLevel().dimension(), "연결 자리가 다름: " + link);
+		PortableTerminalItem basic = ModStorage.PORTABLE_TERMINAL;
+		helper.assertValueEqual(basic.check(helper.getLevel(), player, link), PortableTerminalItem.Check.OK, "가까운 단말");
+		helper.assertValueEqual(basic.check(helper.getLevel(), player, null), PortableTerminalItem.Check.NOT_LINKED, "연결 안 됨");
+		GlobalPos nether = GlobalPos.of(Level.NETHER, new BlockPos(12_000, 64, 12_000));
+		helper.assertValueEqual(basic.check(helper.getLevel(), player, nether), PortableTerminalItem.Check.OTHER_DIMENSION, "다른 차원");
+		helper.assertValueEqual(ModStorage.ENDER_PORTABLE_TERMINAL.check(helper.getLevel(), player, nether), PortableTerminalItem.Check.NOT_LOADED,
+				"안 불러온 청크");
+		GlobalPos empty = GlobalPos.of(helper.getLevel().dimension(), abs.east());
+		helper.assertValueEqual(basic.check(helper.getLevel(), player, empty), PortableTerminalItem.Check.MISSING, "단말이 없는 자리");
+		player.snapTo(abs.getX() + 100.5, abs.getY(), abs.getZ() + 0.5);
+		helper.assertValueEqual(basic.check(helper.getLevel(), player, link), PortableTerminalItem.Check.TOO_FAR, "먼 단말");
+		helper.assertValueEqual(ModStorage.ENDER_PORTABLE_TERMINAL.check(helper.getLevel(), player, link), PortableTerminalItem.Check.OK, "셜커판은 멀어도");
 		helper.succeed();
 	}
 }

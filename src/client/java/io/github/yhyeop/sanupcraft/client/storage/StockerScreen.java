@@ -22,7 +22,7 @@ public class StockerScreen extends AbstractContainerScreen<StockerMenu> {
 			int step = StockerMenu.STEPS[i];
 			int id = i;
 			addRenderableWidget(Button.builder(Component.literal(step > 0 ? "+" + step : Integer.toString(step)),
-					button -> minecraft.gameMode.handleInventoryButtonClick(menu.containerId, id)).bounds(leftPos + 52 + i * 20, topPos + 56, 19, 16).build());
+					button -> minecraft.gameMode.handleInventoryButtonClick(menu.containerId, id)).bounds(leftPos + 8 + i * 27, topPos + 54, 26, 14).build());
 		}
 	}
 

@@ -330,6 +330,10 @@ public final class PlaytestCommand {
 		give(p, ModStorage.CRAFTING_TERMINAL.asItem(), 1);
 		give(p, ModStorage.AUTOCRAFTER.asItem(), 2);
 		give(p, ModStorage.STOCKER.asItem(), 1);
+		give(p, ModStorage.PORTABLE_TERMINAL, 1);
+		give(p, ModStorage.ENDER_PORTABLE_TERMINAL, 1);
+		give(p, ModLogistics.ENDER_ANCHOR.asItem(), 1);
+		give(p, Items.POPPED_CHORUS_FRUIT, 8);
 		give(p, ModPower.BOILER.asItem(), 1);
 		give(p, ModPower.STEAM_PIPE.asItem(), 16);
 		give(p, Items.WATER_BUCKET, 1);

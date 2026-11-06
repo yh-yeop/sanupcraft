@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "sanupcraft:steel_plate",
+    "E": "minecraft:ender_pearl",
+    "R": "minecraft:redstone",
+    "G": "minecraft:glass_pane"
+  },
+  "pattern": [
+    "PEP",
+    "RGR",
+    "PPP"
+  ],
+  "result": {
+    "id": "sanupcraft:portable_terminal"
+  }
+}

@@ -14,6 +14,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Rarity;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -25,7 +26,7 @@ import io.github.yhyeop.sanupcraft.core.ModRegistry;
 
 /**
  * M7 보관 · 제작 편의: 저장 서랍 (S1), 창고 관 · 창고 단말 · 제작 단말 (S2 · S3),
- * 자동 제작대 · 재고 유지기 (S4 · S5). */
+ * 자동 제작대 · 재고 유지기 (S4 · S5), 휴대 단말 (S6). */
 public final class ModStorage {
 	/** 부순 서랍에 남는 내용물. */
 	public static final DataComponentType<DrawerContents> DRAWER_CONTENTS = Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE,
@@ -80,6 +81,14 @@ public final class ModStorage {
 			BuiltInRegistries.MENU, Sanupcraft.id("autocrafter"), new MenuType<>(AutocrafterMenu::new, FeatureFlags.VANILLA_SET));
 	public static final MenuType<StockerMenu> STOCKER_MENU = Registry.register(
 			BuiltInRegistries.MENU, Sanupcraft.id("stocker"), new MenuType<>(StockerMenu::new, FeatureFlags.VANILLA_SET));
+
+	// ---- S6 휴대 단말 ----
+	/** 같은 차원 64칸 안의 단말을 연다. */
+	public static final PortableTerminalItem PORTABLE_TERMINAL = (PortableTerminalItem) ModRegistry.item("portable_terminal",
+			p -> new PortableTerminalItem(false, p), new Item.Properties().stacksTo(1));
+	/** 셜커 껍데기판: 어느 차원에서나 연다. */
+	public static final PortableTerminalItem ENDER_PORTABLE_TERMINAL = (PortableTerminalItem) ModRegistry.item("ender_portable_terminal",
+			p -> new PortableTerminalItem(true, p), new Item.Properties().stacksTo(1).rarity(Rarity.RARE));
 
 	private ModStorage() {
 	}

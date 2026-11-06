@@ -289,5 +289,21 @@
   "advancements.sanupcraft.autocrafter.title": "Hands-Free Crafting",
   "advancements.sanupcraft.autocrafter.description": "Make an autocrafter",
   "advancements.sanupcraft.stocker.title": "Always Full",
-  "advancements.sanupcraft.stocker.description": "Make a stocker with a warden heart"
+  "advancements.sanupcraft.stocker.description": "Make a stocker with a warden heart",
+  "item.sanupcraft.portable_terminal": "Portable Terminal",
+  "item.sanupcraft.portable_terminal.tooltip": "Right-click a storage terminal to link, then right-click in the air to open it",
+  "item.sanupcraft.portable_terminal.tooltip2": "Same dimension, within 64 blocks. The terminal's chunk must be loaded",
+  "item.sanupcraft.ender_portable_terminal": "Shulker Portable Terminal",
+  "item.sanupcraft.ender_portable_terminal.tooltip": "Opens its linked storage terminal from any dimension",
+  "item.sanupcraft.ender_portable_terminal.tooltip2": "The terminal's chunk must be loaded (keep it with an ender anchor)",
+  "item.sanupcraft.portable_terminal.linked": "Linked to the terminal (%s, %s, %s)",
+  "item.sanupcraft.portable_terminal.not_linked": "Right-click a storage terminal to link first",
+  "item.sanupcraft.portable_terminal.other_dimension": "That terminal is in another dimension (needs a shulker portable terminal)",
+  "item.sanupcraft.portable_terminal.too_far": "The terminal is too far (must be within %s blocks)",
+  "item.sanupcraft.portable_terminal.not_loaded": "The terminal's area isn't loaded (keep it with an ender anchor)",
+  "item.sanupcraft.portable_terminal.missing": "The linked terminal is gone",
+  "item.sanupcraft.portable_terminal.unlinked": "Not linked",
+  "item.sanupcraft.portable_terminal.link": "Linked: %s, %s, %s (%s)",
+  "advancements.sanupcraft.portable_terminal.title": "Storage Anywhere",
+  "advancements.sanupcraft.portable_terminal.description": "Make a shulker portable terminal"
 }

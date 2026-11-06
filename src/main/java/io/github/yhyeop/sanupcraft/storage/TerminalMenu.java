@@ -48,7 +48,7 @@ public class TerminalMenu extends AbstractContainerMenu {
 	/** 화면 배치 (클라이언트 화면과 맞춘다). */
 	public static final int LIST_COLUMNS = 9;
 	public static final int LIST_ROWS = 6;
-	public static final int LIST_ROWS_CRAFTING = 4;
+	public static final int LIST_ROWS_CRAFTING = 3;
 	public static final int LIST_X = 8;
 	public static final int LIST_Y = 18;
 

@@ -57,7 +57,7 @@ public class TerminalScreen extends AbstractContainerScreen<TerminalMenu> {
 	@Override
 	protected void init() {
 		super.init();
-		search = new EditBox(font, leftPos + 82, topPos + 5, 88, 10, Component.translatable("gui.sanupcraft.terminal.search"));
+		search = new EditBox(font, leftPos + 98, topPos + 5, 72, 10, Component.translatable("gui.sanupcraft.terminal.search"));
 		search.setMaxLength(50);
 		search.setHint(Component.translatable("gui.sanupcraft.terminal.search").withStyle(ChatFormatting.DARK_GRAY));
 		addRenderableWidget(search);

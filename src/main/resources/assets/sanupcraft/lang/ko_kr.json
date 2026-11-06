@@ -289,5 +289,21 @@
   "advancements.sanupcraft.autocrafter.title": "손 안 대고 제작",
   "advancements.sanupcraft.autocrafter.description": "자동 제작대를 만든다",
   "advancements.sanupcraft.stocker.title": "언제나 가득",
-  "advancements.sanupcraft.stocker.description": "파수꾼의 심장으로 재고 유지기를 만든다"
+  "advancements.sanupcraft.stocker.description": "파수꾼의 심장으로 재고 유지기를 만든다",
+  "item.sanupcraft.portable_terminal": "휴대 단말",
+  "item.sanupcraft.portable_terminal.tooltip": "창고 단말에 우클릭해 연결하고, 들고 우클릭으로 그 단말을 연다",
+  "item.sanupcraft.portable_terminal.tooltip2": "같은 차원 64칸 안. 단말이 있는 청크가 불러와져 있어야 한다",
+  "item.sanupcraft.ender_portable_terminal": "셜커 휴대 단말",
+  "item.sanupcraft.ender_portable_terminal.tooltip": "어느 차원에서나 연결된 창고 단말을 연다",
+  "item.sanupcraft.ender_portable_terminal.tooltip2": "단말이 있는 청크가 불러와져 있어야 한다 (엔더 닻으로 붙잡아 두기)",
+  "item.sanupcraft.portable_terminal.linked": "단말에 연결했다 (%s, %s, %s)",
+  "item.sanupcraft.portable_terminal.not_linked": "먼저 창고 단말에 우클릭해 연결하세요",
+  "item.sanupcraft.portable_terminal.other_dimension": "다른 차원의 단말이다 (셜커 휴대 단말이 필요)",
+  "item.sanupcraft.portable_terminal.too_far": "단말이 너무 멀다 (%s칸 안이어야 한다)",
+  "item.sanupcraft.portable_terminal.not_loaded": "단말이 있는 곳이 불러와져 있지 않다 (엔더 닻으로 붙잡아 두세요)",
+  "item.sanupcraft.portable_terminal.missing": "연결된 단말이 없어졌다",
+  "item.sanupcraft.portable_terminal.unlinked": "연결 안 됨",
+  "item.sanupcraft.portable_terminal.link": "연결: %s, %s, %s (%s)",
+  "advancements.sanupcraft.portable_terminal.title": "어디서나 창고",
+  "advancements.sanupcraft.portable_terminal.description": "셜커 휴대 단말을 만든다"
 }
