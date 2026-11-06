@@ -1391,6 +1391,13 @@ Opus 샘플링(직접 읽음, Haiku 담당 영역): `boss/gear/VoidStaffItem` ·
 - **#32**: `VoidShade.customServerAiStep` 6 ~ 16칸 안에서 `teleportBehind` 실패 시 `ambushCooldown = 20`.
 - **#2 · #10 · #3 · #33 · #1**: 주석만(수호자 · 파수꾼 문서, `VoidColossus.volley`, `EliteMonster` · `EliteAbility` 반사, 장비 상수 셋 "보스 설정과 일부러 따로").
 - 검증: `./gradlew build` GameTest 410개 통과(409 + 새 1), `runClientGameTest` 통과.
+### 8-6a. L2 수정 기록 (모듈 · 장비 · 설정)
+- **#17** `RepairStationBlockEntity.canPlaceItemThroughFace` 재료 갈래를 `!gear.isEmpty() && gear.isValidRepairItem(stack)`로 (`canPlaceItem` 그대로), 클래스 문서 보강. 시험 `repairStationHopperWaitsForGear` — 고치기 전 실패("빈 수리대에 깔때기로 흙이 들어감").
+- **#19** `working()` · `pool()` · `working` 필드(대입 두 줄) 삭제. `pool` 필드 · 저장 키는 유지.
+- **#20** `GearUpgradeRecipes` 클래스 문서를 `source` 규칙에 맞게. **#24** `SteelGear` 문서 "갑옷은 철의 약 1.5배 · 도구는 2배".
+- **#28** `SpecialGearTicks.init`에 `ServerEntityLevelChangeEvents.AFTER_PLAYER_CHANGE_LEVEL` → `HeadLamp.clear(player)`, `HeadLamp` 문서에 "불러온 청크에서만" 한 줄. 시험 `headLampClearsOnDimensionChange` — 모의 플레이어는 연결이 없어 `teleport`가 실패("connection is null")하므로 이벤트를 직접 불러 연결을 본다. 고치기 전 실패("차원을 옮겼는데 조명 추적이 남음"). 28b 보류 그대로.
+- **#47** `ModuleEffects.RAPID_COOLDOWN_PERCENT` · `SCATTER_PELLETS` · `SCATTER_DAMAGE_PERCENT`(50 · 3 · 50), `SanupcraftConfig` 필드 초기값 · `OPTIONS` 기본값이 참조. `configDefaultsMatchConstants`에 세 줄.
+- 결과: `./gradlew build` GameTest 411개(409 + 2) 전부 통과, `runClientGameTest` 종료 코드 0.
 
 ### 8-7. 2단계 계획
 **2단계 없음.** 8-2에서 올린 셋은 반론으로 모두 닫았다: 1은 설계상 장비 상수(주석 한 줄, L1), 5 · 6은 #62 기준 오탐. 3단계도 없음. 다음 라운드 후보는 보류 11(렌더러 기반 클래스, 보스가 넷이 될 때)과 보류 메모 17b · 27b · 28b.

@@ -24,7 +24,7 @@ import io.github.yhyeop.sanupcraft.Sanupcraft;
 
 /**
  * 계승 제작대 레시피 (G4). JSON은 바닐라 모양 · 무형 레시피와 똑같고 {@code type}만 {@code sanupcraft:gear_upgrade_shaped} ·
- * {@code sanupcraft:gear_upgrade_shapeless}. 결과를 만들 때 격자의 첫 장비(내구도가 있는 칸)에서 {@link GearInheritance#carry}로 옮긴다.
+ * {@code sanupcraft:gear_upgrade_shapeless}. 결과를 만들 때 격자의 장비({@link #source}: 마법 부여 · 모듈 · 이름이 있는 것 먼저, 없으면 첫 장비)에서 {@link GearInheritance#carry}로 옮긴다.
  * 바닐라 레시피를 이어받아서 레시피 책 · JEI에는 보통 레시피처럼 보인다.
  */
 public final class GearUpgradeRecipes {

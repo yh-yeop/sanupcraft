@@ -273,11 +273,11 @@ public final class SanupcraftConfig {
 	/** 넉백 모듈: 밀치기 증가. */
 	public double moduleKnockback = io.github.yhyeop.sanupcraft.module.ModuleEffects.KNOCKBACK;
 	/** 연발 모듈: 리벳총 쿨다운(%, 50 = 반). */
-	public int moduleRapidCooldownPercent = 50;
+	public int moduleRapidCooldownPercent = io.github.yhyeop.sanupcraft.module.ModuleEffects.RAPID_COOLDOWN_PERCENT;
 	/** 산탄 모듈: 리벳 1개로 나가는 발 수. */
-	public int moduleScatterPellets = 3;
+	public int moduleScatterPellets = io.github.yhyeop.sanupcraft.module.ModuleEffects.SCATTER_PELLETS;
 	/** 산탄 모듈: 한 발 피해(%, 리벳총 피해 기준). */
-	public int moduleScatterDamagePercent = 50;
+	public int moduleScatterDamagePercent = io.github.yhyeop.sanupcraft.module.ModuleEffects.SCATTER_DAMAGE_PERCENT;
 	/** 증기 수리대: 고치는 틱마다 드는 증기. */
 	public int repairSteamPerTick = io.github.yhyeop.sanupcraft.module.RepairStationBlockEntity.STEAM_PER_TICK;
 	/** 증기 수리대: 다 닳은 장비를 다 고치는 데 걸리는 틱 (재료가 넉넉할 때). */
@@ -521,11 +521,11 @@ public final class SanupcraftConfig {
 					c -> c.moduleAreaSpeedPercent, (c, v) -> c.moduleAreaSpeedPercent = (int) v),
 			new Option("modules", "knockback", io.github.yhyeop.sanupcraft.module.ModuleEffects.KNOCKBACK, 0.0, 5.0, false,
 					c -> c.moduleKnockback, (c, v) -> c.moduleKnockback = v),
-			new Option("modules", "rapidCooldownPercent", 50, 1, 100, true,
+			new Option("modules", "rapidCooldownPercent", io.github.yhyeop.sanupcraft.module.ModuleEffects.RAPID_COOLDOWN_PERCENT, 1, 100, true,
 					c -> c.moduleRapidCooldownPercent, (c, v) -> c.moduleRapidCooldownPercent = (int) v),
-			new Option("modules", "scatterPellets", 3, 1, 9, true,
+			new Option("modules", "scatterPellets", io.github.yhyeop.sanupcraft.module.ModuleEffects.SCATTER_PELLETS, 1, 9, true,
 					c -> c.moduleScatterPellets, (c, v) -> c.moduleScatterPellets = (int) v),
-			new Option("modules", "scatterDamagePercent", 50, 1, 100, true,
+			new Option("modules", "scatterDamagePercent", io.github.yhyeop.sanupcraft.module.ModuleEffects.SCATTER_DAMAGE_PERCENT, 1, 100, true,
 					c -> c.moduleScatterDamagePercent, (c, v) -> c.moduleScatterDamagePercent = (int) v),
 			new Option("repairStation", "steamPerTick", io.github.yhyeop.sanupcraft.module.RepairStationBlockEntity.STEAM_PER_TICK, 0,
 					io.github.yhyeop.sanupcraft.module.RepairStationBlockEntity.STEAM_CAPACITY, true,
