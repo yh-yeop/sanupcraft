@@ -1,0 +1,15 @@
+{
+  "type": "sanupcraft:washing",
+  "ingredient": "sanupcraft:raw_aluminium",
+  "result": {
+    "id": "sanupcraft:refined_aluminium_dust",
+    "count": 3
+  },
+  "byproduct": {
+    "item": {
+      "id": "sanupcraft:rare_dust"
+    },
+    "chance": 0.1
+  },
+  "time": 200
+}

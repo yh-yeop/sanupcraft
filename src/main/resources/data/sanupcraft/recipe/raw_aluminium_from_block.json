@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "sanupcraft:raw_aluminium_block"
+  ],
+  "result": {
+    "id": "sanupcraft:raw_aluminium",
+    "count": 9
+  }
+}

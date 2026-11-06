@@ -3175,6 +3175,119 @@ def main_fin(made):
     made.append(save(void_shield_texture(), "entity/void_colossus_shield.png"))
 
 
+# ---------- 확장 3 D1 새 광석 (크롬철석 · 보크사이트) ----------
+# 크롬: 강청색 · 은색 (원석은 녹흑색 크롬철석 얼룩). 알루미늄: 옅은 은색 (원석은 붉은 갈색 보크사이트 점토).
+CHROMIUM = {"a": "#26323f", "b": "#4f6a82", "c": "#7f9db5", "d": "#b3ccdc", "e": "#e6f2f8"}
+ALUMINIUM = {"a": "#6d7378", "b": "#a0a7ad", "c": "#c9cfd4", "d": "#e3e7ea", "e": "#fbfcfd"}
+CHROMITE_FLECK = ["#0f1a14", "#1f4a32", "#2f7a4f"]
+BAUXITE_CLAY = ["#6e3a26", "#85472e", "#9a5636", "#b06a44", "#c78558"]
+
+RAW_ORE = [
+    "................",
+    "................",
+    "................",
+    "......aaaa......",
+    "....aabbcbaa....",
+    "...abbcbccbba...",
+    "..abccbbbdcbba..",
+    "..abcbbcbbcbba..",
+    "..abbbcbbdbcca..",
+    "..aabcbbbcbbba..",
+    "...abbbcbbbaa...",
+    "....aabbbbaa....",
+    ".....aaaaaa.....",
+    "................",
+    "................",
+    "................",
+]
+
+
+def a1_noise(colors, seed, size=16):
+    rnd = random.Random(seed)
+    im = Image.new("RGBA", (size, size))
+    for y in range(size):
+        for x in range(size):
+            im.putpixel((x, y), hex_px(rnd.choice(colors)))
+    return im
+
+
+def a1_flecks(im, colors, seed, count):
+    rnd = random.Random(seed)
+    for _ in range(count):
+        x, y = rnd.randrange(1, 15), rnd.randrange(1, 15)
+        for dx, dy in ((0, 0), (1, 0), (0, 1)):
+            if rnd.random() < 0.8:
+                im.putpixel((x + dx, y + dy), hex_px(rnd.choice(colors)))
+    return im
+
+
+def a1_bevel(im, light, dark):
+    for i in range(16):
+        im.putpixel((i, 0), hex_px(light))
+        im.putpixel((0, i), hex_px(light))
+        im.putpixel((i, 15), hex_px(dark))
+        im.putpixel((15, i), hex_px(dark))
+    return im
+
+
+def a1_raw_block(base, accent, seed):
+    im = a1_noise(base, seed)
+    a1_flecks(im, accent, seed + 1, 9)
+    return im
+
+
+def a1_metal_block(pal, seed):
+    im = a1_noise([pal["c"], pal["c"], pal["d"], pal["b"]], seed)
+    for y in (4, 11):
+        for x in range(16):
+            im.putpixel((x, y), hex_px(pal["b"]))
+    for x in (4, 11):
+        for y in range(16):
+            if y % 7 != 3:
+                im.putpixel((x, y), hex_px(pal["b"]))
+    for x, y in ((2, 2), (7, 2), (13, 8), (3, 13)):
+        im.putpixel((x, y), hex_px(pal["e"]))
+    return a1_bevel(im, pal["e"], pal["a"])
+
+
+def main_a1(made):
+    # 크롬철석: 심층암 바탕에 녹흑색 얼룩 + 강청색 반짝임
+    deep = a1_noise(["#3a3a40", "#46464d", "#2f2f35", "#4f4f56"], 9101)
+    a1_flecks(deep, CHROMITE_FLECK, 9102, 12)
+    for x, y in ((3, 4), (10, 3), (6, 10), (12, 11)):
+        deep.putpixel((x, y), hex_px(CHROMIUM["c"]))
+    made.append(save(deep, "block/deepslate_chromite_ore.png"))
+    # 보크사이트: 붉은 갈색 점토 덩어리 + 옅은 줄
+    bx = a1_noise(BAUXITE_CLAY, 9111)
+    for y in (3, 8, 13):
+        for x in range(16):
+            if (x + y) % 5:
+                bx.putpixel((x, y), hex_px(BAUXITE_CLAY[(x + y) % 2 + 3]))
+    made.append(save(bx, "block/bauxite_ore.png"))
+    made.append(save(a1_raw_block(["#2c3236", "#363d42", "#252a2e"], ["#31523f", "#4f6a82", "#7f9db5"], 9121), "block/raw_chromium_block.png"))
+    made.append(save(a1_raw_block(BAUXITE_CLAY[:4], ["#c78558", "#d9a77c"], 9131), "block/raw_aluminium_block.png"))
+    made.append(save(a1_metal_block(CHROMIUM, 9141), "block/chromium_block.png"))
+    made.append(save(a1_metal_block(ALUMINIUM, 9151), "block/aluminium_block.png"))
+
+    raw_chromium = {"a": "#161b1e", "b": "#2c3236", "c": "#3d474d", "d": "#7f9db5"}
+    raw_aluminium = {"a": "#4a2416", "b": "#85472e", "c": "#b06a44", "d": "#d9a77c"}
+    made.append(save(recolor(from_art(RAW_ORE), raw_chromium), "item/raw_chromium.png"))
+    made.append(save(recolor(from_art(RAW_ORE), raw_aluminium), "item/raw_aluminium.png"))
+    dust = from_art(ITEMS["iron_dust"])
+
+    def refined(mapping):
+        im = recolor(dust, mapping)
+        for x, y in ((6, 8), (9, 9), (7, 11), (11, 11)):
+            im.putpixel((x, y), hex_px("#ffffff"))
+        return im
+    made.append(save(recolor(dust, CHROMIUM), "item/chromium_dust.png"))
+    made.append(save(recolor(dust, ALUMINIUM), "item/aluminium_dust.png"))
+    made.append(save(refined(CHROMIUM), "item/refined_chromium_dust.png"))
+    made.append(save(refined(ALUMINIUM), "item/refined_aluminium_dust.png"))
+    made.append(save(recolor(from_art(INGOT), CHROMIUM), "item/chromium_ingot.png"))
+    made.append(save(recolor(from_art(INGOT), ALUMINIUM), "item/aluminium_ingot.png"))
+
+
 def save(im, rel, scale=1):
     path = os.path.join(OUT, *rel.split("/"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -3220,6 +3333,7 @@ def main():
     main_m6(made)
     main_m8c(made)
     main_fin(made)
+    main_a1(made)  # 확장 3 D1 새 광석
 
     if "--sheet" in sys.argv:
         tiles = [Image.open(p) for p in made]

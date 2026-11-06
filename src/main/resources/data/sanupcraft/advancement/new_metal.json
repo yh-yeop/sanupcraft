@@ -1,0 +1,35 @@
+{
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "sanupcraft:raw_chromium",
+              "sanupcraft:raw_aluminium"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:raw_chromium"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.new_metal.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.new_metal.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ],
+  "parent": "sanupcraft:raw_iron"
+}

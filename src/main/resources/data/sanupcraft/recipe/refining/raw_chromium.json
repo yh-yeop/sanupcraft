@@ -1,0 +1,15 @@
+{
+  "type": "sanupcraft:refining",
+  "ingredient": "sanupcraft:raw_chromium",
+  "result": {
+    "id": "sanupcraft:refined_chromium_dust",
+    "count": 4
+  },
+  "byproduct": {
+    "item": {
+      "id": "sanupcraft:rare_dust"
+    },
+    "chance": 0.2
+  },
+  "time": 200
+}
