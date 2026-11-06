@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "P": "sanupcraft:steel_plate",
+    "D": "minecraft:diamond",
+    "G": "sanupcraft:gear_part",
+    "C": "sanupcraft:steam_canister",
+    "S": "sanupcraft:steam_pipe"
+  },
+  "pattern": [
+    "PDP",
+    "GCG",
+    " S "
+  ],
+  "result": {
+    "id": "sanupcraft:steam_drill"
+  }
+}

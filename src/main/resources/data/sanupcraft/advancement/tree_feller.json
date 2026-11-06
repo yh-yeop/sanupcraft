@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:tree_feller"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:tree_feller"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.tree_feller.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.tree_feller.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ],
+  "parent": "sanupcraft:crop_harvester"
+}

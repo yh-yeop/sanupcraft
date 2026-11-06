@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "P": "sanupcraft:steel_plate",
+    "A": "minecraft:iron_axe",
+    "G": "sanupcraft:gear_part",
+    "C": "sanupcraft:steam_canister",
+    "S": "sanupcraft:steam_pipe"
+  },
+  "pattern": [
+    "PAP",
+    "GCG",
+    " S "
+  ],
+  "result": {
+    "id": "sanupcraft:chainsaw"
+  }
+}

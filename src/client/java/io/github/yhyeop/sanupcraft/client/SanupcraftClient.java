@@ -28,6 +28,7 @@ public class SanupcraftClient implements ClientModInitializer {
 		EntityRendererRegistry.register(ModBoss.FURNACE_WARDEN, FurnaceWardenRenderer::new);
 		EntityRendererRegistry.register(SteamGear.RIVET_ENTITY, ThrownItemRenderer::new);
 		ItemTooltipCallback.EVENT.register((stack, context, flag, lines) -> addGuideTooltip(stack, lines));
+		JetpackClient.init(); // 확장 M9a
 	}
 
 	/**

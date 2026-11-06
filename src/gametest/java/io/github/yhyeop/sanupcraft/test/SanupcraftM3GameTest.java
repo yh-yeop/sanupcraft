@@ -110,7 +110,9 @@ public class SanupcraftM3GameTest {
 	@GameTest
 	public void advancementGuideLoads(GameTestHelper helper) {
 		String[] ids = {"root", "raw_iron", "crusher", "press", "alloy", "hammer", "quarry", "iron_plate", "steel", "guardian_core", "boiler", "belt_motor", "heatproof",
-				"warden_summoner", "warden_heart", "heart_forge", "shulker_shell", "ender_link", "geothermal_vent", "heatproof_drill", "ender_anchor", "rusted_shrine", "belt_sorter", "rivet_gun", "steam_boots"};
+				"warden_summoner", "warden_heart", "heart_forge", "shulker_shell", "ender_link", "geothermal_vent", "heatproof_drill", "ender_anchor", "rusted_shrine", "belt_sorter", "rivet_gun", "steam_boots",
+				// 확장 M9a
+				"crop_harvester", "tree_feller", "steam_drill", "chainsaw", "steam_jetpack"};
 		var advancements = helper.getLevel().getServer().getAdvancements();
 		for (String id : ids) {
 			helper.assertTrue(advancements.get(Sanupcraft.id(id)) != null, "발전 과제가 없음: " + id);

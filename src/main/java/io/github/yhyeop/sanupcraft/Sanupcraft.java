@@ -15,12 +15,14 @@ import io.github.yhyeop.sanupcraft.core.ModItems;
 import io.github.yhyeop.sanupcraft.core.ModTab;
 import io.github.yhyeop.sanupcraft.factory.ModMachines;
 import io.github.yhyeop.sanupcraft.gear.HeatproofGear;
+import io.github.yhyeop.sanupcraft.gear.ProductionGear;
 import io.github.yhyeop.sanupcraft.gear.SteamGear;
 import io.github.yhyeop.sanupcraft.gear.SteelGear;
 import io.github.yhyeop.sanupcraft.logistics.ModLogistics;
 import io.github.yhyeop.sanupcraft.mining.ModMining;
 import io.github.yhyeop.sanupcraft.playtest.PlaytestCommand;
 import io.github.yhyeop.sanupcraft.power.ModPower;
+import io.github.yhyeop.sanupcraft.production.ModProduction;
 import io.github.yhyeop.sanupcraft.world.ModWorld;
 
 public class Sanupcraft implements ModInitializer {
@@ -42,6 +44,8 @@ public class Sanupcraft implements ModInitializer {
 		SteamGear.init();
 		ModBoss.init();
 		ModWorld.init();
+		ModProduction.init(); // 확장 M9a
+		ProductionGear.init(); // 확장 M9a
 		ModTab.init();
 		CorpseGravesCompat.init();
 		PlaytestCommand.init();

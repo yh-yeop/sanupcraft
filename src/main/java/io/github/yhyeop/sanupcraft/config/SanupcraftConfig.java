@@ -22,14 +22,19 @@ import net.fabricmc.loader.api.FabricLoader;
 
 import io.github.yhyeop.sanupcraft.Sanupcraft;
 import io.github.yhyeop.sanupcraft.boss.BossParty;
+import io.github.yhyeop.sanupcraft.gear.ChainsawItem;
+import io.github.yhyeop.sanupcraft.gear.Jetpack;
 import io.github.yhyeop.sanupcraft.gear.RivetGunItem;
 import io.github.yhyeop.sanupcraft.gear.SteamBoots;
+import io.github.yhyeop.sanupcraft.gear.SteamDrillItem;
 import io.github.yhyeop.sanupcraft.logistics.BeltSorterBlockEntity;
 import io.github.yhyeop.sanupcraft.logistics.EnderAnchorBlockEntity;
 import io.github.yhyeop.sanupcraft.logistics.FilterHopperBlockEntity;
 import io.github.yhyeop.sanupcraft.mining.QuarryBlockEntity;
 import io.github.yhyeop.sanupcraft.power.GeothermalVentBlockEntity;
 import io.github.yhyeop.sanupcraft.power.SteamChargerBlockEntity;
+import io.github.yhyeop.sanupcraft.production.CropHarvesterBlockEntity;
+import io.github.yhyeop.sanupcraft.production.TreeFellerBlockEntity;
 
 /**
  * 서버 설정 파일 {@code config/sanupcraft.json}. 서버(싱글은 내장 서버)가 시작될 때 읽고, 파일이 없으면 기본값으로 만든다.
@@ -75,6 +80,21 @@ public final class SanupcraftConfig {
 	public int bootsDashCooldown = SteamBoots.DASH_COOLDOWN;
 	/** 증기 충전대: 틱당 채우는 증기. */
 	public int chargerSteamPerTick = SteamChargerBlockEntity.TRANSFER_PER_TICK;
+	// ---- M9 생산 · 장비 (확장 묶음 M9a) ----
+	/** 작물 수확기: 앞 9x9의 한 칸을 훑는 간격(틱). */
+	public int harvesterTicksPerScan = CropHarvesterBlockEntity.TICKS_PER_SCAN;
+	/** 작물 수확기: 작물 하나를 거둘 때 드는 증기. */
+	public int harvesterSteamPerCrop = CropHarvesterBlockEntity.STEAM_PER_CROP;
+	/** 벌목기: 블록 하나를 베는 간격(틱). */
+	public int fellerTicksPerBlock = TreeFellerBlockEntity.TICKS_PER_BLOCK;
+	/** 벌목기: 원목 하나를 벨 때 드는 증기 (잎은 1/4). */
+	public int fellerSteamPerBlock = TreeFellerBlockEntity.STEAM_PER_BLOCK;
+	/** 증기 드릴: 블록 하나를 캘 때 드는 증기. */
+	public int drillSteamPerBlock = SteamDrillItem.STEAM_PER_BLOCK;
+	/** 전기톱: 원목 하나를 벨 때 드는 증기 (잎은 1/4). */
+	public int chainsawSteamPerBlock = ChainsawItem.STEAM_PER_BLOCK;
+	/** 증기 제트팩: 떠 있는 틱당 드는 증기. */
+	public int jetpackSteamPerTick = Jetpack.STEAM_PER_TICK;
 
 	/** float 상수를 0.05F -> 0.05처럼 보이는 그대로의 double로 (파일에 0.0500000007...이 안 찍히게). */
 	private static double asDouble(float value) {
@@ -116,7 +136,22 @@ public final class SanupcraftConfig {
 			new Option("steamBoots", "dashCooldownTicks", SteamBoots.DASH_COOLDOWN, 0, 600, true,
 					c -> c.bootsDashCooldown, (c, v) -> c.bootsDashCooldown = (int) v),
 			new Option("steamCharger", "steamPerTick", SteamChargerBlockEntity.TRANSFER_PER_TICK, 1, 1000, true,
-					c -> c.chargerSteamPerTick, (c, v) -> c.chargerSteamPerTick = (int) v));
+					c -> c.chargerSteamPerTick, (c, v) -> c.chargerSteamPerTick = (int) v),
+			// M9 생산 · 장비 (확장 묶음 M9a)
+			new Option("cropHarvester", "ticksPerScan", CropHarvesterBlockEntity.TICKS_PER_SCAN, 1, 200, true,
+					c -> c.harvesterTicksPerScan, (c, v) -> c.harvesterTicksPerScan = (int) v),
+			new Option("cropHarvester", "steamPerCrop", CropHarvesterBlockEntity.STEAM_PER_CROP, 0, 200, true,
+					c -> c.harvesterSteamPerCrop, (c, v) -> c.harvesterSteamPerCrop = (int) v),
+			new Option("treeFeller", "ticksPerBlock", TreeFellerBlockEntity.TICKS_PER_BLOCK, 1, 200, true,
+					c -> c.fellerTicksPerBlock, (c, v) -> c.fellerTicksPerBlock = (int) v),
+			new Option("treeFeller", "steamPerBlock", TreeFellerBlockEntity.STEAM_PER_BLOCK, 0, 200, true,
+					c -> c.fellerSteamPerBlock, (c, v) -> c.fellerSteamPerBlock = (int) v),
+			new Option("steamDrill", "steamPerBlock", SteamDrillItem.STEAM_PER_BLOCK, 0, SteamDrillItem.CAPACITY, true,
+					c -> c.drillSteamPerBlock, (c, v) -> c.drillSteamPerBlock = (int) v),
+			new Option("chainsaw", "steamPerBlock", ChainsawItem.STEAM_PER_BLOCK, 0, ChainsawItem.CAPACITY, true,
+					c -> c.chainsawSteamPerBlock, (c, v) -> c.chainsawSteamPerBlock = (int) v),
+			new Option("steamJetpack", "steamPerTick", Jetpack.STEAM_PER_TICK, 0, 100, true,
+					c -> c.jetpackSteamPerTick, (c, v) -> c.jetpackSteamPerTick = (int) v));
 
 	/** 읽은 결과: 설정, 경고 문구, 파일에 빠진 키가 있었는지, 파일을 새로 썼는지. */
 	public record Loaded(SanupcraftConfig config, List<String> warnings, boolean missingKeys, boolean wroteFile) {

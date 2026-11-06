@@ -1177,6 +1177,192 @@ def main_bundle3(made):
     made.append(save(charger_bottom(), "block/steam_charger_bottom.png"))
 
 
+M9A_COLORS = {"G": "#3f9b3a", "F": "#8fe063", "Y": "#e8c040"}
+
+
+def m9a_px(ch):
+    c = M9A_COLORS.get(ch)
+    if c is None:
+        return px(ch)
+    return tuple(int(c[i:i + 2], 16) for i in (1, 3, 5)) + (255,)
+
+
+def m9a_put(im, x, y, ch):
+    if 0 <= x < im.width and 0 <= y < im.height:
+        im.putpixel((x, y), m9a_px(ch))
+
+
+def m9a_rect(im, x0, y0, x1, y1, ch):
+    for y in range(y0, y1 + 1):
+        for x in range(x0, x1 + 1):
+            m9a_put(im, x, y, ch)
+
+
+def m9a_line(im, x0, y0, x1, y1, ch, width=1):
+    steps = max(abs(x1 - x0), abs(y1 - y0), 1)
+    for i in range(steps + 1):
+        x = round(x0 + (x1 - x0) * i / steps)
+        y = round(y0 + (y1 - y0) * i / steps)
+        for dx in range(width):
+            for dy in range(width):
+                m9a_put(im, x + dx, y + dy, ch)
+
+
+def harvester_front():
+    """작물 수확기 앞면: 어두운 창 안에 푸른 새싹과 낫 날."""
+    im = panel(seed=401)
+    m9a_rect(im, 3, 3, 12, 11, "a")
+    m9a_rect(im, 4, 4, 11, 10, "m")
+    # 새싹
+    m9a_line(im, 7, 10, 7, 7, "G", 2)
+    m9a_rect(im, 4, 6, 6, 7, "F")
+    m9a_rect(im, 9, 5, 11, 6, "F")
+    m9a_put(im, 5, 6, "G")
+    m9a_put(im, 10, 5, "G")
+    # 낫 날 (위쪽 둥근 모양)
+    for x in range(4, 12):
+        m9a_put(im, x, 4, "d")
+    m9a_put(im, 4, 5, "c")
+    m9a_put(im, 11, 5, "c")
+    # 증기 눈금
+    m9a_rect(im, 4, 13, 11, 13, "k")
+    for x in (5, 7, 9):
+        m9a_put(im, x, 13, "g")
+    return im
+
+
+def harvester_top():
+    im = panel(seed=402)
+    m9a_rect(im, 4, 4, 11, 11, "a")
+    m9a_rect(im, 5, 5, 10, 10, "m")
+    for i in range(5, 11):
+        m9a_put(im, i, 7, "n")
+        m9a_put(im, i, 8, "n")
+    return im
+
+
+def feller_front():
+    """벌목기 앞면: 어두운 창 안에 톱날 원."""
+    im = panel(seed=411)
+    m9a_rect(im, 3, 3, 12, 12, "a")
+    m9a_rect(im, 4, 4, 11, 11, "m")
+    for y in range(16):
+        for x in range(16):
+            d = math.hypot(x - 7.5, y - 7.5)
+            if 4 <= x <= 11 and 4 <= y <= 11:
+                if d < 1.6:
+                    m9a_put(im, x, y, "a")
+                elif d < 3.3:
+                    m9a_put(im, x, y, "d")
+                elif d < 4.2 and (x + y) % 2 == 0:
+                    m9a_put(im, x, y, "c")
+    m9a_put(im, 7, 7, "t")
+    m9a_put(im, 8, 8, "t")
+    m9a_rect(im, 4, 13, 11, 13, "k")
+    for x in (5, 7, 9):
+        m9a_put(im, x, 13, "g")
+    return im
+
+
+def feller_top():
+    im = panel(seed=412)
+    m9a_rect(im, 4, 4, 11, 11, "a")
+    m9a_rect(im, 5, 5, 10, 10, "w")
+    for i in range(5, 11):
+        m9a_put(im, i, 7, "x")
+        m9a_put(im, i, 8, "x")
+    return im
+
+
+def jetpack_icon():
+    """증기 제트팩: 구리 띠를 두른 통 두 개와 아래 분사구."""
+    im = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    for x0 in (2, 9):
+        m9a_rect(im, x0, 2, x0 + 4, 11, "b")
+        m9a_rect(im, x0, 2, x0, 11, "d")
+        m9a_rect(im, x0 + 4, 2, x0 + 4, 11, "a")
+        m9a_rect(im, x0 + 1, 1, x0 + 3, 1, "c")
+        m9a_rect(im, x0 + 1, 2, x0 + 1, 10, "c")
+        m9a_put(im, x0 + 2, 1, "g")
+        m9a_rect(im, x0, 4, x0 + 4, 4, "t")
+        m9a_rect(im, x0, 9, x0 + 4, 9, "s")
+        m9a_rect(im, x0 + 1, 12, x0 + 3, 13, "a")
+        m9a_put(im, x0 + 2, 14, "h")
+    m9a_rect(im, 7, 5, 8, 7, "a")
+    m9a_rect(im, 5, 6, 10, 6, "a")
+    return im
+
+
+def drill_icon():
+    """증기 드릴: 오른쪽 위를 향한 나선 드릴 날, 구리 손잡이."""
+    im = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    m9a_line(im, 2, 14, 7, 9, "r", 3)
+    m9a_line(im, 2, 14, 6, 10, "t", 2)
+    m9a_line(im, 7, 9, 10, 6, "c", 3)
+    m9a_line(im, 8, 8, 10, 6, "d", 1)
+    m9a_put(im, 6, 8, "g")
+    m9a_put(im, 7, 7, "h")
+    # 나선 날
+    m9a_line(im, 10, 6, 13, 3, "b", 2)
+    m9a_put(im, 14, 2, "e")
+    m9a_put(im, 13, 2, "d")
+    m9a_put(im, 14, 3, "d")
+    for px_, py_ in ((11, 6), (12, 4), (13, 5)):
+        m9a_put(im, px_, py_, "a")
+    return im
+
+
+def chainsaw_icon():
+    """전기톱: 주황 몸통과 손잡이, 이빨이 달린 긴 날."""
+    im = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    m9a_rect(im, 1, 7, 7, 12, "s")
+    m9a_rect(im, 1, 7, 7, 7, "u")
+    m9a_rect(im, 1, 12, 7, 12, "r")
+    m9a_rect(im, 1, 7, 1, 12, "t")
+    m9a_rect(im, 2, 3, 5, 5, "a")
+    m9a_rect(im, 3, 4, 4, 4, "m")
+    m9a_rect(im, 3, 5, 3, 7, "a")
+    m9a_rect(im, 5, 9, 6, 10, "g")
+    # 날
+    m9a_line(im, 8, 9, 14, 4, "c", 2)
+    m9a_line(im, 8, 8, 14, 3, "d", 1)
+    for i in range(0, 6):
+        x = 8 + i
+        y = 10 - round(i * 0.83)
+        if i % 2 == 0:
+            m9a_put(im, x, y + 1, "a")
+    m9a_put(im, 15, 3, "b")
+    return im
+
+
+def jetpack_layer():
+    """제트팩이 몸통에 입혀지는 모양: 강철 몸통 위에 등에 통 두 개, 앞에 구리 띠."""
+    im = armor_layer(False)
+    # 앞면(20..27, 20..31)에 구리 띠
+    m9a_rect(im, 20, 26, 27, 27, "t")
+    m9a_rect(im, 20, 27, 27, 27, "s")
+    # 등판(32..39, 20..31)에 통 두 개
+    for x0 in (33, 37):
+        m9a_rect(im, x0, 21, x0 + 1, 30, "b")
+        m9a_rect(im, x0, 21, x0, 30, "d")
+        m9a_rect(im, x0 + 1, 21, x0 + 1, 30, "a")
+        m9a_rect(im, x0, 23, x0 + 1, 23, "t")
+        m9a_rect(im, x0, 27, x0 + 1, 27, "s")
+        m9a_put(im, x0, 21, "g")
+    return im
+
+
+def main_m9a(made):
+    made.append(save(harvester_front(), "block/crop_harvester_front.png"))
+    made.append(save(harvester_top(), "block/crop_harvester_top.png"))
+    made.append(save(feller_front(), "block/tree_feller_front.png"))
+    made.append(save(feller_top(), "block/tree_feller_top.png"))
+    made.append(save(jetpack_icon(), "item/steam_jetpack.png"))
+    made.append(save(drill_icon(), "item/steam_drill.png"))
+    made.append(save(chainsaw_icon(), "item/chainsaw.png"))
+    made.append(save(jetpack_layer(), "entity/equipment/humanoid/steam_jetpack.png"))
+
+
 def save(im, rel, scale=1):
     path = os.path.join(OUT, *rel.split("/"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -1210,6 +1396,7 @@ def main():
     main_bundle1(made)
     main_bundle2(made)
     main_bundle3(made)
+    main_m9a(made)
 
     if "--sheet" in sys.argv:
         tiles = [Image.open(p) for p in made]

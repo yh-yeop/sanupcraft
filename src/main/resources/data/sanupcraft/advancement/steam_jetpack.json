@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:steam_jetpack"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:steam_jetpack"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.steam_jetpack.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.steam_jetpack.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ],
+  "parent": "sanupcraft:steam_drill"
+}

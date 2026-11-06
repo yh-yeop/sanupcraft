@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:crop_harvester"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:crop_harvester"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.crop_harvester.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.crop_harvester.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ],
+  "parent": "sanupcraft:quarry"
+}
