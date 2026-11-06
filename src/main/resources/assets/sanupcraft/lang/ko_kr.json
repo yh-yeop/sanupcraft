@@ -104,8 +104,8 @@
   "advancements.sanupcraft.press.description": "압착기: 철 주괴 → 철판. 합금로 = 철판 6 + 화로 2 + 용광로.",
   "block.sanupcraft.guardian_altar.no_room": "공간이 좁다: 제단 위로 3x3 · 높이 4칸을 비우자.",
   "block.sanupcraft.guardian_altar.peaceful": "평화로움에서는 보스가 깨어나지 않는다.",
-  "entity.sanupcraft.rusty_guardian.rust_warning": "녹이 슨다! 강철 갑옷 한 벌이 없으면 피해 1.5배 + 구속.",
-  "entity.sanupcraft.furnace_warden.heat_warning": "과열! 내열 갑옷 한 벌이 없으면 피해 1.5배 + 불.",
+  "entity.sanupcraft.rusty_guardian.rust_warning": "녹이 슨다! 강철 갑옷 한 벌이 없으면 피해 1.5배 + 구속 + 녹(방어 감소).",
+  "entity.sanupcraft.furnace_warden.heat_warning": "과열! 내열 갑옷 한 벌이 없으면 피해 1.5배 + 과열(물에 들어가면 풀림).",
   "block.sanupcraft.boiler.water_full": "물이 가득 찼다.",
   "block.sanupcraft.boiler.other_fuel": "다른 연료가 들어 있다. 같은 연료만 더 넣을 수 있다.",
   "block.sanupcraft.boiler.hint.no_water": "물 없음: 양동이로 붓거나 물 원천 옆에",
@@ -309,7 +309,7 @@
   "book.sanupcraft.guide.4": "보스 1 · 녹슨 수호자\n\n수호자 제단에 소환석(철판 + 기계 부품 + 레드스톤 블록)을 쓴다. 평원 · 숲의 녹슨 사당에도 있다.\n강철 한 벌이 없으면 녹 공격이 1.5배로 아프고 느려진다. 강철 검은 1.5배 피해.",
   "book.sanupcraft.guide.5": "수호자 공략\n\n돌진: 웅크리고 선이 보이면 옆으로 피한다.\n내려찍기: 경고 고리 밖으로.\n졸개(좀벌레): 먼저 정리한다.\n패턴 타격은 방패를 깬다. 체력이 반이면 더 빨라진다.\n전리품: 수호자의 핵",
   "book.sanupcraft.guide.6": "3단계 · 네더\n\n핵 → 분쇄기 → 핵 조각 4. 강철 장비 + 기계 부품 + 핵 조각 = 내열 장비.\n네더에서는 용암 옆 지열 분출구로 증기를 얻고, 내열 드릴 굴착기로 고대 잔해를 캔다. 엔더 닻은 비운 공장을 계속 돌린다.",
-  "book.sanupcraft.guide.7": "보스 2 · 용광로 파수꾼\n\n네더 제단에 파수꾼 소환석(핵 조각 + 마그마 블록 + 블레이즈 막대)을 쓴다.\n내열 한 벌이 없으면 과열(1.5배 + 불). 내열 검은 1.5배 피해.",
+  "book.sanupcraft.guide.7": "보스 2 · 용광로 파수꾼\n\n네더 제단에 파수꾼 소환석(핵 조각 + 마그마 블록 + 블레이즈 막대)을 쓴다.\n내열 한 벌이 없으면 과열(1.5배 + 지속 피해, 물에 들어가면 풀림). 내열 검은 1.5배 피해.",
   "book.sanupcraft.guide.8": "파수꾼 공략\n\n증기 분출: 입이 빛나면 부채꼴 밖(옆 · 뒤)으로.\n화염 장판: 발밑 고리에서 벗어난다.\n도약 내려찍기: 착지 고리 밖으로.\n인원이 많을수록 장판이 늘어난다.\n전리품: 파수꾼의 심장",
   "book.sanupcraft.guide.9": "4단계 · 엔드\n\n심장 제련로: 고대 잔해 → 네더라이트 파편, 블레이즈 막대 → 가루(엔더의 눈).\n셜커 껍데기 + 심장으로 엔더 송신기 · 수신기. 같은 염료끼리 차원을 넘어 아이템을 보낸다.",
   "book.sanupcraft.guide.10": "기계 요령\n\n· 기계는 깔때기 · 벨트로 자기 레시피 재료만 받는다.\n· 굴착기는 분쇄기보다 훨씬 빠르다. 상자를 거쳐 필요한 것만 보내자.\n· 증기 계기판 + 비교기로 저장량을 읽는다.\n· 아이템에 마우스를 올리면 쓰임새가 나온다.",
@@ -711,5 +711,10 @@
   "subtitles.sanupcraft.boss.colossus.pull": "공허 거상: 끌어당기기 준비",
   "subtitles.sanupcraft.boss.colossus.crystals": "공허 거상: 수정 소환",
   "subtitles.sanupcraft.boss.colossus.rage": "공허 거상: 분노",
-  "subtitles.sanupcraft.boss.colossus.death": "공허 거상: 무너짐"
+  "subtitles.sanupcraft.boss.colossus.death": "공허 거상: 무너짐",
+  "effect.sanupcraft.rust": "녹",
+  "effect.sanupcraft.overheat": "과열",
+  "effect.sanupcraft.void_erosion": "공허 침식",
+  "death.attack.sanupcraft.overheat": "%1$s이(가) 과열로 쓰러졌습니다",
+  "death.attack.sanupcraft.overheat.player": "%1$s이(가) %2$s에게서 벗어나려다 과열로 쓰러졌습니다"
 }
