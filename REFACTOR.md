@@ -1112,3 +1112,25 @@ public Component problemMessage(Level level, Problem problem, String keyPrefix);
 | 확인: 시험 1은 B를 먼저 `check`하지 말 것 | 받아들임 | 두 탑을 A → B 순으로 `check`, B의 `checkTimer`가 40인 상태에서 3틱 안 판정 |
 
 그 밖의 7-8 내용(① `BossCombat`, 멀티블록 ① · ②의 나머지 API, #40 힌트)은 그대로 간다. 걸음: 보스 ① → ②a → ②b → ③ → 제트팩 → 멀티블록 ① → 멀티블록 ②(+43, K).
+
+### 7-11. 2단계 수정 기록 (Opus)
+시작 `e5acd64`(GameTest 297 통과). 걸음마다 `./gradlew build --no-configuration-cache`, 보스 · 렌더 걸음은 `runClientGameTest`도. 줄 수는 본 · 클라이언트 코드(시험 제외).
+
+| 걸음 · 커밋 | 옮긴 것 | 줄 (+/−) | 시험 |
+|---|---|---|---|
+| 보스 ① `c05de29` | 새 `boss/BossCombat`(`SHIELD_BREAK_SECONDS` · `breakShield` · `horizontalDistance` · `targets(level, box[, extra])` · `PlayerCooldown` + `warn`). 수호자 · 파수꾼의 방패 깨기 · 수평 거리 · 경고 맵 복사본과 두 공개 상수 삭제, 패턴 대상 7곳 → `targets`, 거상 방어막 문구 · `targets`도 같은 도우미로 | +106 / −109 | 298 통과. 새 `FixBoss.bossWarningCooldownPerPlayer` (새 API라 고치기 전 실패 확인은 해당 없음) |
+| 보스 ②a `f74619c` | 새 `PartyBossMonster extends Monster implements PartyBoss`: 보스 바(부모 생성자에서 만듦) · `party()` · `bossBarName` · `isEnraged` · `customServerAiStep` 머리(진행도 · 첫 화남 → 추상 `announcePhase`) · `actuallyHurt` · `getDamageAfterMagicAbsorb` · `dropCustomDeathLoot`(추상 `keyItem`) · 저장/읽기 · `setCustomName`/`refreshBossBar` · `removeWhenFarAway` · 보이기/숨기기. 세 보스 생성자는 `super(type, level, 색, 경험치)` 한 줄. 거상은 `shield_wave` · `crystals` 저장과 수정 정리만 오버라이드. `GuardianAltarBlock.isBoss` → `instanceof PartyBossMonster` | +174 / −276 | 299 통과. 새 `FixBoss.bossSaveKeysStayCompatible`(세 보스 태그 키 이름 + 파수꾼 손으로 쓴 옛 형식 태그 읽기 — 동작 불변 확인용이라 고치기 전에도 통과하는 시험) |
+| 보스 ②b `a1ccb6f` | `PatternGoal`(추상 `inPattern`) · 공격 동작(`EVENT_ATTACK` · `ATTACK_ANIMATION_TICKS` · `playAttackAnimation` · `handleEntityEvent` · `aiStep` · `getAttackTick`)을 부모로. 수호자 `swingArms` · 파수꾼 `swingHead` · 거상 `doHurtTarget` 첫 두 줄 → `playAttackAnimation`. 파수꾼은 `EVENT_ROAR`만 자기 `handleEntityEvent`에. `RustyGuardianRenderer`: `getAttackAnimationTick` → `getAttackTick`. `makeStuckInBlock` · `canBeAffected`는 7-10대로 각자 둠 | +80 / −125 | 첫 빌드에서 `M9b.grinderKillFeedsExperienceTank` 1건 실패(좀비 경험치 4 < 5, 보스와 무관한 기존 흔들림) → 같은 코드로 다시 돌려 299 통과. `runClientGameTest` 통과 + 스크린숏 비교(아래) |
+| ③ 77 `87f97c7` | 새 `client/boss/BossRenderState`(`attackTicksRemaining` · `enraged` · `attackProgress()` · `attackRaise()` · `extractCommon`). 세 `*RenderState`가 상속, 세 모델의 `p` · `raise` 계산 → 상태 함수, 세 렌더러 추출 두 줄 → `extractCommon`, 사망 페이드 → `BossGlowLayer`. `BossRenderer` 기반 클래스는 7-10대로 안 만듦 | +52 / −50 | 299 통과, `runClientGameTest` 통과 + 스크린숏 비교 |
+| 제트팩 `c8af18f` | `Jetpack.hasThrustSteam(pack)` — `Jetpack.thrust` · `JetpackClient`의 `Math.max(설정값, 1)` 판정 하나로 | +8 / −5 | 299 통과 |
+| 멀티블록 ① `32920b6` | `BigBoilerControllerBlockEntity.SHAPE = new MultiblockShape(3, 4, …)`, `BigBoilerShape` 삭제, 호출처 넷 · `M8a` 옮김, `MultiblockShape` 문서 | +22 / −109 | 299 통과. `M8a.bigBoilerFormsOnlyWithRightShape`에 외벽 33 · 전체 36 단언 |
+| 멀티블록 ② `82cdd45` | `MultiblockShape`: 생성자에 `formed` 속성, `form` · `unform`(K안) · `notifyControllers` · `problemMessage`, 인터페이스 `Controller`(`shape` · `getBlockPos` · `facing` · `isFormed` · `requestCheck`) · `LinkedCasing`(`linkedController` · `link`). 두 제어기 BE의 `setCasingsFormed`, 두 외벽 블록의 `notifyControllers`, 두 제어기 블록의 틀린 칸 문구 복사본 삭제. 제어기 제거도 `unform`. 상자 순회는 `isLoaded` 가드. #40: `BoilerBlock.hint`를 `protected static` + `boiler.steamCapacity()`로, 큰 보일러 `hint` 삭제 | +190 / −93 | 새 `M8b.sharedWallTowerSurvivesNeighbourBreak` · `sharedWallTowerSurvivesNeighbourControllerRemoval`: **고치기 전 코드에서 2건 실패 확인**("공유 벽돌 무늬가 꺼짐", 3틱째) → 고친 뒤 301 통과 |
+
+합계: 본 · 클라이언트 29파일 +618 / −753(−135줄), 시험 3파일 +143 / −7. 보스 세 파일 568 · 671 · 622줄 → 401 · 516 · 520줄(+ 부모 191, `BossCombat` 83).
+
+**스크린숏 비교** (`runClientGameTest` 54장, 1280×720 보스 장면은 `M11a` · `Fin`. 지표: 채널 최대 차이가 24를 넘는 픽셀 비율):
+- 잡음 수준: 같은 코드(`e5acd64`)로 두 번 찍어 비교. 보스 장면 대부분 0.004~0.2%, 수정이 무작위 자리에 뜨는 `fin-shielded` 9.5% · `fin-shielded-angle` 2.6%.
+- ②b 뒤 · ③ 뒤 · 마지막(멀티블록 ② 뒤)을 처음 사진과 비교: 보스 장면 0.004~0.93%, `fin-shielded` 12~13%(잡음과 같은 원인). 잡음보다 큰 `fin-close` 0.93% · `fin-pulling` 0.74%는 나란히 놓고 차이 그림을 봤다 — 윤곽만 한두 픽셀 어긋남(숨쉬기 · 머리 위 조각 회전이 시각에 따라 다름), 자세 · 레이어 · 크기 같음. 공격 자세(`m11a-attack` 0.23% · `fin-attack` 0.25%)도 팔을 든 자세가 같음을 눈으로 확인. 멀티블록 장면(`m8a-industry` 0.94% · `m8b-blocks` 0.40% 등)도 잡음 수준.
+- 결론: 렌더 결과 변화 없음.
+
+**미룬 것**: 없음(7-10 범위 모두 처리). 참고 — `M9b.grinderKillFeedsExperienceTank`가 가끔 실패한다(경험치 구슬이 탱크로 덜 들어감, 이번 변경과 무관). 다음 리팩터링 1단계 후보.
