@@ -186,7 +186,6 @@ public final class SanupcraftConfig {
 					c -> c.chainsawSteamPerBlock, (c, v) -> c.chainsawSteamPerBlock = (int) v),
 			new Option("steamJetpack", "steamPerTick", Jetpack.STEAM_PER_TICK, 0, 100, true,
 					c -> c.jetpackSteamPerTick, (c, v) -> c.jetpackSteamPerTick = (int) v),
-					c -> c.pumpTicksPerBucket, (c, v) -> c.pumpTicksPerBucket = (int) v),
 			// M9b 몹 분쇄기
 			new Option("mobGrinder", "damage", asDouble(MobGrinderBlockEntity.DAMAGE), 0.0, 1000.0, false,
 					c -> c.grinderDamage, (c, v) -> c.grinderDamage = v),
