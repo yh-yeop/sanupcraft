@@ -37,6 +37,7 @@ MODS = [
     ("simple-voice-chat", True, "거리 기반 음성 채팅 (서버 UDP 24454 열기)"),
     ("player-corpse", True, "죽은 자리에 시체 (주인만 열 수 있음, 남은 시간 표시)"),
     ("jei", False, "레시피 보기"),
+    ("mouse-tweaks", False, "인벤토리 마우스 편의 (끌어서 나누기 · 휠로 옮기기)"),
 ]
 
 USER_AGENT = "yh-yeop/sanupcraft (mrpack builder)"
