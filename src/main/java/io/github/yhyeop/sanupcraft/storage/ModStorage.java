@@ -120,7 +120,6 @@ public final class ModStorage {
 		return BlockBehaviour.Properties.of()
 				.mapColor(color)
 				.strength(3.0F, 6.0F)
-				.requiresCorrectToolForDrops()
 				.sound(SoundType.METAL);
 	}
 }

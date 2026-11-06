@@ -1,5 +1,6 @@
 package io.github.yhyeop.sanupcraft.storage;
 
+import java.util.Locale;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -49,10 +50,6 @@ public class PortableTerminalItem extends Item {
 		this.ender = ender;
 	}
 
-	public boolean isEnder() {
-		return ender;
-	}
-
 	@Override
 	public InteractionResult useOn(UseOnContext context) {
 		Level level = context.getLevel();
@@ -81,7 +78,7 @@ public class PortableTerminalItem extends Item {
 		GlobalPos link = stack.get(ModStorage.TERMINAL_LINK);
 		Check check = check(serverLevel, player, link);
 		if (check != Check.OK) {
-			player.sendOverlayMessage(Component.translatable("item.sanupcraft.portable_terminal." + check.name().toLowerCase(), rangeText()));
+			player.sendOverlayMessage(Component.translatable("item.sanupcraft.portable_terminal." + check.name().toLowerCase(Locale.ROOT), rangeText()));
 			return InteractionResult.FAIL;
 		}
 		ServerLevel target = serverLevel.getServer().getLevel(link.dimension());

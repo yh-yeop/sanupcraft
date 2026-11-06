@@ -234,11 +234,15 @@ public class StockerBlockEntity extends BlockEntity implements StorageNetwork.Me
 			}
 			known = true;
 			int sets = setsFor(deficit, out.getCount());
-			if (fill(net, machine, MachineBlockEntity.SLOT_INPUT, recipe.ingredient(), recipe.count(), sets)
-					&& (recipe.ingredient2().isEmpty()
-							|| fill(net, machine, MachineBlockEntity.SLOT_INPUT2, recipe.ingredient2().get(), recipe.count2(), sets))) {
+			boolean first = fill(net, machine, MachineBlockEntity.SLOT_INPUT, recipe.ingredient(), recipe.count(), sets);
+			if (first && (recipe.ingredient2().isEmpty()
+					|| fill(net, machine, MachineBlockEntity.SLOT_INPUT2, recipe.ingredient2().get(), recipe.count2(), sets))) {
 				machine.setChanged();
 				return Status.WORKING;
+			}
+			if (first) {
+				// 둘째 재료가 모자라 다음 레시피로 넘어가도, 첫째 칸은 이미 바뀌었을 수 있다 (표시 안 하면 이웃 청크에서 재시작 때 유실)
+				machine.setChanged();
 			}
 		}
 		return known ? Status.MISSING : Status.IDLE;

@@ -10,6 +10,7 @@ import net.minecraft.core.GlobalPos;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.Item;
@@ -151,6 +152,45 @@ public class SanupcraftStorageGameTest {
 		placed.applyComponentsFromItemStack(drops.get(0));
 		helper.assertValueEqual(placed.count(), 5000, "다시 놓은 서랍 개수");
 		helper.assertValueEqual(placed.upgrades(), 1, "다시 놓은 서랍 업그레이드");
+		helper.succeed();
+	}
+
+	/** 서랍을 부수고 둘레의 떨어진 아이템 엔티티를 모아 돌려준다. */
+	private static List<ItemStack> breakDrawerAndCollect(GameTestHelper helper, ServerPlayer player, BlockPos pos) {
+		helper.assertTrue(player.gameMode.destroyBlock(helper.absolutePos(pos)), "서랍이 안 부서짐");
+		return helper.getLevel().getEntitiesOfClass(ItemEntity.class, helper.getBounds().inflate(1.0)).stream().map(ItemEntity::getItem).toList();
+	}
+
+	private static void assertSingleDrawerItem(GameTestHelper helper, List<ItemStack> drops) {
+		int loose = drops.stream().filter(s -> s.is(Items.REDSTONE)).mapToInt(ItemStack::getCount).sum();
+		helper.assertValueEqual(loose, 0, "낱개로 쏟아진 레드스톤");
+		List<ItemStack> drawers = drops.stream().filter(s -> s.is(ModStorage.STEEL_DRAWER.asItem())).toList();
+		helper.assertValueEqual(drawers.size(), 1, "떨어진 서랍 아이템 수");
+		DrawerContents contents = drawers.get(0).get(ModStorage.DRAWER_CONTENTS);
+		helper.assertTrue(contents != null && contents.count() == 5000 && contents.item().is(Items.REDSTONE), "서랍 아이템의 내용물: " + contents);
+	}
+
+	/** 곡괭이로 부수면 보기 칸을 따로 쏟지 않고 내용물 전부가 서랍 아이템 하나에 담긴다 (81). */
+	@GameTest
+	public void drawerBreaksIntoOneItem(GameTestHelper helper) {
+		BlockPos pos = new BlockPos(1, 1, 1);
+		drawer(helper, pos, ModStorage.STEEL_DRAWER).insert(new ItemStack(Items.REDSTONE), 5000, false);
+		ServerPlayer player = helper.makeMockServerPlayerInLevel();
+		player.setGameMode(GameType.SURVIVAL); // 창작 모드는 전리품을 안 떨군다
+		player.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(Items.IRON_PICKAXE));
+		assertSingleDrawerItem(helper, breakDrawerAndCollect(helper, player, pos));
+		helper.succeed();
+	}
+
+	/** 맨손으로 부숴도 내용물이 사라지지 않는다 (도구 제한 없음, R1). */
+	@GameTest
+	public void drawerBreaksByHandKeepsContents(GameTestHelper helper) {
+		BlockPos pos = new BlockPos(1, 1, 1);
+		drawer(helper, pos, ModStorage.STEEL_DRAWER).insert(new ItemStack(Items.REDSTONE), 5000, false);
+		ServerPlayer player = helper.makeMockServerPlayerInLevel();
+		player.setGameMode(GameType.SURVIVAL); // 창작 모드는 전리품을 안 떨군다
+		player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+		assertSingleDrawerItem(helper, breakDrawerAndCollect(helper, player, pos));
 		helper.succeed();
 	}
 

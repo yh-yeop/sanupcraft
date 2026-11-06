@@ -11,7 +11,7 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
 /**
- * 주인 잠금 (엔더 운반기와 같은 규칙). 놓은 사람이 주인. 주인 · OP가 웅크리고 빈손 우클릭으로 잠그면 주인 · OP만 쓴다 (기본 열림).
+ * 주인 잠금 (엔더 운반기와 같은 규칙). 놓은 사람이 주인. 주인 · 같은 팀(M10) · OP가 웅크리고 빈손 우클릭으로 잠그면 그들만 쓴다 (기본 열림).
  * 주인이 없으면 처음 잠그는 사람이 주인이 된다. 블록 엔티티가 하나씩 갖고, 저장도 대신 해 준다.
  */
 public final class OwnerLock {
@@ -44,7 +44,7 @@ public final class OwnerLock {
 		return owner != null && owner.equals(player.getUUID());
 	}
 
-	/** 잠금을 켜고 끌 수 있는가: 주인, OP, 또는 주인이 없을 때. */
+	/** 잠금을 켜고 끌 수 있는가: 주인, 주인과 같은 팀, OP, 또는 주인이 없을 때. */
 	public boolean canManage(Player player) {
 		return owner == null || isOwner(player) || io.github.yhyeop.sanupcraft.server.Teams.sameTeam(player.level(), owner, player) // M10 팀
 				|| player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER);
