@@ -154,11 +154,6 @@ public class CropHarvesterBlockEntity extends SteamWorkerBlockEntity {
 		return STEAM_CAPACITY;
 	}
 
-	/** 지금 훑는 칸 번호 (시험 · 상태 표시용). */
-	public int cursor() {
-		return cursor;
-	}
-
 	@Override
 	protected Component getDefaultName() {
 		return Component.translatable("block.sanupcraft.crop_harvester");

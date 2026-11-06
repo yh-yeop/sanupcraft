@@ -37,10 +37,6 @@ public final class TreeFelling {
 			return !logs.isEmpty() && !leaves.isEmpty();
 		}
 
-		public int size() {
-			return logs.size() + leaves.size();
-		}
-
 		/** 베는 순서: 위쪽 원목부터 아래로, 그다음 잎. */
 		public List<BlockPos> fellOrder() {
 			List<BlockPos> order = new ArrayList<>(logs);
