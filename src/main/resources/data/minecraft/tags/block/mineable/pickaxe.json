@@ -57,6 +57,7 @@
     "sanupcraft:chromium_block",
     "sanupcraft:aluminium_block",
     "sanupcraft:blast_charge",
-    "sanupcraft:loose_rock"
+    "sanupcraft:loose_rock",
+    "sanupcraft:combat_beacon"
   ]
 }

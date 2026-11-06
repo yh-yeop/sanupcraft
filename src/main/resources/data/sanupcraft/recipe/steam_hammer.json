@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "I": "sanupcraft:steel_ingot",
+    "P": "sanupcraft:steam_pipe",
+    "G": "sanupcraft:gear_part",
+    "T": "minecraft:stick"
+  },
+  "pattern": [
+    "IPI",
+    "IGI",
+    " T "
+  ],
+  "result": {
+    "id": "sanupcraft:steam_hammer"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "parent": "sanupcraft:steel_spear",
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:flamethrower"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:flamethrower"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.flamethrower.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.flamethrower.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ]
+}

@@ -218,6 +218,37 @@ public final class SanupcraftConfig {
 	public int veinBonusPercent = io.github.yhyeop.sanupcraft.resource.vein.Veins.BONUS_PERCENT;
 	/** 광맥 탐사기: 한 번에 드는 증기. */
 	public int prospectorSteam = io.github.yhyeop.sanupcraft.resource.vein.Veins.PROSPECTOR_STEAM;
+	// ---- M13 전투 (C1 무기 · C5 협동) ----
+	/** 증기 해머: 강타(기절)에 드는 증기. */
+	public int steamHammerStunSteam = io.github.yhyeop.sanupcraft.combat.SteamHammerItem.STUN_STEAM;
+	/** 증기 해머: 기절 틱. */
+	public int steamHammerStunTicks = io.github.yhyeop.sanupcraft.combat.SteamHammerItem.STUN_TICKS;
+	/** 화염 방사기: 한 번(2틱) 뿜을 때 드는 증기. */
+	public int flamethrowerSteamPerPulse = io.github.yhyeop.sanupcraft.combat.FlamethrowerItem.STEAM_PER_PULSE;
+	/** 화염 방사기: 한 번 맞을 때 피해. */
+	public double flamethrowerDamage = asDouble(io.github.yhyeop.sanupcraft.combat.FlamethrowerItem.DAMAGE);
+	/** 화염 방사기: 원뿔 길이(칸). */
+	public int flamethrowerRange = io.github.yhyeop.sanupcraft.combat.FlamethrowerItem.RANGE;
+	/** 화염 방사기: 블록에 불을 붙이나 (0 = 끔, 1 = 켬). */
+	public int flamethrowerLightsBlocks = 0;
+	/** 전투 신호기: 한 번 걸 때 드는 증기. */
+	public int combatBeaconSteamPerPulse = io.github.yhyeop.sanupcraft.combat.CombatBeaconBlockEntity.STEAM_PER_PULSE;
+	/** 전투 신호기: 버프 반경(칸). */
+	public int combatBeaconRadius = io.github.yhyeop.sanupcraft.combat.CombatBeaconBlockEntity.RADIUS;
+	/** 쓰러짐: 켜기 (0 = 끔 - 바로 죽는다, 1 = 켬). */
+	public int downedEnabled = 1;
+	/** 쓰러짐: 버티는 틱 (이 안에 주사기로 살려야 한다). */
+	public int downedBleedOutTicks = io.github.yhyeop.sanupcraft.combat.Downed.BLEED_OUT_TICKS;
+	/** 쓰러짐: 한 번 쓰러진 뒤 다시 쓰러질 수 있기까지(틱). */
+	public int downedCooldownTicks = io.github.yhyeop.sanupcraft.combat.Downed.COOLDOWN_TICKS;
+	/** 쓰러짐: 이 거리 안에 다른 플레이어가 있어야 쓰러진다 (없으면 바로 죽음). */
+	public int downedHelperRange = io.github.yhyeop.sanupcraft.combat.Downed.HELPER_RANGE;
+	/** 쓰러짐: 쓰러진 채 맞으면 줄어드는 틱. */
+	public int downedHitPenaltyTicks = io.github.yhyeop.sanupcraft.combat.Downed.HIT_PENALTY_TICKS;
+	/** 쓰러짐: 일으켰을 때 체력. */
+	public int downedReviveHealth = io.github.yhyeop.sanupcraft.combat.SteamSyringeItem.REVIVE_HEALTH;
+	/** 응급 증기 주사기: 한 번에 드는 증기. */
+	public int syringeSteam = io.github.yhyeop.sanupcraft.combat.SteamSyringeItem.STEAM_PER_USE;
 
 	/** float 상수를 0.05F -> 0.05처럼 보이는 그대로의 double로 (파일에 0.0500000007...이 안 찍히게). */
 	private static double asDouble(float value) {
@@ -385,7 +416,38 @@ public final class SanupcraftConfig {
 			new Option("veins", "bonusPercent", io.github.yhyeop.sanupcraft.resource.vein.Veins.BONUS_PERCENT, 0, 100, true,
 					c -> c.veinBonusPercent, (c, v) -> c.veinBonusPercent = (int) v),
 			new Option("veins", "prospectorSteam", io.github.yhyeop.sanupcraft.resource.vein.Veins.PROSPECTOR_STEAM, 0, io.github.yhyeop.sanupcraft.resource.vein.ProspectorItem.CAPACITY, true,
-					c -> c.prospectorSteam, (c, v) -> c.prospectorSteam = (int) v));
+					c -> c.prospectorSteam, (c, v) -> c.prospectorSteam = (int) v),
+			// M13 전투 (C1 무기 · C5 협동)
+			new Option("steamHammer", "stunSteam", io.github.yhyeop.sanupcraft.combat.SteamHammerItem.STUN_STEAM, 0, io.github.yhyeop.sanupcraft.combat.SteamHammerItem.CAPACITY, true,
+					c -> c.steamHammerStunSteam, (c, v) -> c.steamHammerStunSteam = (int) v),
+			new Option("steamHammer", "stunTicks", io.github.yhyeop.sanupcraft.combat.SteamHammerItem.STUN_TICKS, 0, 200, true,
+					c -> c.steamHammerStunTicks, (c, v) -> c.steamHammerStunTicks = (int) v),
+			new Option("flamethrower", "steamPerPulse", io.github.yhyeop.sanupcraft.combat.FlamethrowerItem.STEAM_PER_PULSE, 0, io.github.yhyeop.sanupcraft.combat.FlamethrowerItem.CAPACITY, true,
+					c -> c.flamethrowerSteamPerPulse, (c, v) -> c.flamethrowerSteamPerPulse = (int) v),
+			new Option("flamethrower", "damage", asDouble(io.github.yhyeop.sanupcraft.combat.FlamethrowerItem.DAMAGE), 0.0, 100.0, false,
+					c -> c.flamethrowerDamage, (c, v) -> c.flamethrowerDamage = v),
+			new Option("flamethrower", "range", io.github.yhyeop.sanupcraft.combat.FlamethrowerItem.RANGE, 1, 16, true,
+					c -> c.flamethrowerRange, (c, v) -> c.flamethrowerRange = (int) v),
+			new Option("flamethrower", "lightsBlocks", 0, 0, 1, true,
+					c -> c.flamethrowerLightsBlocks, (c, v) -> c.flamethrowerLightsBlocks = (int) v),
+			new Option("combatBeacon", "steamPerPulse", io.github.yhyeop.sanupcraft.combat.CombatBeaconBlockEntity.STEAM_PER_PULSE, 0, io.github.yhyeop.sanupcraft.combat.CombatBeaconBlockEntity.CAPACITY, true,
+					c -> c.combatBeaconSteamPerPulse, (c, v) -> c.combatBeaconSteamPerPulse = (int) v),
+			new Option("combatBeacon", "radius", io.github.yhyeop.sanupcraft.combat.CombatBeaconBlockEntity.RADIUS, 1, 64, true,
+					c -> c.combatBeaconRadius, (c, v) -> c.combatBeaconRadius = (int) v),
+			new Option("downed", "enabled", 1, 0, 1, true,
+					c -> c.downedEnabled, (c, v) -> c.downedEnabled = (int) v),
+			new Option("downed", "bleedOutTicks", io.github.yhyeop.sanupcraft.combat.Downed.BLEED_OUT_TICKS, 20, 12_000, true,
+					c -> c.downedBleedOutTicks, (c, v) -> c.downedBleedOutTicks = (int) v),
+			new Option("downed", "cooldownTicks", io.github.yhyeop.sanupcraft.combat.Downed.COOLDOWN_TICKS, 0, 1_000_000, true,
+					c -> c.downedCooldownTicks, (c, v) -> c.downedCooldownTicks = (int) v),
+			new Option("downed", "helperRange", io.github.yhyeop.sanupcraft.combat.Downed.HELPER_RANGE, 1, 256, true,
+					c -> c.downedHelperRange, (c, v) -> c.downedHelperRange = (int) v),
+			new Option("downed", "hitPenaltyTicks", io.github.yhyeop.sanupcraft.combat.Downed.HIT_PENALTY_TICKS, 0, 12_000, true,
+					c -> c.downedHitPenaltyTicks, (c, v) -> c.downedHitPenaltyTicks = (int) v),
+			new Option("downed", "reviveHealth", io.github.yhyeop.sanupcraft.combat.SteamSyringeItem.REVIVE_HEALTH, 1, 1024, true,
+					c -> c.downedReviveHealth, (c, v) -> c.downedReviveHealth = (int) v),
+			new Option("steamSyringe", "steamCost", io.github.yhyeop.sanupcraft.combat.SteamSyringeItem.STEAM_PER_USE, 0, io.github.yhyeop.sanupcraft.combat.SteamSyringeItem.CAPACITY, true,
+					c -> c.syringeSteam, (c, v) -> c.syringeSteam = (int) v));
 
 	/** 읽은 결과: 설정, 경고 문구, 파일에 빠진 키가 있었는지, 파일을 새로 썼는지. */
 	public record Loaded(SanupcraftConfig config, List<String> warnings, boolean missingKeys, boolean wroteFile) {

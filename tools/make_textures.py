@@ -3933,6 +3933,157 @@ def main_d2(made):
     made.append(save(from_art(VEIN_PROSPECTOR_ICON), "item/vein_prospector.png"))
 
 
+# ---------- M13 전투 (C1 무기 · C5 협동) ----------
+def _hex(c):
+    return tuple(int(c[i:i + 2], 16) for i in (1, 3, 5)) + (255,)
+
+
+def _put(im, pts, color):
+    for x, y in pts:
+        if 0 <= x < im.width and 0 <= y < im.height:
+            im.putpixel((x, y), _hex(color) if color.startswith("#") else px(color))
+
+
+def steel_spear_icon():
+    im = Image.new("RGBA", (16, 16))
+    # 자루: 왼쪽 아래 → 오른쪽 위 대각선 (나무 두 줄)
+    for i in range(1, 11):
+        _put(im, [(i, 15 - i)], "x")
+        _put(im, [(i, 14 - i)], "w" if i % 3 else "x")
+    # 이음쇠
+    _put(im, [(10, 4), (11, 5), (10, 5)], "b")
+    # 날: 강철 마름모
+    _put(im, [(11, 3), (12, 2), (13, 1), (12, 3), (11, 4)], "d")
+    _put(im, [(12, 1), (13, 2), (14, 1), (14, 0)], "e")
+    _put(im, [(12, 4), (13, 3), (11, 2)], "c")
+    return im
+
+
+def steam_hammer_icon():
+    im = Image.new("RGBA", (16, 16))
+    # 머리
+    for y in range(2, 8):
+        for x in range(2, 14):
+            _put(im, [(x, y)], "c" if 2 < y < 7 and 2 < x < 13 else "a")
+    for x in range(3, 13):
+        _put(im, [(x, 3)], "d")
+    _put(im, [(3, 4), (12, 4)], "e")
+    # 증기 계기 (하늘색) · 배관 (구리)
+    _put(im, [(7, 4), (8, 4), (7, 5), (8, 5)], "g")
+    _put(im, [(7, 4)], "h")
+    _put(im, [(1, 4), (1, 5), (14, 4), (14, 5)], "t")
+    # 자루
+    for y in range(8, 15):
+        _put(im, [(7, y)], "x")
+        _put(im, [(8, y)], "w")
+    _put(im, [(7, 8), (8, 8)], "s")
+    _put(im, [(7, 14), (8, 14)], "b")
+    return im
+
+
+def flamethrower_icon():
+    im = Image.new("RGBA", (16, 16))
+    # 연료 통 (빨강)
+    for y in range(5, 12):
+        for x in range(1, 5):
+            _put(im, [(x, y)], "R" if x in (1, 4) or y in (5, 11) else "Q")
+    _put(im, [(2, 6)], "#ffb0a0")
+    # 몸통 (강철)
+    for x in range(5, 13):
+        _put(im, [(x, 7)], "d")
+        _put(im, [(x, 8)], "c")
+        _put(im, [(x, 9)], "b")
+    # 노즐 (구리) · 불꽃
+    _put(im, [(13, 7), (13, 8), (13, 9), (14, 8)], "s")
+    _put(im, [(15, 7), (15, 8), (15, 9)], "u")
+    _put(im, [(14, 7), (14, 9)], "t")
+    # 손잡이
+    _put(im, [(7, 10), (7, 11), (8, 11), (8, 12)], "w")
+    _put(im, [(10, 10), (10, 11)], "a")
+    return im
+
+
+def steam_syringe_icon():
+    im = Image.new("RGBA", (16, 16))
+    # 바늘
+    _put(im, [(13, 2), (14, 1)], "e")
+    _put(im, [(12, 3)], "d")
+    # 유리 통 (대각선, 하늘색 증기)
+    for i in range(4, 10):
+        x, y = i + 1, 14 - i
+        _put(im, [(x, y), (x - 1, y), (x, y + 1)], "h")
+        _put(im, [(x - 1, y + 1)], "g" if i % 2 else "k")
+    _put(im, [(11, 4), (10, 3), (11, 3)], "c")
+    # 손잡이 · 밀대 (강철)
+    _put(im, [(3, 10), (4, 11), (2, 11), (3, 12), (4, 12)], "b")
+    _put(im, [(2, 13), (1, 14), (0, 15)], "c")
+    _put(im, [(1, 13), (2, 14)], "d")
+    return im
+
+
+def combat_beacon_face(part):
+    im = panel(seed={"top": 31, "side": 32, "bottom": 33}[part])
+    if part == "top":
+        # 붉은 신호등 + 금 테
+        for y in range(4, 12):
+            for x in range(4, 12):
+                edge = x in (4, 11) or y in (4, 11)
+                _put(im, [(x, y)], "#d8a82a" if edge else ("Q" if (x + y) % 3 else "R"))
+        _put(im, [(6, 6), (7, 6), (6, 7)], "#ffd0c0")
+    elif part == "side":
+        # 가운데 빨간 띠 · 위아래 금 테
+        for x in range(1, 15):
+            _put(im, [(x, 3), (x, 12)], "#d8a82a")
+            _put(im, [(x, 7)], "R")
+            _put(im, [(x, 8)], "Q")
+        for x in (3, 7, 11):
+            _put(im, [(x, 7), (x, 8)], "#ffb0a0")
+    else:
+        for x in range(5, 11):
+            _put(im, [(x, 7), (x, 8)], "a")
+        _put(im, [(7, 6), (8, 6), (7, 9), (8, 9)], "t")
+    return im
+
+
+def effect_stunned_icon():
+    im = Image.new("RGBA", (18, 18))
+    # 머리 둘레를 도는 별 셋
+    for cx, cy in ((4, 8), (9, 4), (14, 8)):
+        _put(im, [(cx, cy - 2), (cx, cy - 1), (cx, cy + 1), (cx, cy + 2), (cx - 2, cy), (cx - 1, cy), (cx + 1, cy), (cx + 2, cy)], "#f2d24a")
+        _put(im, [(cx, cy)], "#fff6c0")
+    for x in range(3, 16):
+        y = 13 + (1 if x in (3, 4, 14, 15) else 0)
+        _put(im, [(x, y)], "#a88a20")
+    return im
+
+
+def effect_downed_icon():
+    im = Image.new("RGBA", (18, 18))
+    # 빨간 십자 (응급)
+    for y in range(3, 15):
+        for x in range(7, 11):
+            _put(im, [(x, y)], "#c22a2a")
+    for y in range(7, 11):
+        for x in range(3, 15):
+            _put(im, [(x, y)], "#c22a2a")
+    _put(im, [(7, 3), (3, 7)], "#ff7a7a")
+    for i in range(3, 15):
+        _put(im, [(10, i)] if not 7 <= i <= 10 else [], "#7a1414")
+    return im
+
+
+def main_m13(made):
+    """M13 전투: 강철 창 · 증기 해머 · 화염 방사기 · 응급 증기 주사기 · 전투 신호기 · 효과 아이콘(기절 · 쓰러짐)."""
+    made.append(save(steel_spear_icon(), "item/steel_spear.png"))
+    made.append(save(steam_hammer_icon(), "item/steam_hammer.png"))
+    made.append(save(flamethrower_icon(), "item/flamethrower.png"))
+    made.append(save(steam_syringe_icon(), "item/steam_syringe.png"))
+    for part in ("top", "side", "bottom"):
+        made.append(save(combat_beacon_face(part), f"block/combat_beacon_{part}.png"))
+    made.append(save(effect_stunned_icon(), "mob_effect/stunned.png"))
+    made.append(save(effect_downed_icon(), "mob_effect/downed.png"))
+
+
 def save(im, rel, scale=1):
     path = os.path.join(OUT, *rel.split("/"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -3983,6 +4134,7 @@ def main():
     main_blast(made)
     main_a5(made)
     main_d2(made)  # 확장 3 D2 광맥 탐사기
+    main_m13(made)
 
     if "--sheet" in sys.argv:
         tiles = [Image.open(p) for p in made]

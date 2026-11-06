@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "P": "sanupcraft:steel_plate",
+    "S": "sanupcraft:steam_pipe",
+    "B": "minecraft:blaze_rod",
+    "G": "sanupcraft:gear_part"
+  },
+  "pattern": [
+    "PSB",
+    "GPP",
+    "P  "
+  ],
+  "result": {
+    "id": "sanupcraft:flamethrower"
+  }
+}

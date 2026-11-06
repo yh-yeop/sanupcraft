@@ -89,7 +89,9 @@ public final class PlaytestCommand {
 		// 확장 3 D3 · D5
 		BLAST("증기 발파 · 위험 요소: 발파 장약 · 원격 기폭기 · 유독 가스 · 무른 바위", null, PlaytestCommand::kitBlast),
 		// 확장 3 D2 광맥 탐사
-		VEINS("광맥 탐사: 광맥 탐사기 · 굴착기 · 보일러 · 파이프", null, PlaytestCommand::kitVeins);
+		VEINS("광맥 탐사: 광맥 탐사기 · 굴착기 · 보일러 · 파이프", null, PlaytestCommand::kitVeins),
+		// M13 전투 (C1 무기 · C5 협동)
+		COMBAT("전투: 강철 창 · 증기 해머 · 화염 방사기 · 전투 신호기 · 쓰러짐 · 응급 증기 주사기", null, PlaytestCommand::kitCombat);
 
 		final String description;
 		final ResourceKey<Level> dimension;
@@ -685,6 +687,30 @@ public final class PlaytestCommand {
 		give(p, Items.CHEST, 4);
 		give(p, Items.IRON_PICKAXE, 1);
 		give(p, Items.COMPASS, 1);
+		food(p);
+	}
+
+	/** M13 전투: 무기 셋(증기 · 연료 가득), 보일러로 돌리는 전투 신호기, 응급 주사기 둘, 증기 통, 시험할 몹 (소환 알). 쓰러짐은 두 사람 이상이 필요. */
+	private static void kitCombat(ServerPlayer p) {
+		give(p, io.github.yhyeop.sanupcraft.combat.ModCombat.STEEL_SPEAR, 1);
+		give(p, charged(io.github.yhyeop.sanupcraft.combat.ModCombat.STEAM_HAMMER));
+		give(p, charged(io.github.yhyeop.sanupcraft.combat.ModCombat.FLAMETHROWER));
+		give(p, Items.BLAZE_POWDER, 32);
+		give(p, Items.MAGMA_CREAM, 16);
+		give(p, io.github.yhyeop.sanupcraft.combat.ModCombat.COMBAT_BEACON.asItem(), 1);
+		give(p, ModPower.BOILER.asItem(), 1);
+		give(p, ModPower.STEAM_PIPE.asItem(), 8);
+		give(p, ModPower.STEAM_GAUGE.asItem(), 1);
+		give(p, Items.WATER_BUCKET, 1);
+		give(p, Items.COAL, 32);
+		give(p, charged(io.github.yhyeop.sanupcraft.combat.ModCombat.STEAM_SYRINGE));
+		give(p, charged(io.github.yhyeop.sanupcraft.combat.ModCombat.STEAM_SYRINGE));
+		give(p, charged(SteamGear.STEAM_CANISTER));
+		give(p, ModPower.STEAM_CHARGER.asItem(), 1);
+		give(p, Items.ZOMBIE_SPAWN_EGG, 8);
+		give(p, Items.SKELETON_SPAWN_EGG, 4);
+		give(p, Items.SHIELD, 1);
+		equip(p, SteelGear.STEEL_HELMET, SteelGear.STEEL_CHESTPLATE, SteelGear.STEEL_LEGGINGS, SteelGear.STEEL_BOOTS);
 		food(p);
 	}
 }
