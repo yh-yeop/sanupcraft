@@ -603,3 +603,358 @@ Sonnet 4기가 각자 작업 트리에서 고치고 `./gradlew build`로 확인�
 | 시험 | GameTest 110개 통과, 클라이언트 시험 통과 |
 
 Opus 샘플링: 판정 단계에서 Opus가 지적 밖 코드(굴착기 flush 경로 · 블록 엔티티 언로드 순서)를 직접 읽어 확인했고, 비판적 Sonnet이 드릴 안내 문구(29)를 추가로 찾았다.
+
+## 7. 3차 리팩터링 1단계 · 확장 전체 (2026-11-06)
+
+대상: 2차 리팩터링(`4b071fb`) 이후 바뀐 본 코드 전부 (확장 묶음 1~4, M5~M11, C3 · 약 2만 5천 줄, 패키지 21개).
+절차: Haiku 9기 병렬(패키지 겹치지 않게) → Opus 1기 판정 → 비판적 Sonnet 반론 → Opus 최종 결정 → Sonnet n기 수정.
+기준 시험: `./gradlew build` (GameTest 292개), 화면 쪽은 `runClientGameTest`.
+
+### 7-1. 지적 (Haiku 9기, 79건)
+
+#### H1 보스 · 소리 (`boss/` · `sound/`)
+1. BossParty.java:42, :230 · 주석 불일치 · 중 — 기여자가 없으면 "하나만 떨군다"는 주석과 달리 `1 + tier`개를 떨군다 (강화 소환석이면 2~4개).
+2. FurnaceWarden · RustyGuardian · 중복 · 중 — 보스 바 · party · 저장 · actuallyHurt · 상한 보정 · 방패 깨기 · 경고 · 거리 · 낙하/불 처리 · PatternGoal 등이 두 보스에 복사돼 있다 (공통 부모 필요). ※ 지난 2차 리팩터링 보류 3번과 같은 항목.
+3. FurnaceWarden.java:292-321, :346-361, :432-441 · RustyGuardian.java:298-315 · 버그 · 하 — 패턴 판정의 플레이어 목록에 관전 · 크리에이티브 제외가 없어 밀치기와 집계에 들어간다 (BossParty.countPlayers · VoidColossus.targets는 뺀다).
+4. BossParty.java:186-192 · 기타 · 하 — `seen` 맵이 나간 플레이어 객체를 보스가 살아 있는 동안 붙잡는다 (저장 안 됨, 한정적).
+5. GuardianAltarBlock.java:88 · 기타 · 하 — `!(player instanceof ServerPlayer p) || p.connection != null` 이중 부정 조건.
+6. GuardianAltarBlock.java:40 · BossParty.java:53 · 중복 · 하 — 같은 48.0 반경 상수가 두 곳.
+7. RustyGuardian.java:440, :501 · 기타 · 하 — 근접 이벤트 번호 리터럴 4 (다른 보스는 EVENT_ATTACK 상수).
+8. FurnaceWarden.java:155, :186 · 주석 불일치 · 하 — "20칸 안"이지만 `inflate(20)` 상자라 대각선 약 28칸.
+9. GuardianAltarBlock.java:55-72, :141-146 · 중복 · 하 — 우클릭 경로와 summon()이 같은 소환 조건을 두 번 검사.
+
+#### H2 창고 (`storage/`)
+10. storage/StorageMachineBlock.java:79 · AutocrafterBlockEntity.java:42 · 버그 · 상 — 자동 제작대를 부수면 재료 · 결과 칸이 사라진다 (dropContents 없음).
+11. storage/AutocrafterBlockEntity.java:203 · 버그 · 중 — acceptSteam에 `setChanged()` 없음.
+12. storage/OwnerLock.java:47 · 주석 불일치 · 하 — 팀원도 허용하는데 주석은 "주인 · OP만".
+13. storage/AutocrafterBlockEntity.java:38 · 주석 불일치 · 하 — "9칸이 차면"이지만 견본이 쓴 칸만 본다.
+14. storage/StockerBlockEntity.java:225 · 버그 · 하 — 재료 1만 넣고 재료 2가 실패해도 되돌리지 않는다 (다음 주기에 회복).
+15. storage/TerminalBlockEntity.java:75 · 기타 · 하 — 화면이 열린 동안 매 틱 setChanged.
+16. storage/PortableTerminalItem.java:84 · 버그 · 하 — `toLowerCase()`에 Locale 없음.
+17. storage/PortableTerminalItem.java:52 · 죽은 코드 · 하 — isEnder() 미사용.
+18. storage/StorageNetwork.java:64 · 죽은 코드 · 하 — nodes() 미사용.
+19. storage/DrawerBlockEntity.java:149 · 죽은 코드 · 하 — insertFromHand의 player 매개변수 미사용.
+
+#### H3 증기 · 유체 (`power/` · `fluid/`)
+20. power/SteamTurbineBlockEntity.java:73 · 버그 · 중 — acceptHighPressureSteam에 `setChanged()` 없음.
+21. power/SteamTurbineBlockEntity.java:59 · 버그 · 중 — 변경 감지가 `hp + steam != before`라 배율 1이면 변환해도 표시가 빠진다 (설정 최소값 1).
+22. HighPressurePipeBlock.java:30-51 · SteamPipeBlock.java:28-44 · 중복 · 하 — 두 파이프의 상태 · 연결 코드 복사.
+23. power/BoilerBlockEntity.java:58, 94, 314, 324 · 죽은 코드 · 하 — litDuration 필드는 쓰기만 하고 읽지 않음.
+24. power/SteamChargerBlockEntity.java:38, 63, 67-69 · 죽은 코드 · 하 — charging · isCharging() 미사용.
+25. fluid/PumpBlockEntity.java:85-89 · 버그 · 하 — 원천을 먼저 지우고 kind가 null이면 내용물을 버림 (도달 가능성 낮음).
+26. power/SteamStorage.java:3 · 주석 불일치 · 하 — 구현체 목록이 낡음.
+
+#### H4 엔드 · 네더 (`end/` · `nether/`)
+27. end/VaultData.java:67-71 · end/DimensionalVaultBlockEntity.java:113-116, 166-170 · 버그 · 중 — 저장 표시가 Channel.setChanged에만 있고 `removeItemNoUpdate`는 setChanged를 안 불러, 그 경로로 비우면 재시작 뒤 아이템이 되살아날 수 있다.
+28. end/EndIslandStructure.java:23-24 · 주석 불일치 · 하 — 귀퉁이끼리는 비교하지 않는데 주석은 서로 비교한다고 함.
+29. end/VoidCondenserBlockEntity.java:60-63, 73 · 버그 · 하 — 저장고가 차면 불은 꺼지는데 상태 문구는 RUNNING.
+30. end/VoidGear.java:72-73, 118-121 · 기타 · 하 — UUID 맵(LAST_SAFE · LAST_RESCUE)을 로그아웃 때 안 지운다.
+31. EndIslandStructure.java:47-71 · NetherFloorStructure.java:54-81 · 중복 · 하 — 귀퉁이 판정 루프와 배치 호출이 거의 같은 코드로 둘.
+32. BarterCollectorBlock · GoldDispenserBlock · BreathCollectorBlock · 중복 · 하 — 같은 affectNeighborsAfterRemoval 셋.
+33. end/ChorusHarvesterBlockEntity.java:79-112 · 기타 · 하 — 256블록 상한을 넘는 후렴 나무는 일부만 보고 거둔다.
+34. nether/LavaSteamboat.java:44-69 · 죽은 코드 · 하 — floatOnLava()의 boolean 반환값을 버림.
+
+#### H5 기계 · 산업 (`factory/` · `industry/`)
+35. factory/MachineBlock.java:90 · 버그 · 상 — 기계를 부수면 칸 내용물(재료 · 연료 · 결과 · 부산물 · 업그레이드)이 사라진다. `preRemoveSideEffects`/`dropContents`가 없다 (다른 블록 엔티티는 떨군다).
+36. industry/FurnaceTowerControllerBlock.java:111 · 버그 · 상 — 용광로 탑 칸 18개도 부서질 때 유실.
+37. industry/FurnaceTowerControllerBlockEntity.java:111, 130-149 · 버그 · 중 — 묶음을 잡은 뒤 재료를 꺼내도 계속 증기를 쓰고 결과 없이 끝난다 (증기 낭비, batchUnits 낡은 값).
+38. factory/MachineBlockEntity.java:459-464 · 버그 · 하 — 파이프로 받은 증기에 `setChanged()` 없음.
+39. factory/MachineBlockEntity.java:320 · 주석 불일치 · 하 — "바닐라 계산과 같되"지만 하나만 든 기계가 0이 나올 수 있다.
+40. industry/BigBoilerControllerBlock.java:74-88 · 중복 · 하 — 보일러 힌트 로직 복사.
+41. industry/BigBoilerShape.java · 중복 · 하 — MultiblockShape와 거의 같은 코드.
+42. 외벽 · 벽돌 · 두 제어기 · 중복 · 하 — notifyControllers · setCasingsFormed 복사.
+43. industry/FurnaceTowerControllerBlockEntity.java:314-327 · 버그 · 하 — 풀릴 때 이웃 제어기가 쓰는 벽돌까지 끄고 link(null)를 조건 없이 부른다.
+44. factory/MachineBlockEntity.java:199 · 기타 · 하 — 매 틱 업그레이드 효과 계산(Math.pow), 세척기 물 6방향 조회.
+45. industry/FurnaceTowerControllerBlockEntity.java:43 · 주석 불일치 · 하 — 상한은 설정값인데 주석은 BATCH_SIZE.
+
+#### H6 물류 · 수송 (`logistics/` · `transport/`)
+46. transport/TrainCoupling.java:591 · 버그 · 하 — 속도를 x · z 따로 잘라 대각선이면 최대 √2배.
+47. logistics/ItemFilter.java:508 · 죽은 코드 · 하 — contains() 미사용 (FilterMenu.sampleExists가 같은 일).
+48. logistics/EnderLinkBlockEntity.java:477 · 주석 불일치 · 하 — 팀원 · 주인 없음도 허용하는데 주석은 "주인 · OP만".
+49. logistics/EnderAnchorBlockEntity.java:304 · 중복 · 하 — 바닐라 `preRemoveSideEffects`가 Container 내용물을 이미 떨군다(javap 확인) → super 뒤 dropContents는 빈 호출. ※ 이 사실은 H2-1 · H5-1 · H5-2 판정에도 걸린다.
+50. transport/SteamLocomotive.java:332 · 버그 · 하 — missingTicks가 칸별이 아니라 열차 전체라 뒤 칸이 40틱 전에 떨어질 수 있다.
+51. logistics/EnderAnchorBlockEntity.java:278 · 버그 · 하 — 켜진 동안 반경 설정을 바꾸면 coveringAnchor 판정이 붙잡은 범위와 달라진다.
+52. transport/SteamLocomotive.java:204 · 주석 불일치 · 하 — "빈손이면 출발/멈춤"이지만 아무 아이템이나 토글.
+53. logistics/BeltMotorBlockEntity.java:311 · 주석 불일치 · 하 — 증기가 모자라면 belts = 0인데 주석은 센다고 함.
+54. transport/CargoStationBlockEntity.java:27 · 주석 불일치 · 하 — 한도는 설정값인데 주석은 상수.
+55. logistics/BeltBlockEntity.java:57 · 기타 · 하 — 벨트 칸마다 매 틱 엔티티 조회.
+
+#### H7 장비 · 렌치 · 채굴 · 설정 · 실테스트
+56. mining/QuarryBlockEntity.java:189-194, 157-171 · 버그 · 중 — acceptSteam · flush에 `setChanged()` 없음. ※ flush는 지난 2차 리팩터링에서 오탐(같은 청크 상자가 표시)으로 판정됨.
+57. gear/Jetpack.java:86-88 · 주석 불일치 · 하 — "창작 모드는 증기를 안 쓴다"지만 증기 1 이상이 없으면 창작도 못 뜬다.
+58. gear/ToolMining.java:34, 41-48 · 기타 · 하 — FACES 정적 맵을 LEAVE 때 안 지운다.
+59. gear/SteamBoots.java:117 · 주석 불일치 · 하 — "막아 준 몫"이지만 실제 맞은 피해로 깎는다.
+60. gear/SteamDrillItem.java:67-68 · 중복 · 하 — Wrench.tell과 같은 조건 (앞 절은 늘 거짓).
+61. playtest/PlaytestCommand.java:197-198 · 중복 · 하 — 석탄 64 두 줄. ※ 지난 2차 리팩터링 14번에서 오탐 판정.
+62. ProductionGear · SteelGear · HeatproofGear · VoidGear · 중복 · 하 — 같은 갑옷 방어 EnumMap 도우미 넷.
+63. gear/ChainsawItem.java:9 · 주석 불일치 · 하 — "잎은 1/4"이지만 정수 나눗셈 max(1, cost/4).
+64. playtest/PlaytestCommand.java:568-572 · 기타 · 하 — kitEnd2가 apply()의 엔드 발판을 버리고 다시 텔레포트.
+
+#### H8 생산 · 서버 (`production/` · `server/`)
+65. server/GoalBoardBlockEntity.java:228 · 버그 · 상 — 깔때기 · 벨트가 남은 목표보다 많이 넘기면 초과분이 사라진다 (setItem → insert가 남은 만큼만 받고 나머지를 버림). 생산 기계의 pushOut도 같은 경로.
+66. production/TreeFellerBlockEntity.java:47 · 버그 · 중 — 묘목 다시 심을 자리(replantAt)가 저장되지 않아, 잎만 남은 상태로 다시 불러오면 묘목을 안 심는다.
+67. production/TreeFellerBlockEntity.java:65-101 · 기타 · 중 — 잎 없는 통나무 구조물 옆이면 10틱마다 최대 18번 256블록 BFS가 헛돈다.
+68. server/GoalCommand.java:38-40 · 죽은 코드 · 하 — register() 미사용.
+69. TreeFelling.size · TreeFeller.felled()/queued() · CropHarvester.cursor() · 죽은 코드 · 하 — 미사용 (felled 필드는 저장만).
+70. server/GoalBoardBlock.java:53-59 · 중복 · 하 — topContributors(3) 두 번, 상수 없음.
+71. production/grinder/MobGrinderBlockEntity.java:153-178 · 중복 · 하 — 둘레 경험치 탱크 찾기 루프 둘.
+72. production/TreeFellerBlockEntity.java:139-165 · 기타 · 하 — preferredSapling을 칸마다 다시 계산.
+
+#### H9 클라이언트 (`client/`)
+73. JetpackClient.java:34-43 (서버 gear/Jetpack.java:80-95) · 버그 · 중 — 클라이언트는 땅 · 물 · 용암 조건과 로컬 설정으로 먼저 띄우지만, 서버 `thrust()`는 그 조건을 안 보고 설정도 동기화되지 않는다. 변조 클라이언트는 땅 · 물에서 뜰 수 있고, 설정이 다르면 위치가 튄다.
+74. storage/TerminalScreen.java:233 · 버그 · 하 — 드래그 비율 분모 `rows*18-15`가 그리기(`rows*18-17`)와 달라 막대가 약 2px 어긋난다.
+75. storage/StockerScreen.java:42 · 버그 · 하 — `toLowerCase()`에 Locale 없음 (터키어에서 번역 키를 못 찾음).
+76. SanupcraftClient.java:43 · 주석 불일치 · 하 — 거상은 이미 전용 모델인데 "임시 렌더러"라고 적힘.
+77. 보스 렌더러 3곳 · 모델 3곳 · 중복 · 하 — 사망 페이드 · 내려치기 자세 계산이 거의 같은 식으로 셋. JetpackClient · Jetpack의 `Math.max(cost,1)`도.
+78. storage/StockerScreen.java:48 · 중복 · 하 — `hoveredSlot.index == 0 && indexOf(...) == 0` 중복 조건.
+79. storage/StorageClient.java:53-57 · 죽은 코드 · 하 — 삼항 한 줄을 감싼 중첩 클래스.
+
+### 7-2. Opus 판정
+집계(79건 + Opus 샘플링 2건 = 81): **수정 대상 31** · 오탐 42 · 보류 3 · 2단계로 5 · 3단계로 0. 수정 대상 중 1 · 8 · 12 · 13 · 26 · 28 · 45 · 48 · 52 · 53 · 54 · 57 · 76은 주석만(동작 변화 없음).
+
+검증 메모 (바닐라 26.3 소스 직접 확인):
+- **F1. 부술 때 내용물 (10 · 35 · 36 · 49)**: `BlockEntity.preRemoveSideEffects`(BlockEntity.java:235)가 `this instanceof Container`이면 `Containers.dropContents`를 부른다. 부르는 곳은 `LevelChunk.setBlockState`(310행: 블록이 바뀌고 BE가 빠질 때 — 부수기 · 폭발 · `/setblock` 공통). 자동 제작대 · 기계 · 용광로 탑 BE는 모두 `BaseContainerBlockEntity`이고 `preRemoveSideEffects`를 오버라이드하지 않으며, 블록 클래스(`StorageMachineBlock` · `MachineBlock` · `FurnaceTowerControllerBlock`)는 `affectNeighborsAfterRemoval`만 바꾼다 → **내용물은 이미 떨어진다**. 실제로 부수는 시험은 없지만(기존 시험은 Container가 아닌 굴착기 · 드릴뿐) 경로가 바닐라 그대로라 오탐. `Containers.dropItemStack`이 스택을 `split`으로 비우므로 `super` 뒤 `dropContents`(49)는 빈 호출 — 엔더 닻 외에 `SteamChargerBlockEntity` · `SteamWorkerBlockEntity`도 같다.
+  - 같은 사실의 반대쪽(Opus 샘플링 **#81**): `DrawerBlockEntity`도 `Container`(출력 칸 = 최대 64개 보기)인데 오버라이드가 없다. 플레이어가 부수면 `removeBlock`(→ 보기 64개를 쏟음) 다음 `playerDestroy`(→ 나머지만 아이템에 담김)라 "부숴도 내용물을 품은 채"가 깨지고, **폭발은 순서가 반대**(`BlockBehaviour.onExplosionHit`: `getDrops` 먼저 → `setBlockAndUpdate(AIR)`)라 **최대 64개가 복제**된다. 바닐라 셜커 상자처럼 빈 `preRemoveSideEffects`가 맞다(`DimensionalVaultBlockEntity`도 이미 그렇게 함). 기존 `drawerKeepsContents`는 `Block.getDrops`만 불러 못 잡았다.
+- **F2. `setChanged` 누락과 저장 (11 · 14 · 20 · 21 · 27 · 38 · 56)**: `ChunkMap.save`는 `tryMarkSaved()`가 거짓(표시 안 됨)이면 청크를 쓰지 않는다 — 자동저장(`saveChunkIfNeeded`) · 서버 종료(`saveAllChunks(true)`) · 언로드 모두. 쓸 때는 `SerializableChunkData.copyOf`가 그 청크의 **모든 BE**를 저장한다. `setChanged` → `Level.blockEntityChanged` → 청크 `markUnsaved`. 즉 누락은 "그 뒤 저장 전까지 같은 청크를 아무도 표시하지 않을 때" 마지막 변경만 잃는다. 판정 규칙(지난 #7 · #8과 같은 기준):
+  - **줄어드는 쪽**(소모 · 내보냄 · 꺼냄)에서 빠지면 재시작 때 되살아나 복제 → 수정. 이번 지적 중 해당 없음(27 `removeItemNoUpdate`는 닿는 경로가 없음: 창고 화면은 `ChestMenu` → `removeItem`, 깔때기도 `removeItem`).
+  - **받는 쪽 증기**(11 · 20 · 38 · 56의 `acceptSteam`)는 흐름 자원이고, 보낸 쪽(보일러 · 터빈 · 분출구 · 응축기)이 자기 청크를 표시하므로 잃는 건 마지막 몇 틱 분 증기뿐, 다음 소모 때 표시된다 → 오탐. 받는 쪽에 매 틱 `setChanged`를 넣으면 비교기 이웃 갱신(`updateNeighbourForOutputSignal`)이 매 틱 돈다.
+  - **받는 쪽 아이템**은 실제 유실이라 수정(14).
+
+| 번호 | 판정 | 근거 (검증) | 수정 방향 |
+|---|---|---|---|
+| 1 | 수정(주석) | 확인: 기여자가 없으면 `1 + tier`개 (`giveKeyItem`) | `BossParty` 클래스 문서 "하나만" · `giveKeyItem` 문서 "필수품만" → "필수품 `1 + 단계`개만" |
+| 2 | **2단계로** | 지난 보류 3의 조건("보스가 셋째로 늘 때") 충족: 공허 거상까지 셋. `PartyBoss` 인터페이스로는 protected 오버라이드를 못 묶음 | `Monster`와 세 보스 사이 공통 부모 설계(아래). 77과 같이 |
+| 3 | 수정 | 확인: 파수꾼 분출 · 장판 폭발 · 도약, 수호자 돌진(`inflate(0.6)`) · 내려치기의 플레이어 목록에 관전 · 창작 제외가 없음 → 창작 방패를 깨고 밀치고 `hits`에 셈. 장판 위치 고르기 · 거상 · `countPlayers`는 이미 뺌 | 다섯 곳 `getEntitiesOfClass(Player.class, box, EntitySelector.NO_CREATIVE_OR_SPECTATOR)`. 시험 없음 |
+| 4 | 오탐 | 지난 #4와 같음(`seen` = 모의 플레이어용, 보상 시험이 기댐) | |
+| 5 | 오탐 | 모의 플레이어(`connection == null`)에 문구를 안 보내는 의도된 가드 | |
+| 6 | 오탐 | 값만 같고 뜻이 다름(보스 하나만 반경 · 인원 반경) | |
+| 7 | 수정(가독) | 확인: 수호자만 리터럴 `(byte) 4` | `RustyGuardian`에 `EVENT_ATTACK = 4` 상수, 두 곳 교체 |
+| 8 | 수정(주석) | 확인: `inflate(20)`은 상자(가로 대각 약 28칸, 위아래 ±20) | `maxRings()` 주석 "20칸 안" → "가로 · 세로 ±20칸 상자 안" |
+| 9 | 오탐 | `summon()`은 명령 · 시험도 부르는 공개 경로라 자체 검사가 필요, 우클릭은 문구를 위해 먼저 검사 | |
+| 10 | 오탐 | F1: 바닐라가 떨군다 | |
+| 11 | 오탐 | F2: 받는 쪽 증기 | |
+| 12 | 수정(주석) | 확인: `canManage`가 같은 팀(M10)도 허용 | `OwnerLock` 클래스 · `canManage` 문서에 "주인과 같은 팀" 추가 |
+| 13 | 수정(주석) | 확인: `tryCraft`는 견본이 쓴 칸만 본다 | "재료 9칸이 차면" → "견본이 쓰는 재료 칸이 모두 차면" |
+| 14 | 수정 | 지적의 "되돌리지 않음"은 재료가 칸에 남아 회복되므로 무해. 대신 확인: 재료 1을 넣고 재료 2가 실패하면 `machine.setChanged()` 없이 다음 레시피로 넘어감 → 네트워크 쪽은 표시, 기계 칸은 미표시(이웃 청크면 재시작 때 아이템 유실, F2) | `feedMachine`: 첫 `fill`이 칸을 바꿨으면(둘째 성공 여부와 상관없이) `machine.setChanged()`. 시험 없음 |
+| 15 | 오탐 | 소모 쪽이라 표시가 필요(F2), 화면을 연 단말 수만큼 | |
+| 16 | 수정 | 확인: `Check`의 `NOT_LINKED` · `OTHER_DIMENSION` · `MISSING`이 터키어 로캘에서 `ı`로 바뀌어 번역 키를 못 찾음 | `toLowerCase(Locale.ROOT)` |
+| 17 | 오탐 | 단순 공개 조회 함수(시험 · 디버그용으로 무해) | |
+| 18 | 오탐 | 위와 같음 | |
+| 19 | 오탐 | `DrawerBlock` · 시험이 쓰는 시그니처, 노이즈 | |
+| 20 | 오탐 | F2: 받는 쪽 증기 | |
+| 21 | 오탐 | 배율 1이면 고압 → 보통으로 옮겨도 총량이 같아 표시가 빠지지만, 다시 불러오면 그만큼 다시 바꿀 뿐 손실 · 복제 없음 | |
+| 22 | 오탐 | 연결 규칙(`connectsTo`)이 달라 공통 부모 이득 작음 | |
+| 23 | 수정(죽은 코드) | 확인: 보일러 `litDuration`은 쓰기 · 저장만, 읽는 곳 없음(화면 · 시험 없음. 시험의 `litDuration()`은 기계 쪽) | 필드 · `lit_duration` 읽기/쓰기 삭제(옛 저장의 키는 무시됨) |
+| 24 | 수정(죽은 코드) | 확인: `charging` · `isCharging()` 쓰는 곳 없음 | 둘 삭제 |
+| 25 | 오탐 | `findSource`가 물 · 용암 **원천**이고 `BucketPickup`인 칸만 고름 → 바닐라 범위에선 늘 그 양동이. 물 태그를 단 다른 모드 유체만 이론상 | |
+| 26 | 수정(주석) | 확인: 구현체 15곳인데 목록은 5곳 | 목록을 빼고 "증기를 모아 두는 블록 엔티티. 증기 계기판이 읽는다" |
+| 27 | 오탐 | F2: `removeItemNoUpdate`에 닿는 경로 없음 | |
+| 28 | 수정(주석) | 확인: 귀퉁이는 가운데와만 비교 | "서로 ±MAX_STEP 안" → "가운데와 ±MAX_STEP 안" |
+| 29 | 오탐 | 상태 문구에 `고압 증기 저장/최대`가 같이 나와 가득 참이 보임, 불은 만든 양 기준 | |
+| 30 | 수정 | 지적의 메모리는 플레이어 수만큼이라 무해. 대신 확인: 정적 맵이 서버(월드)를 넘어 남는다 → 한 JVM에서 월드를 바꾸면(싱글) 다른 월드의 `LAST_RESCUE` 게임 시각과 비교해 `now - last`가 음수 → **쿨다운으로 구조 거부**, `LAST_SAFE`도 다른 월드 자리 | `init`에서 `ServerLifecycleEvents.SERVER_STARTING`에 두 맵 `clear()` (`ModLogistics`의 닻 정리와 같은 방식). 로그아웃 때 지우면 쿨다운 우회가 되므로 그때는 지우지 않는다. 시험 없음 |
+| 31 | 오탐 | 높이 함수(`surface` · `floorBelow`)가 달라 8줄 반복을 묶을 이득 없음 | |
+| 32 | 오탐 | 한 줄짜리 바닐라 패턴 | |
+| 33 | 오탐 | 후렴 나무는 자연 상태에서 상한보다 훨씬 작음, 상한은 안전장치 | |
+| 34 | 오탐 | 반환값 무시는 정상 | |
+| 35 | 오탐 | F1 | |
+| 36 | 오탐 | F1 | |
+| 37 | 수정 | 확인: 묶음을 잡은 뒤 재료를 빼도 `work`는 잡을 때의 `units`로 증기를 쓰고, 0개면 `finish`가 아무것도 안 낸다 | `work` 처음에 `available(current)`: 0이면 `batch = null; progress = 0; searchTimer = 0;` 후 false, `units`보다 적으면 묶음 `units`를 그만큼 줄인다(진행 유지). **시험 추가**(M8b): 묶음 시작 → 재료 비움 → tick → `batchUnits() == 0` · 증기 그대로 |
+| 38 | 오탐 | F2: 받는 쪽 증기 | |
+| 39 | 오탐 | 바닐라 `getRedstoneSignalFromContainer`와 같은 `Mth.lerpDiscrete`(값이 0보다 크면 +1) → 하나만 들어도 1 | |
+| 40 | **2단계로** | 큰 보일러 · 용광로 탑 두 멀티블록의 힌트 · 모양 · 외벽 표시가 각자 복사 → 공통화는 두 모듈 설계 판단 | 41 · 42 · 43과 한 묶음(아래) |
+| 41 | **2단계로** | `BigBoilerShape` ↔ `MultiblockShape` 통합 | 위와 같음 |
+| 42 | **2단계로** | 외벽 · 벽돌 블록 · 두 제어기의 `notifyControllers` · `setCasingsFormed` 복사 | 위와 같음 |
+| 43 | **2단계로** | 맞음: 이웃 탑과 공유한 벽돌도 끄고 `link(null)`. 다음 확인(`CHECK_INTERVAL`)에서 이웃이 다시 켜 일시적. "외벽 공유 허용 여부"는 큰 보일러에도 같은 문제라 40~42 공통화 때 규칙으로 정한다 | |
+| 44 | 오탐 | 틱당 `Math.pow` 몇 번 · 6방향 조회는 기계 수 대비 무시할 비용 | |
+| 45 | 수정(주석) | 확인: 상한은 `furnaceTowerBatchSize` | "최대 BATCH_SIZE개" → "최대 설정값(기본 BATCH_SIZE)개" |
+| 46 | 오탐 | `velocity`는 투영(`along`)에만 쓰고 최종 속도는 `follow`가 `CAR_MAX_SPEED`로 다시 자름, 레일은 축 방향 | |
+| 47 | 수정(죽은 코드) | 확인: `ItemFilter.contains`는 호출 없음(`FilterMenu.sampleExists`가 크기 제한까지 반영해 대신함) | 삭제 |
+| 48 | 수정(주석) | 확인: 지적 줄(477)은 없고 클래스 문서의 "주인 · OP만"이 `canManage`(팀 포함)와 다름 | "주인 · 같은 팀 · OP만" |
+| 49 | 수정(정리) | F1: `super` 뒤 `dropContents`는 빈 호출. 엔더 닻 · 증기 충전기 · 증기 일꾼 셋 | 세 곳에서 `Containers.dropContents(...)` 줄만 삭제(닻의 청크 풀기 · 일꾼의 `pending` 떨구기는 유지), 주석 "내용물은 `super`(바닐라)가 떨군다" |
+| 50 | 수정 | 확인: `missingTicks`가 열차 전체에 하나라, 칸 i가 39틱 비었다가 나타난 같은 틱에 칸 j가 비면 바로 떼어 냄 | `missingIndex` 필드: 빈 칸 번호가 바뀌면 `missingTicks = 0`부터. 끝까지 돌면 · 떼면 `-1`. 시험 없음 |
+| 51 | 보류 | 맞음: 켜진 동안 반경 설정을 바꾸면(재시작 · `config reload`) `coveringAnchor`가 새 반경으로 판정. 고치려면 닻마다 켠 때 반경을 저장(저장 형식 변경) | 정책: 닻이 반경을 기록할지, "설정 변경 뒤에는 닻을 다시 놓는다"로 문서화할지 |
+| 52 | 수정(주석) | 확인: 연료 · 증기 통이 아니면 무엇을 들든 출발/멈춤 | "빈손이면" → "그 밖(빈손 · 다른 아이템)이면" |
+| 53 | 수정(주석) | 확인: 증기가 모자라면 `belts = 0` | `poweredBelts` 주석에 "증기가 모자라면 0" |
+| 54 | 수정(주석) | 확인: 한도는 `stationItemsPerTransfer` | "최대 ITEMS_PER_TRANSFER개" → "최대 설정값(기본 ITEMS_PER_TRANSFER)개" |
+| 55 | 오탐 | 켜진 벨트만, 바닐라 깔때기와 같은 수준의 비용 | |
+| 56 | 오탐 | `flush`는 지난 #7, `acceptSteam`은 F2 | |
+| 57 | 수정(주석) | 확인: 창작은 덜지 않을 뿐 1 이상 있어야 뜸 | "증기를 안 쓴다" → "증기를 덜지 않는다 (그래도 1 이상 들어 있어야 뜬다)" |
+| 58 | 오탐 | `BEFORE`에 넣고 `AFTER`에서 꺼냄, 남아도 다음 캐기에 덮어씀(플레이어 수만큼) | |
+| 59 | 오탐 | 보정이 −50%라 막아 준 몫 = 맞은 몫 | |
+| 60 | 오탐 | 5와 같은 모의 플레이어 가드 | |
+| 61 | 오탐 | 지난 #14와 같음 | |
+| 62 | 오탐 | 6줄 도우미, 파일마다 독립 | |
+| 63 | 오탐 | 근사 표기(실제 값은 설정), 노이즈 | |
+| 64 | 오탐 | 실테스트 명령: 발판이 하나 더 깔릴 뿐 (지난 #16과 같은 기준) | |
+| 65 | 수정 | 확인(**상**): 26.3 `HopperBlockEntity.tryMoveInItem`은 빈 칸이면 `setItem(slot, 스택 전체)` 후 `EMPTY`를 돌려줌. 벨트 끝(`BeltBlockEntity.insert`) · 증기 일꾼 `pushOut`은 스택째 넘기므로 남은 목표보다 많으면 초과분이 사라짐(깔때기는 1개씩이라 무사) | `GoalBoardBlockEntity.setItem`: `insert` 뒤 남은 몫이 있고 다음 목표가 같은 아이템이면 한 번 더 `insert`, 그래도 남으면 판 위(`y + 1`)에 `Containers.dropItemStack`. **시험 추가**(M10): 남은 목표 10에 `HopperBlockEntity.addItem(null, board, 64개, Direction.UP)` → 진행 = 목표, 판 둘레 아이템 엔티티 합 = 54(다음 목표가 같은 아이템이면 그만큼 뺀 값) |
+| 66 | 수정 | 확인: `replantAt` · `replantLog`가 저장 안 됨 → 원목을 다 벤 뒤(잎만 남음) 다시 불러오면 `startFelling`이 원목을 못 찾아 묘목을 안 심음 | `saveAdditional`/`loadAdditional`에 `replant_at`(`BlockPos.CODEC`) · `replant_log`(블록 id, 없으면 null). 시험 선택(M9a: 저장 → `loadStatic` 뒤 값 비교) |
+| 67 | 오탐 | 10틱마다 시작점 12칸 × 최대 256칸, 벌목기 수가 적음 | |
+| 68 | 수정(죽은 코드) | 확인: `GoalCommand.register`는 호출 없음(`ModServer`가 `node()`를 씀). 부르면 `sanupcraft` 뿌리를 따로 만들 함수 | 삭제 |
+| 69 | 오탐 | 단순 조회 함수 · 저장되는 누적 수, 무해 | |
+| 70 | 오탐 | 노이즈 | |
+| 71 | 오탐 | 두 루프의 뜻(통째 넣기 · 나눠 비우기)이 다름 | |
+| 72 | 오탐 | 나무 하나당 9칸 조회 | |
+| 73 | 보류 | 맞음: 서버 `thrust`는 땅 · 물 조건을 안 보고, 클라이언트는 로컬 설정 값으로 판단(설정 동기화 없음). 다만 움직임은 원래 클라이언트가 정해 변조 클라이언트 대비 이득이 없고, 설정 불일치는 서버 설정을 바꾼 멀티에서만 | 정책: 클라이언트가 설정을 쓰는 곳 전체의 동기화(서버 → 클라이언트 페이로드) 여부. 멀티 실테스트 뒤 |
+| 74 | 수정 | 확인: 그리기 이동 범위 `rows*18-17`, 끌기 분모 `rows*18-15` → 끝에서 약 2px 어긋남 | `scrollTo` 분모를 `rows * 18 - 17.0`으로(손잡이 반 7은 그대로). 클라이언트 전용 |
+| 75 | 수정 | 16과 같음(`IDLE` · `MISSING` · `NO_PRODUCER`) | `toLowerCase(Locale.ROOT)` |
+| 76 | 수정(주석) | 확인: 거상은 X1에서 전용 모델 | "(임시 렌더러, M11에서 전용 모델)" → "(전용 모델, X1)" |
+| 77 | 보류 | 렌더러 · 모델의 사망 페이드 · 내려치기 식 공통화는 2(보스 공통 부모) 결정 뒤 클라이언트 쪽에서 같이 | |
+| 78 | 오탐 | 앞 조건이 뒤 조건에 포함된 중복일 뿐, 노이즈 | |
+| 79 | 오탐 | 노이즈 | |
+| **80** (Opus 추가) | 수정 | 16 · 75와 같은 문제: `PlaytestCommand.Stage.id()`의 `name().toLowerCase()` → 터키어 로캘에서 `I`가 든 단계 이름이 바뀜 | `toLowerCase(Locale.ROOT)` |
+| **81** (Opus 추가) | 수정 | F1 아래: 서랍을 부수면 64개를 쏟고, 폭발이면 최대 64개 복제 | `DrawerBlockEntity`에 빈 `preRemoveSideEffects` 오버라이드(바닐라 셜커 상자 · 차원 창고와 같음) + 주석. **시험 추가**(Storage): 레드스톤 5000 서랍을 `level.destroyBlock(pos, true)` → 떨어진 아이템 엔티티가 서랍 하나(내용물 5000)뿐, 낱개 레드스톤 없음. 가능하면 폭발(`level.explode`)로도 한 번 |
+
+### 7-3. 수정 묶음 (파일 소유)
+다섯 묶음은 파일이 겹치지 않는다. 공용 파일(`lang` · README · ROADMAP · `src/gametest/resources/fabric.mod.json`)은 아무도 안 건드린다 — 새 시험은 **이미 등록된 시험 파일**에 메서드로만 넣는다. 각자 작업 트리에서 고친 뒤 `./gradlew build`(GameTest 292 + 새 시험) 통과 확인, 새 시험은 고치기 전에 실패하는지도 확인. 위치는 줄 번호가 아니라 문구로 찾는다.
+경로 앞 `main/` = `src/main/java/io/github/yhyeop/sanupcraft/`, `client/` = `src/client/java/io/github/yhyeop/sanupcraft/client/`, `test/` = `src/gametest/java/io/github/yhyeop/sanupcraft/test/`.
+
+| 묶음 | 항목 | 소유 파일 (이 묶음만 수정) | 시험 |
+|---|---|---|---|
+| **K1 보스 · 클라이언트 화면** | 1, 3, 7, 8, 74, 75, 76 | `main/boss/BossParty.java`(주석만), `main/boss/FurnaceWarden.java`, `main/boss/RustyGuardian.java`, `client/storage/TerminalScreen.java`, `client/storage/StockerScreen.java`, `client/SanupcraftClient.java`(주석만) | 새 시험 없음. build + 가능하면 `runClientGameTest` |
+| **K2 창고** | 12, 13, 14, 16, 81 | `main/storage/OwnerLock.java`(주석만), `main/storage/AutocrafterBlockEntity.java`(주석만), `main/storage/StockerBlockEntity.java`, `main/storage/PortableTerminalItem.java`, `main/storage/DrawerBlockEntity.java`, `test/SanupcraftStorageGameTest.java`(서랍 부수기 시험 추가만) | 새 시험 1~2 (81: 부수기, 가능하면 폭발) |
+| **K3 증기 · 산업** | 23, 24, 26, 37, 45, 49(충전기) | `main/power/BoilerBlockEntity.java`, `main/power/SteamChargerBlockEntity.java`, `main/power/SteamStorage.java`(주석만), `main/industry/FurnaceTowerControllerBlockEntity.java`, `test/SanupcraftM8bGameTest.java`(탑 시험 추가만) | 새 시험 1 (37) |
+| **K4 물류 · 수송 · 엔드** | 28, 30, 47, 48, 49(닻), 50, 52, 53, 54 | `main/logistics/ItemFilter.java`, `main/logistics/EnderLinkBlockEntity.java`(주석만), `main/logistics/EnderAnchorBlockEntity.java`, `main/logistics/BeltMotorBlockEntity.java`(주석만), `main/transport/SteamLocomotive.java`, `main/transport/CargoStationBlockEntity.java`(주석만), `main/end/EndIslandStructure.java`(주석만), `main/end/VoidGear.java` | 새 시험 없음. 기존 닻 시험(`anchorHandsOverAfterReload` 등) 그대로 통과 |
+| **K5 생산 · 서버 · 장비 · 실테스트** | 49(일꾼), 57, 65, 66, 68, 80 | `main/server/GoalBoardBlockEntity.java`, `main/server/GoalCommand.java`, `main/production/SteamWorkerBlockEntity.java`, `main/production/TreeFellerBlockEntity.java`, `main/gear/Jetpack.java`(주석만), `main/playtest/PlaytestCommand.java`, `test/SanupcraftM10GameTest.java`(목표판 시험 추가만), `test/SanupcraftM9aGameTest.java`(벌목기 저장 시험, 선택) | 새 시험 1~2 (65 필수, 66 선택) |
+
+주의:
+- K3 · K4 · K5가 49를 나눠 맡는다(파일은 각자 하나). 지우는 건 `Containers.dropContents(...)` 한 줄뿐 — 닻의 `setForced(false)`, 일꾼의 `pending` 떨구기 · `pending.clear()`는 남긴다.
+- K5의 `SteamWorkerBlockEntity`는 `TreeFellerBlockEntity`의 부모라 같은 묶음에 둔다.
+- K1의 3번은 바닐라 `net.minecraft.world.entity.EntitySelector.NO_CREATIVE_OR_SPECTATOR`를 쓰고 공통 도우미를 새로 만들지 않는다(2단계 보스 공통화와 겹치지 않게).
+
+2단계로 올린 것 (1단계에서 손대지 않음):
+- **2 (+77) 보스 공통 부모**: 세 보스(`RustyGuardian` · `FurnaceWarden` · `VoidColossus`)의 중복을 `Monster` 아래 공통 부모로 묶을지, 묶으면 어디까지(보스 바 · party 저장 · `actuallyHurt` · 방패 깨기 · 경고 · PatternGoal 뼈대)인지. 77(렌더러 · 모델)은 그 결정을 따라간다. K1이 먼저 고친 3 · 7 · 8을 그대로 옮긴다.
+- **40 · 41 · 42 · 43 멀티블록 공통화**: `BigBoilerShape` ↔ `MultiblockShape`, 두 제어기 · 외벽 블록의 `notifyControllers` · `setCasingsFormed` · 힌트를 한 틀로. 그때 "두 구조물이 외벽 · 벽돌을 공유할 수 있나"(43)를 규칙으로 정한다(금지 → 모양 확인에서 거부 / 허용 → 끌 때 내 제어기에 이어진 것만). K3이 먼저 고친 37 · 45를 그대로 둔다.
+
+보류 3건(51 닻 반경 기록, 73 제트팩 설정 동기화, 77 렌더러 공통화)은 이 표로만 넘긴다. 3단계로 올린 것 없음.
+
+### 7-4. 비판적 Sonnet 반론
+판정당 1회. 근거는 코드 · 바닐라 소스를 직접 읽은 것 (`BlockEntity.preRemoveSideEffects` · `LevelChunk.setBlockState` · `Level.destroyBlock` · `ServerPlayerGameMode.destroyBlock` · `BlockBehaviour.onExplosionHit` · `Containers.dropItemStack` · `HopperBlockEntity.tryMoveInItem` · `GameRules`). 최종 결정은 Opus.
+81건 중 **반론 6건**(R1~R6. 그중 R1~R3은 #81 하나에 대한 보강이라 "수정" 판정은 유지하고 사양만 바꾸자는 것), 동의하되 보정 1건(R7), 질문받은 지점의 검증 결과(V1~V4)를 적는다. 나머지 판정은 읽어 보고 동의라 건너뛴다.
+
+| 번호 | 반론 | 근거 | 요청 | 확신도 |
+|---|---|---|---|---|
+| R1 (#81 수정 방향 보강: 도구 없이 부수면 소멸) | 빈 `preRemoveSideEffects`로 바꾸면 **맨손 · 도끼로 부술 때 서랍 내용물 전부가 아무 흔적 없이 사라진다**. 서랍 블록은 `requiresCorrectToolForDrops()`라서 곡괭이가 아니면 `playerDestroy`(= 전리품 표)가 아예 안 불린다. 지금은 그 경우에도 보기 칸 최대 64개가 쏟아지지만(나머지는 어차피 소실), 고치고 나면 5000개든 1만 개든 전부 증발한다. 바닐라 셜커 상자를 본뜬다면서 셜커는 도구 제한이 없다는 점이 빠졌다 | `ModStorage.java:119-125` (`.strength(3.0F, 6.0F).requiresCorrectToolForDrops()`), `ServerPlayerGameMode.java:319-323` (`canDestroy = hasCorrectToolForDrops` 일 때만 `playerDestroy`), 곡괭이 태그 `data/minecraft/tags/block/mineable/pickaxe.json`에 두 서랍이 있고 `needs_*_tool` 태그는 없음 → 아무 곡괭이면 됨. 시나리오: 철제 서랍에 레드스톤 5000개를 넣고 맨손으로 부수면 현재는 64개가 나오고 4936개 소실, 수정 뒤엔 5000개 소실 | 둘 중 하나를 #81에 같이: (a) `drawerProperties`에서 `.requiresCorrectToolForDrops()` 삭제(셜커와 같게 "부숴도 내용물 유지"를 도구와 무관하게 보장). (b) 유지하려면 서랍 `playerWillDestroy`에서 도구가 틀릴 때 내용물을 아이템 하나로 묶어 떨구는 별도 코드 필요(복잡). (a)를 권장. `ModStorage.java`를 K2 소유에 추가 | 상 (코드 사실) / 중 (a가 디자인 의도에 맞는지는 Opus 판단) |
+| R2 (#81 보강: 폭발 · 전리품 조건) | 폭발 복제는 막아도 **내용물이 "살아남는" 것은 아니다**. 서랍 전리품 표에 `survives_explosion` 조건이 있어 크리퍼(`mob_explosion_drop_decay` 기본 true, 반경 3) 폭발이면 서랍 아이템이 **약 2/3 확률로 안 나온다**. 즉 크리퍼 폭발에서 "내용물 유지"는 확률 1/3. 이전에도 소실이었으니 퇴행은 아니지만, 판정문이 "폭발 복제 해결"로 끝나 플레이어는 내용물이 지켜진다고 이해하기 쉽다 | `data/sanupcraft/loot_table/blocks/iron_drawer.json` · `steel_drawer.json` (`"condition": {"type": "minecraft:survives_explosion"}`), `GameRules.java:56` (`MOB_EXPLOSION_DROP_DECAY` 기본 true), `:28`(블록 폭발도 true), `:86`(`TNT_EXPLOSION_DROP_DECAY` 기본 false). 손으로 쓴 JSON이라 생성기에 덮어써질 일 없음 (`DataGenerator` 없음) | 두 JSON에서 `condition` 줄 삭제(내용물 든 아이템은 폭발에도 드롭). 바닐라 셜커 전리품 표에 이 조건이 없다는 건 내 기억이고, 이 작업 환경의 디컴파일에는 데이터 JSON이 없어 직접 확인하지 못함. 원치 않으면 판정문에 "폭발은 감쇠 확률로 소실, 의도됨"이라고 적기만 | 중 |
+| R3 (#81 시험 사양 보정) | 시험을 `level.destroyBlock(pos, true)`로 쓰는 건 **옳고 충분하다**: `Level.destroyBlock`은 `dropResources` 먼저 → `setBlock`(= `preRemoveSideEffects`) 나중이라 폭발과 같은 순서의 복제가 그대로 재현돼 고치기 전에 확실히 실패한다. 반면 "가능하면 `level.explode`"는 권하지 않는다: 반경 1이면 서랍(폭발 저항 6)이 안 부서지고, 크게 하면 이웃 시험 구조물을 건드리며, 크리퍼형이면 R2의 확률 때문에 흔들린다 | `Level.java:276-295` (순서), `BlockBehaviour.java:174-188` (폭발도 `getDrops` → `setBlockAndUpdate(AIR)`), `ModStorage.java:122` (저항 6) | 시험은 `destroyBlock(pos, true)` 하나만 필수로 하고 폭발 시험은 빼거나 `TNT` 상호작용 + 반경 4 + 주변 빈 구역일 때만(감쇠 규칙 false라 결정적). 기대값: 아이템 엔티티가 서랍 아이템 하나(`DRAWER_CONTENTS.count == 5000`)이고 낱개 `REDSTONE` 엔티티 합 0 | 상 |
+| R4 (#17 · #18 · #69 오탐 사유가 사실과 다름) | "시험 · 디버그용으로 무해"라고 했지만 **시험에서도 안 부른다**. 같은 기준으로 #47(`ItemFilter.contains`) · #24(`isCharging`) · #68(`GoalCommand.register`)은 지우면서 호출 0건인 다른 함수는 남기는 건 판정 기준이 일관되지 않다 | `grep`: `PortableTerminalItem.isEnder`(`:52`) · `StorageNetwork.nodes`(`:64`) · `CropHarvesterBlockEntity.cursor`(`:158`) · `TreeFellerBlockEntity.felled`/`queued` · `TreeFelling.Tree.size`(`:40`) 모두 정의 한 줄 외에 `src/main` · `src/client` · `src/gametest` 어디에도 호출 없음 | 기준을 하나로: 호출 0건 공개 함수는 지운다(`PortableTerminalItem` · `StorageNetwork`는 K2, `CropHarvester` · `TreeFeller` · `TreeFelling`은 K5 영역). `felled` 필드와 저장 키는 유지. 아니면 판정문에 "남기는 기준"을 적기 (`CropHarvesterBlockEntity` · `TreeFelling`은 소유 목록에 없으니 추가 필요) | 상 (사실) / 하 (중요도, 건너뛰어도 무방) |
+| R5 (#2 보스 공통 부모: 에스컬레이션 방향) | 2단계로 올리는 건 동의하지만 **"`Monster`와 세 보스 사이 공통 부모"가 맞는 도구인지**는 다시 보자. 중복의 상당수는 위임 한두 줄짜리 오버라이드(`actuallyHurt` · `getDamageAfterMagicAbsorb` · `dropCustomDeathLoot` · 저장/읽기. 상태는 이미 `BossParty`가 받음)이고, 진짜 복사본은 **정적 함수**(`breakShield` 10줄 · `horizontalDistance` · `warnRust`/`warnHeat` 쿨다운 맵 · `PatternGoal` 뼈대)다. 이건 상속 없이 `BossParty`(또는 `BossCombat`)의 정적 도우미로 먼저 옮길 수 있고, 그것만으로 복사의 절반이 사라진다. 부모 클래스는 그다음 단계로 쪼개야 시험이 깨질 때 원인을 좁힌다 | `RustyGuardian.java:379-400` ↔ `FurnaceWarden.java:469-490`(문구 키만 다르고 본문 동일). 세 보스의 `hurtServer`는 **서로 다르다**(수호자는 `IS_FIRE` 면역 없음 · 파수꾼은 `IS_FIRE` 면역 · 거상은 방어막 선검사 `VoidColossus.java:423-445`) → 부모가 가져갈 수 있는 건 `super` 뒤 `playSound` 류뿐. 시험 12개 파일이 세 클래스를 직접 씀(`grep -rl`). 저장 키는 `BossParty.save/load` 안이라 부모로 옮겨도 NBT 키는 안 변함(안전), 거상의 `shield_wave` · `crystals`는 자기 클래스에 남아야 함 | 2단계 안에서 두 걸음으로: ① 정적 도우미 이관(동작 불변, `./gradlew build`), ② 그다음에만 부모(보스 바 · `setCustomName`/`refreshBossBar`/`startSeenByPlayer`/`stopSeenByPlayer`/`removeWhenFarAway`/저장 위임). 둘 다 **K1 병합 뒤**, `runClientGameTest`(렌더러가 세 클래스를 직접 참조) 포함. **3단계는 불필요**(엔티티 id · NBT · 패킷 · 렌더러 계약이 그대로라 "구조 자체를 바꾸는" 경우가 아님). Opus 직접 수정으로 충분 | 중 (방향) / 하 (두 걸음 분할이 꼭 필요한지) |
+| R6 (#41 분리) | 40~43을 한 덩어리로 2단계에 올렸는데 **41(`BigBoilerShape` ↔ `MultiblockShape`)은 설계 판단 없이 기계적**이다. `MultiblockShape`는 이미 깊이 · 높이 · 배치 · 외벽 판정을 생성자로 받고, `BigBoilerShape`는 그 특수한 경우(3x3x4, 가운데 기둥 2 · 3층 빈칸)를 정적으로 박은 98줄이다. 42(`notifyControllers`/`setCasingsFormed`)와 43(공유 벽돌 규칙)만 두 제어기 사이의 규칙 결정이 필요하다 | `diff BigBoilerShape MultiblockShape`: 차이는 정적 ↔ 인스턴스와 `Layout`뿐. 호출처는 `BigBoilerCasingBlock.java:30` · `BigBoilerControllerBlock.java:61-63, 119` · `BigBoilerControllerBlockEntity.java:35` · 시험 `SanupcraftM8aGameTest.java:27, 60, 67, 246`(`BigBoilerShape.Part`/`casings`를 `MultiblockShape`로 바꾸는 수정 필요) | 41은 2단계 안에서 **먼저 단독 진행**(`static final MultiblockShape BIG_BOILER = new MultiblockShape(3, 4, layout, isCasing)`), 40 · 42 · 43만 규칙 결정(외벽 공유 허용 여부) 뒤로. 43은 동의(다음 확인에서 이웃이 다시 켜므로 일시적: `FurnaceTowerControllerBlockEntity.java:297-312`의 `now \|\| changed` 재연결) | 하 |
+| R7 (#65 동의하되 보정) | 판정 유지. 두 가지만 보정: (1) 기본 목표 순서는 철 주괴 1000 → 철판 2000 → 리벳 5000 → 기어 500으로 **연속 두 목표가 같은 아이템이 아니다**(`Goals.java:16-19`). "다음 목표가 같은 아이템이면 한 번 더 `insert`"는 `/goal set`으로 같은 아이템을 연속 지정했을 때만 도는 가지라, 시험의 기대값(남은 10 · 64개 → 진행 = 목표, 판 둘레 54개)은 이 가지 없이 결정적으로 54다. (2) 초과분은 `y+1`에 떨구는데 완료 직후 `spawnReward`가 같은 칸(`above()`)에 보상 상자를 놓는다. 아이템 엔티티가 상자 칸 안에 생겨 어색할 수 있어도 유실은 아니고, 기존 폴백(`spawnReward` 끝)이 이미 같은 위치다 → 그대로 | `GoalBoardBlockEntity.java:258-268`(`spawnReward` 후보 `above()` 첫째), `HopperBlockEntity.java:319-322`(빈 칸 → `setItem` 스택째) | 시험 기대값에서 "(다음 목표가 같은 아이템이면 …)" 단서를 빼고 54로 고정 | 하 |
+
+#### 질문받은 세 지점 검증 (반론 아님)
+- **V1. `setChanged` 규칙(줄어드는 쪽만 수정, 받는 쪽 증기는 오탐)에 구멍이 있나**: 받는 쪽 **아이템 · 유체**가 표시 없이 바뀌는 경로를 따라가 봤다. 결과는 **구멍 없음(#14 · #65 외)**.
+  - 유체: `FluidTank.fill/drain`이 `onChange`로 BE의 `setChanged`를 부르고(`FluidTank.java:50-64`), 펌프 `pumpOnce`(`PumpBlockEntity.java:85-92`) · 펌프의 밀어내기(`:143-145`, `target.fill` → 대상의 `setChanged`) · 보일러 `fill`(`BoilerBlockEntity.java:246-256`) · 기계(세척기) `fill`(`MachineBlockEntity.java:409-419`) · 탱크 · 경험치 탱크(`ExperienceTankBlockEntity.java:28`, `MobGrinderBlockEntity.store`가 `orb.discard()` 뒤 `tank.fill`)가 전부 표시한다. 보일러 `drawFromTanks`의 `tank.drain`도 표시.
+  - 아이템: `StorageNetwork.fill`(`:262-285`)은 `changed`면 `container.setChanged()`, `SteamWorkerBlockEntity.stash/flushPending` · `BarterCollector` 흡수(`taken > 0`) · `FilterHopperBlockEntity.eject`(`removeItem` + 대상 `setChanged`) · `CargoStationBlockEntity.move`(`addItem`이 대상 표시, `removeItem`이 출발 표시) · 엔더 송신기 `setItem` → 수신기 `addItem` · `GoldDispenserBlock`/`SoulFurnaceBlock` 손 넣기(`setItem` 또는 `setChanged`)가 모두 표시.
+  - 서랍 · 차원 창고: `DrawerBlockEntity`의 모든 변경은 `changed()`/`setChangedOnly()`를 거치고, 창고 채널은 `SimpleContainer.setChanged` → `setDirty`(`VaultData.java:67-71`). #27의 `removeItemNoUpdate`는 바닐라에서 `AbstractContainerMenu.clearContainer`(제작칸 닫힘) · 상인 · 석재절단기 같은 **자기 결과 칸**에만 쓰이고 `ChestMenu`/깔때기는 안 부른다(디컴파일 호출처 확인) → 오탐 동의.
+  - 증기: 보낸 쪽이 자기 청크를 표시하므로 받는 쪽 누락은 소실일 뿐 복제가 아니다 → 규칙 동의.
+- **V2. 렌치 `UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS`(= 플래그 256)와 #81의 상호작용**: `Wrench.pickUp`은 `copyData`(= `saveCustomOnly` + `collectComponents`, 서랍은 `DRAWER_CONTENTS`에 보기 칸까지 합친 전체 개수)로 아이템을 먼저 만든 뒤 256을 켜고 `setBlock`하므로 `preRemoveSideEffects`가 아예 안 불린다(`LevelChunk.java:304-311`, `sideEffects = (flags & 256) == 0`). 빈 오버라이드를 넣어도 렌치 경로는 변하지 않는다 → 충돌 없음. 소실 경로는 R1(도구 없음)과 `/setblock replace`(전리품 표를 안 거침)뿐이며 셜커도 같다. 플레이어가 곡괭이로 부수면 지금도 복제는 없다(`removeBlock` 먼저 → 보기 칸 `split` → `playerDestroy`의 `contents()`가 `sync()`로 나머지만 계산)는 Opus 설명도 확인했다. 다만 개수가 64 이하면 보기 칸이 전부 쏟아져 아이템에는 빈 서랍(업그레이드만)이 남는 게 현재 동작이라, 수정 뒤에 "작은 개수일수록 달라 보이는" 변화가 있다는 점만 알아 둘 것.
+- **V3. 부모 클래스(#2)를 지금 해도 안전한가**: 저장 키는 안전하다(파티 상태는 전부 `BossParty.save/load`, 거상 전용 `shield_wave` · `crystals`만 자기 클래스). 위험은 시험 쪽이다: 12개 시험 파일이 `RustyGuardian` · `FurnaceWarden` · `VoidColossus`와 각자의 중첩 `Pattern` · `hitWithRust/Heat` · `startPattern`을 직접 부른다. 생성자 제네릭(`EntityType<? extends RustyGuardian>`), 필드 초기화 순서(`ServerBossEvent`가 필드 초기화에서 `getDisplayName()`을 부름), `private class PatternGoal`의 비공개 필드 접근이 부모로 올리면 `protected`가 돼야 한다는 점이 변경 폭을 키운다. K1이 `FurnaceWarden` · `RustyGuardian`을 같은 라운드에 고치므로 **K1 병합 뒤에** 시작해야 한다. R5의 두 걸음 순서면 안전하다.
+- **V4. #3 창작 · 관전 제외가 기존 시험을 깨나**: 보스 시험이 쓰는 모의 플레이어는 전부 `GameType.SURVIVAL`(`FixBoss` · `M2` · `M3` · `Fin` · `C3` · `Stage2`)이고 `CREATIVE`는 보스와 무관한 시험(`Bundle3:235`, `FixLogistics:216, 220`, `M9a:490`)에만 쓴다 → 깨지지 않음. `Monster`의 일반 표적 선정도 창작을 이미 제외하므로 동작 일관성도 맞다.
+
+#### 반론하지 않은 판정 (읽고 동의)
+- 오탐 F1(10 · 35 · 36): `BlockEntity.preRemoveSideEffects`가 `Container`면 `Containers.dropContents`를 부르고(`BlockEntity.java:235-239`, `LevelChunk.java:304-311`), 자동 제작대 · 기계 · 탑 BE는 모두 `BaseContainerBlockEntity`이며 슬롯 수가 `items.size()`/`SLOT_COUNT`로 전부 노출돼 재료 · 결과 · 부산물 · 업그레이드가 떨어진다 → 직접 확인. 부수는 시험이 없다는 점만 약점이니 값싼 시험 하나(`destroyBlock` → 아이템 엔티티에 재료 존재)를 K2/K3에 얹으면 좋지만 필수는 아님.
+- 수정: 1 · 3 · 7 · 8 · 12 · 13 · 14(`feedMachine`의 첫 `fill` 뒤 `setChanged`: 둘째가 실패하면 네트워크에서 뺀 재료가 기계 청크 미표시로 사라질 수 있음, 맞음) · 16 · 23 · 24 · 26 · 28 · 30 · 37(`finish`가 이미 `Math.min(units, available)`이라 `work` 쪽만 보강하면 됨) · 45 · 47 · 48 · 49 · 50 · 52 · 53 · 54 · 57 · 65 · 66(`replant`가 `isAir`를 확인하므로 구조가 선 채 불러와도 무해, 위에서 아래로 베므로 바닥 원목이 마지막) · 68 · 74(그리기 이동 범위 `trackHeight - 2 - 15 = rows*18-17`, 끌기 분모 `-15` 확인) · 75 · 76 · 80.
+- 오탐: 4 · 5 · 6 · 9 · 10 · 11 · 15 · 19 · 20 · 21 · 22 · 25 · 27 · 29 · 31~36 · 38 · 39 · 44 · 46 · 55 · 56 · 58~64 · 67 · 70~72 · 78 · 79. (#67은 통나무 벽 옆에서 10틱마다 시작 칸 최대 12곳 × 256칸 탐색이 도는 건 사실이지만 상한이 있고 반 초 간격이라 허용.)
+- 보류: 51 · 73 · 77. 2단계: 2 · 40 · 42 · 43 (R5 · R6의 분할 요청 외 동의). **3단계로 올릴 것은 없음** (동의).
+
+#### 요약 (Opus 결정 요청)
+| 반론 | 요청 | 확신도 |
+|---|---|---|
+| R1 | #81에 `requiresCorrectToolForDrops()` 삭제 (또는 소실 감수를 명시) | 상 / 중 |
+| R2 | 서랍 전리품 표의 `survives_explosion` 삭제 여부 | 중 |
+| R3 | #81 시험은 `destroyBlock(pos, true)`만 필수, 폭발 시험은 선택 | 상 |
+| R4 | 호출 0건 함수 일괄 삭제 (또는 남기는 기준 명시) | 상 / 하 |
+| R5 | #2는 정적 도우미 → 부모의 두 걸음으로, K1 병합 뒤 | 중 / 하 |
+| R6 | #41 먼저 단독 | 하 |
+| R7 | #65 시험 기대값 54로 고정 | 하 |
+
+### 7-5. 최종 결정 (Opus)
+| 반론 | 결정 | 이유 |
+|---|---|---|
+| R1 서랍 도구 없이 부수면 소멸 | **받아들임 (a)** | 확인: `drawerProperties`에 `.requiresCorrectToolForDrops()`. 빈 `preRemoveSideEffects`만 넣으면 맨손 · 도끼로 부술 때 내용물 전부가 사라진다. 바닐라 셜커 상자 · 통도 도구 제한이 없다 → `drawerProperties`에서만 삭제(곡괭이 태그는 그대로 두어 캐는 속도 유지). 같은 파일의 다른 속성 함수(저장 기계용, 바로 위)는 손대지 않는다 |
+| R2 폭발 · `survives_explosion` | **기각** | 확인: 바닐라 `BlockLootSubProvider.createShulkerBoxDrop`도 `applyExplosionCondition`으로 같은 조건을 건다 → 셜커와 같은 규칙. 퇴행도 아님. 판정문 보정만: #81은 "복제 해결", 크리퍼 폭발 감쇠로 서랍째 사라질 수 있는 것은 바닐라와 같은 의도 |
+| R3 #81 시험 사양 | **받아들임** | `Level.destroyBlock`이 `dropResources` → `setBlock` 순서라 고치기 전에 확실히 실패한다. 폭발 시험은 뺀다. 맨손 부수기 시험을 하나 더(R1 고정) |
+| R4 호출 0건 함수 기준 | **받아들임** | 기준을 하나로: **호출 0건(본 · 클라이언트 · 시험 모두)인 함수는 지우고, 그 때문에 쓰기만 남는 필드 · 저장 키도 지운다**(#23과 같은 기준). 17 · 18 · 69를 오탐 → 수정(죽은 코드)으로 바꾼다. `cursor`처럼 다른 로직이 읽는 필드는 남긴다 |
+| R5 #2 두 걸음 | **받아들임** | 중복의 큰 몫이 정적 함수(`breakShield` · `horizontalDistance` · 경고 쿨다운)이고 세 보스 `hurtServer`가 서로 달라 부모가 가져갈 게 적다. ① 정적 도우미 → ② 부모 순서, K1 병합 뒤, 3단계 불필요 |
+| R6 #41 먼저 단독 | **받아들임** | `BigBoilerShape`는 `MultiblockShape`의 특수한 경우(정적 · `Layout`뿐 차이). 규칙 판단 없이 기계적으로 옮길 수 있다 |
+| R7 #65 시험 기대값 | **받아들임** | 기본 목표 순서에 같은 아이템 연속이 없다(`Goals`). 기대값 54로 고정. 같은 아이템 다음 목표용 재`insert` 가지는 코드에 남기되(`/goal set` 연속 지정) 시험은 안 건다 |
+| V1~V4 | 동의 | V1: 받는 쪽 아이템 · 유체 경로에 다른 구멍 없음. V2: 렌치(플래그 256)는 `preRemoveSideEffects`를 안 거쳐 #81과 충돌 없음 — 64개 이하 서랍을 곡괭이로 부수면 지금은 빈 서랍 + 낱개, 고친 뒤엔 내용물 든 서랍 하나(의도대로). V3: #2는 K1 병합 뒤. V4: #3이 기존 시험(전부 SURVIVAL)을 안 깬다 |
+
+최종 집계(81건 = 지적 79 + Opus 추가 2): **수정 대상 34** (7-2의 31 + R4로 17 · 18 · 69) · 오탐 39 · 보류 3 (51 · 73 · 77) · 2단계로 5 (2 · 40 · 41 · 42 · 43) · 3단계로 0.
+
+### 7-6. 최종 수정 묶음
+다섯 묶음은 파일이 겹치지 않는다. 각자 자기 git 작업 트리에서 병렬로 고친다. **공용 파일(`lang/*.json` · README · ROADMAP · `src/gametest/resources/fabric.mod.json` · 전리품 JSON)은 아무 묶음도 건드리지 않는다** — 새 시험은 이미 등록된 시험 파일에 메서드로만 넣는다. REFACTOR.md도 묶음은 안 고친다(수정 기록은 조정자가 병합 뒤 적는다).
+경로 앞 `main/` = `src/main/java/io/github/yhyeop/sanupcraft/`, `client/` = `src/client/java/io/github/yhyeop/sanupcraft/client/`, `test/` = `src/gametest/java/io/github/yhyeop/sanupcraft/test/`. 위치는 줄 번호가 아니라 문구로 찾는다.
+모든 묶음 공통 완료 조건: `./gradlew build` 통과(GameTest 292 + 새 시험), 새 시험은 고치기 전에 한 번 실패하는지 확인(되돌려 보기), 주석만 고치는 파일은 코드 변경 금지.
+
+| 묶음 | 소유 파일 (이 묶음만 수정) | 시험 |
+|---|---|---|
+| **K1 보스 · 클라이언트 화면** (1, 3, 7, 8, 74, 75, 76) | `main/boss/BossParty.java`(주석만), `main/boss/FurnaceWarden.java`, `main/boss/RustyGuardian.java`, `client/storage/TerminalScreen.java`, `client/storage/StockerScreen.java`, `client/SanupcraftClient.java`(주석만) | 새 시험 없음. build + `runClientGameTest` |
+| **K2 창고** (12, 13, 14, 16, 17, 18, 81) | `main/storage/OwnerLock.java`(주석만), `main/storage/AutocrafterBlockEntity.java`(주석만), `main/storage/StockerBlockEntity.java`, `main/storage/PortableTerminalItem.java`, `main/storage/StorageNetwork.java`, `main/storage/DrawerBlockEntity.java`, `main/storage/ModStorage.java`(`drawerProperties` 한 줄만), `test/SanupcraftStorageGameTest.java`(시험 추가만) | **필수 2**: 81 곡괭이 부수기 · 81 맨손 부수기. 선택 1: 자동 제작대 부수기(F1 고정) |
+| **K3 증기 · 산업** (23, 24, 26, 37, 45, 49-충전기) | `main/power/BoilerBlockEntity.java`, `main/power/SteamChargerBlockEntity.java`, `main/power/SteamStorage.java`(주석만), `main/industry/FurnaceTowerControllerBlockEntity.java`, `test/SanupcraftM8bGameTest.java`(시험 추가만) | **필수 1**: 37 |
+| **K4 물류 · 수송 · 엔드** (28, 30, 47, 48, 49-닻, 50, 52, 53, 54) | `main/logistics/ItemFilter.java`, `main/logistics/EnderLinkBlockEntity.java`(주석만), `main/logistics/EnderAnchorBlockEntity.java`, `main/logistics/BeltMotorBlockEntity.java`(주석만), `main/transport/SteamLocomotive.java`, `main/transport/CargoStationBlockEntity.java`(주석만), `main/end/EndIslandStructure.java`(주석만), `main/end/VoidGear.java` | 새 시험 없음. 기존 닻 시험(`anchorHandsOverAfterReload` · `anchorUntracksOnRemoved` · `anchorForcesChunksAndReleasesOnlyItsOwn`) · 열차 · 공허 장비 시험 그대로 통과 |
+| **K5 생산 · 서버 · 장비 · 실테스트** (49-일꾼, 57, 65, 66, 68, 69, 80) | `main/server/GoalBoardBlockEntity.java`, `main/server/GoalCommand.java`, `main/production/SteamWorkerBlockEntity.java`, `main/production/TreeFellerBlockEntity.java`, `main/production/TreeFelling.java`, `main/production/CropHarvesterBlockEntity.java`, `main/gear/Jetpack.java`(주석만), `main/playtest/PlaytestCommand.java`, `test/SanupcraftM10GameTest.java`(시험 추가만), `test/SanupcraftM9aGameTest.java`(시험 추가만) | **필수 1**: 65. 선택 1: 66 |
+
+**K1 단계**
+- 1: `BossParty` 클래스 문서 "기여자가 없으면 … 보스 자리에 하나만 떨군다" → "필수품 `1 + 단계`개만 떨군다". `giveKeyItem` 문서 "필수품만 떨군다" → "필수품(`1 + 단계`개)만 떨군다".
+- 3: `FurnaceWarden`의 화염 분출(`BLAST_RANGE`) · 장판 폭발(`explodeRings`) · 도약 착지(`LEAP_RADIUS`), `RustyGuardian`의 돌진(`inflate(0.6)`) · 내려치기(`slamReach`) — 다섯 `getEntitiesOfClass(Player.class, …)`에 셋째 인자 `EntitySelector.NO_CREATIVE_OR_SPECTATOR`. 새 도우미 만들지 않음.
+- 7: `RustyGuardian`에 `public static final byte EVENT_ATTACK = 4;`(파수꾼과 같은 이름), `broadcastEntityEvent(this, (byte) 4)` · `if (id == 4)` 교체.
+- 8: `FurnaceWarden.maxRings()` 주석 "장판은 20칸 안 플레이어 발밑마다 하나" → "장판은 가로 · 세로 ±20칸 상자 안 플레이어 발밑마다 하나".
+- 74: `TerminalScreen.scrollTo` 분모 `rows * 18 - 15.0` → `rows * 18 - 17.0`.
+- 75: `StockerScreen` `toLowerCase()` → `toLowerCase(Locale.ROOT)` (`java.util.Locale` 가져오기).
+- 76: `SanupcraftClient` 주석 "(임시 렌더러, M11에서 전용 모델)" → "(전용 모델, X1)".
+
+**K2 단계**
+- 12: `OwnerLock` 클래스 문서 "주인 · OP가 … 주인 · OP만 쓴다" → "주인 · 같은 팀(M10) · OP가 … 그들만 쓴다", `canManage` 문서 "주인, OP, 또는 주인이 없을 때" → "주인, 주인과 같은 팀, OP, 또는 주인이 없을 때".
+- 13: `AutocrafterBlockEntity` 클래스 문서 "재료 9칸(견본과 같은 칸에 같은 아이템)이 차면" → "견본이 쓰는 재료 칸(견본과 같은 칸에 같은 아이템)이 모두 차면".
+- 14: `StockerBlockEntity.feedMachine`: 레시피마다 `boolean first = fill(… SLOT_INPUT …)`로 받고, 둘째 `fill`이 실패해 다음 레시피로 넘어가기 전에도 `if (first) machine.setChanged();` (성공 경로의 기존 `setChanged`는 그대로).
+- 16: `PortableTerminalItem` `check.name().toLowerCase()` → `toLowerCase(Locale.ROOT)`.
+- 17: `PortableTerminalItem.isEnder()` 삭제(필드 `ender`는 `inRange`가 쓰므로 유지).
+- 18: `StorageNetwork.nodes()` 삭제, 쓰기만 남는 필드 `nodes`와 생성자 인자도 삭제(만들 때의 지역 변수 `nodes` · `maxNodes` 상한은 그대로).
+- 81: `DrawerBlockEntity`에 `@Override public void preRemoveSideEffects(BlockPos pos, BlockState state) {}` + 주석 "부숴도 내용물은 서랍 아이템에 담긴다 (바닐라 셜커 상자와 같다: 보기 칸을 따로 쏟지 않는다)". `ModStorage.drawerProperties`에서 `.requiresCorrectToolForDrops()` 한 줄 삭제(R1).
+- 시험 ① `drawerBreaksIntoOneItem`: 강철 서랍에 레드스톤 5000 → 곡괭이를 든 모의 플레이어로 부수거나 `helper.getLevel().destroyBlock(abs, true)` → 둘레 아이템 엔티티: 서랍 아이템 정확히 하나(`DRAWER_CONTENTS.count == 5000`), 낱개 `REDSTONE` 합 0. ② `drawerBreaksByHandKeepsContents`: 같은 조건에서 맨손(빈손 모의 플레이어 `gameMode.destroyBlock`)으로 부숴도 서랍 아이템 하나 · 5000. ③(선택) 자동 제작대에 재료를 넣고 `destroyBlock` → 재료 아이템 엔티티가 있다.
+
+**K3 단계**
+- 23: `BoilerBlockEntity`의 `litDuration` 필드 · 대입 · `lit_duration` 읽기/쓰기 삭제(`litTime`은 그대로).
+- 24: `SteamChargerBlockEntity`의 `charging` 필드 · 대입 · `isCharging()` 삭제.
+- 26: `SteamStorage` 문서 → "증기를 모아 두는 블록 엔티티. 증기 계기판이 읽는다."
+- 37: `FurnaceTowerControllerBlockEntity.work` 처음에 `int left = available(current);` → `left <= 0`이면 `batch = null; progress = 0; searchTimer = 0; return false;`, `left < current.units()`이면 같은 레시피 · 진행으로 `units`만 `left`인 묶음으로 바꿔 `batch`에 넣고 계속(증기 계산은 바뀐 `units`로). `finish`의 `Math.min`은 그대로.
+- 45: 클래스 문서 "최대 {@link #BATCH_SIZE}개" → "최대 설정값(기본 {@link #BATCH_SIZE})개".
+- 49(충전기): `preRemoveSideEffects`의 `Containers.dropContents(...)` 줄과 그 `if`를 삭제(`super`만 남김) + 주석 "내용물은 `super`(바닐라)가 떨군다". 오버라이드 자체가 `super`만 부르게 되면 오버라이드째 지운다.
+- 시험 `towerCancelsBatchWhenInputsTaken`(M8b): 탑을 세우고 고압 증기 · 재료 넣기 → 몇 틱 돌려 `batchUnits() > 0` → 재료 칸 비움 → 한 틱 → `batchUnits() == 0`이고 증기가 그 틱에 줄지 않음. 재료 일부만 빼면 `batchUnits()`가 남은 수와 같은지도 한 번.
+
+**K4 단계**
+- 28: `EndIslandStructure` 문서 "서로 ±{@link #MAX_STEP} 안일 때만" → "가운데와 ±{@link #MAX_STEP} 안일 때만".
+- 30: `VoidGear.init`에 `ServerLifecycleEvents.SERVER_STARTING.register(server -> { LAST_SAFE.clear(); LAST_RESCUE.clear(); });` + 주석 "한 JVM에서 월드를 바꾸면 다른 월드의 게임 시각 · 자리가 남는다 (로그아웃 때는 지우지 않는다: 쿨다운 우회 방지)".
+- 47: `ItemFilter.contains` 삭제.
+- 48: `EnderLinkBlockEntity` 클래스 문서 "주인 · OP만 수신기를 열고" → "주인 · 같은 팀 · OP만 수신기를 열고".
+- 49(닻): `preRemoveSideEffects`의 `Containers.dropContents(serverLevel, pos, this);` 한 줄만 삭제(`setForced(false)`는 유지), 주석 "청크를 놓는다. 연료는 `super`(바닐라)가 떨군다".
+- 50: `SteamLocomotive`에 `private int missingIndex = -1;`. `pullCars`에서 빈 칸을 만나면 `if (i != missingIndex) { missingIndex = i; missingTicks = 0; }` 뒤 `++missingTicks` 판정. 끝까지 돌면 · `detachFrom`에서 `missingIndex = -1`(기존 `missingTicks = 0` 옆).
+- 52: 클래스 문서 "빈손이면 출발 / 멈춤" → "그 밖(빈손 · 다른 아이템)이면 출발 / 멈춤".
+- 53: `poweredBelts` 주석에 "증기가 모자라면 0" 추가.
+- 54: `CargoStationBlockEntity` 문서 "최대 {@link #ITEMS_PER_TRANSFER}개" → "최대 설정값(기본 {@link #ITEMS_PER_TRANSFER})개".
+
+**K5 단계**
+- 49(일꾼): `SteamWorkerBlockEntity.preRemoveSideEffects`의 `Containers.dropContents(serverLevel, pos, this);` 한 줄만 삭제(`pending` 떨구기 · `pending.clear()` 유지), 주석 "칸 내용물은 `super`(바닐라)가 떨군다".
+- 57: `Jetpack.thrust` 문서 "창작 모드는 증기를 안 쓴다" → "창작 모드는 증기를 덜지 않는다 (그래도 1 이상 들어 있어야 뜬다)".
+- 65: `GoalBoardBlockEntity.setItem`: `int accepted = insert(null, stack);` → 남은 수 `rest = stack.getCount() - accepted`; `rest > 0 && accepted > 0 && isGoalItem(stack) && progress < goalCount`이면 남은 몫으로 한 번 더 `insert`; 그래도 남으면 `level != null`일 때 `Containers.dropItemStack(level, x + 0.5, y + 1.0, z + 0.5, stack.copyWithCount(rest))`. 주석 "깔때기 · 벨트 · 일꾼은 스택째 넘긴다 (26.3 `tryMoveInItem`): 남는 몫은 판 위에 떨군다".
+- 66: `TreeFellerBlockEntity` 저장에 `output.storeNullable("replant_at", BlockPos.CODEC, replantAt)`, `replant_log`(블록 id `Identifier`, 없으면 저장 안 함). 읽기는 `input.read(...).orElse(null)`, 블록은 `BuiltInRegistries.BLOCK.getOptional(id)`.
+- 68: `GoalCommand.register` 삭제(쓰지 않게 된 import 정리).
+- 69: `TreeFellerBlockEntity.felled()` · `queued()` 삭제, `felled`는 쓰기만 남으므로 필드 · 증가 · `felled` 읽기/쓰기도 삭제(#23 기준). `TreeFelling.Tree.size()` 삭제. `CropHarvesterBlockEntity.cursor()` 삭제(필드 `cursor`는 로직이 쓰므로 유지).
+- 80: `PlaytestCommand.Stage.id()` `name().toLowerCase()` → `toLowerCase(Locale.ROOT)`.
+- 시험 `goalBoardDropsOverflow`(M10): 목표판에 남은 목표 10이 되게 진행을 맞춘 뒤 `HopperBlockEntity.addItem(null, board, new ItemStack(목표 아이템, 64), Direction.UP)` → 목표 완료(`completedGoals()` +1), 판 둘레의 그 아이템 엔티티 개수 합 **54**. (선택) `treeFellerKeepsReplantSpot`(M9a): `startFelling` 뒤 `saveWithFullMetadata` → `loadStatic` 사본이 같은 자리에 심는지(원목 · 묘목을 두고 `replant` 경로까지).
+
+병합 순서: K1~K5는 서로 독립이라 어떤 순서든 된다. 병합 뒤 조정자가 한 번 더 `./gradlew build` + `runClientGameTest`, 그 뒤 7-7의 2단계.
+
+### 7-7. 2단계 계획
+담당: **K1~K5가 모두 병합된 뒤 Opus 1기**가 직접 수정한다(설계 판단이 있는 일이라 나누지 않음). 걸음마다 `./gradlew build`(보스 걸음은 `runClientGameTest`도) 통과 후 다음으로. 비판적 Sonnet 반론은 아래 설계 결정(보스 ② 부모의 범위, 43 규칙)에 1회씩. 3단계는 필요 없음(엔티티 id · NBT 키 · 패킷 · 렌더러 계약이 그대로).
+
+**보스 공통 코드 (#2, 77은 따라감)** — R5의 두 걸음
+- ① 정적 도우미 이관(동작 불변): `boss/BossCombat`(final, 정적)으로 `breakShield` · `horizontalDistance` · 경고 쿨다운(`warnHeat`/`warnRust`의 플레이어별 200틱, 문구 키만 인자) · 패턴 대상 목록(`NO_CREATIVE_OR_SPECTATOR` 상자 조회)을 옮기고 세 보스가 부른다. `PatternGoal` 뼈대는 이 걸음에서 손대지 않는다.
+- ② 부모 `PartyBossMonster extends Monster implements PartyBoss`: 보스 바(`ServerBossEvent` 생성 · `setCustomName`/`refreshBossBar`/`startSeenByPlayer`/`stopSeenByPlayer`), `removeWhenFarAway`, `BossParty` 저장/읽기 · `actuallyHurt` · `getDamageAfterMagicAbsorb` · `dropCustomDeathLoot` 위임(키 아이템은 추상 `keyItem()`)만. `hurtServer`(세 보스가 다름) · 패턴 · 거상의 `shield_wave`/`crystals`는 각자 남긴다. 필드 초기화 순서(보스 바가 `getDisplayName()`을 부름)는 부모 생성자에서 지연 생성으로 처리.
+- 77(렌더러 · 모델 사망 페이드 · 내려치기 식): ② 뒤에도 클라이언트 쪽 공통 도우미 한 곳으로 묶을 가치가 있으면 같은 Opus가 같은 라운드에, 아니면 보류 유지.
+
+**멀티블록 (#40~43)** — R6 순서
+- ① 41 단독(기계적): `BigBoilerShape`를 `MultiblockShape` 인스턴스(`BIG_BOILER = new MultiblockShape(…)`, 3x3x4 · 가운데 기둥 · 빈칸 `Layout`)로 바꾸고 `BigBoilerShape` 삭제. 호출처(`BigBoilerCasingBlock` · `BigBoilerControllerBlock` · `BigBoilerControllerBlockEntity` · `SanupcraftM8aGameTest`)를 옮긴다.
+- ② 40 · 42: 두 제어기 공통으로 `MultiblockShape`(또는 작은 `MultiblockController` 도우미)에 `setCasingsFormed(level, controller, facing, formed, owns)` · `notifyControllers(level, casingPos)` · 힌트 문구 만들기를 하나로. 외벽 블록 둘(큰 보일러 외벽 · 내열 벽돌)의 이웃 변화 → 제어기 알림도 그 도우미를 부른다.
+- **43 규칙 결정: 외벽 공유를 허용한다** (금지하면 모양 확인이 이웃 제어기를 찾아야 하고 큰 보일러 외벽에는 소유 기록이 없어 BE를 새로 달아야 함 → 이득보다 변경이 큼). 규칙: 끌 때 ⓐ 벽돌 `link`는 **나를 가리킬 때만** `null`로, ⓑ FORMED를 끈 외벽마다 둘레 제어기에 `notifyControllers`(= `requestCheck`)를 보내 이웃이 **다음 틱에** 다시 켜고 다시 잇게 한다(지금의 `CHECK_INTERVAL`만큼의 공백을 1틱으로). 시험: 벽돌 한 면을 공유하는 탑 둘을 세우고 A의 벽돌 하나를 부숨 → 1~2틱 뒤 B가 여전히 `isFormed()`, 공유 벽돌 FORMED 참 · B에 이어짐.
