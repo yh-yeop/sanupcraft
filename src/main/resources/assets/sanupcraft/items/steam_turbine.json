@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "sanupcraft:block/steam_turbine"
+    "model": "sanupcraft:block/steam_turbine_item"
   }
 }

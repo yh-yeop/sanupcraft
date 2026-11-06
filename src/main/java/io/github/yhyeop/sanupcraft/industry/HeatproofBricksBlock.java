@@ -20,7 +20,8 @@ public class HeatproofBricksBlock extends BaseEntityBlock {
 
 	public HeatproofBricksBlock(BlockBehaviour.Properties properties) {
 		super(properties);
-		registerDefaultState(stateDefinition.any().setValue(FORMED, false));
+		registerDefaultState(stateDefinition.any().setValue(FORMED, false)
+				.setValue(CasingLook.X, 0).setValue(CasingLook.Y, 0).setValue(CasingLook.Z, 0)); // 확장 M15 R5
 	}
 
 	@Override
@@ -35,6 +36,6 @@ public class HeatproofBricksBlock extends BaseEntityBlock {
 
 	@Override
 	protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-		builder.add(FORMED);
+		builder.add(FORMED, CasingLook.X, CasingLook.Y, CasingLook.Z);
 	}
 }

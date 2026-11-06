@@ -43,6 +43,7 @@ public class SanupcraftClient implements ClientModInitializer {
 		// M6 엔드 최종: 공허 거상 · 공허 수정 (전용 모델, X1)
 		EntityRendererRegistry.register(io.github.yhyeop.sanupcraft.end.ModEnd.VOID_COLOSSUS, io.github.yhyeop.sanupcraft.client.end.VoidColossusRenderer::new);
 		EntityRendererRegistry.register(io.github.yhyeop.sanupcraft.end.ModEnd.VOID_CRYSTAL, io.github.yhyeop.sanupcraft.client.end.VoidCrystalRenderer::new);
+		io.github.yhyeop.sanupcraft.client.machine.MachineLookClient.init(); // 확장 M15 R4: 기계 움직이는 부품
 	}
 
 	/**

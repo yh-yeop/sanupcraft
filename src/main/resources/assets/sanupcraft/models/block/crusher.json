@@ -3,6 +3,6 @@
   "textures": {
     "front": "sanupcraft:block/crusher_front",
     "side": "sanupcraft:block/machine_side",
-    "top": "sanupcraft:block/crusher_top"
+    "top": "sanupcraft:block/crusher_top_slot"
   }
 }

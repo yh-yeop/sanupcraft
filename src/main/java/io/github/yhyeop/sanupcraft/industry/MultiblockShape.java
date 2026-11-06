@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.state.properties.BooleanProperty;
  * 칸 좌표: 옆 {@code side} -1..1 (제어기 기준 오른쪽이 +), 깊이 {@code depth} 0..depth-1 (앞면이 0), 높이 {@code up} 0..height-1.
  * 칸마다 와야 하는 것은 {@link Layout}이 정하고, 외벽인지는 {@code isCasing}이 본다. 빈칸은 공기여야 한다.
  * 외벽 무늬({@code formed} 속성) 켜기 · 끄기, 외벽이 부서질 때 제어기 알림, 틀린 칸 문구도 여기서 한다.
+ * 무늬를 켤 때 외벽의 이어진 모양({@link CasingLook}, 확장 M15 R5)도 같이 정한다.
  * <p>
  * 외벽 공유 (REFACTOR.md 7-10): 두 구조물이 외벽을 같이 써도 된다. 한쪽이 풀릴 때({@link #unform}) 모양이 선 이웃 제어기가 가진 칸은
  * 무늬를 남기고 그 이웃에 잇는다. 나머지 칸만 끄고, 벽돌 링크는 나를 가리킬 때만 푼다.
@@ -151,7 +152,7 @@ public final class MultiblockShape {
 	public void form(ServerLevel level, BlockPos controller, Direction facing) {
 		BlockPos self = controller.immutable();
 		for (BlockPos casing : casings(controller, facing)) {
-			setCasing(level, casing, true, self, null);
+			setCasing(level, casing, true, self, null, facing, self);
 		}
 	}
 
@@ -161,29 +162,38 @@ public final class MultiblockShape {
 	 */
 	public void unform(ServerLevel level, BlockPos controller, Direction facing) {
 		List<BlockPos> mine = casings(controller, facing);
-		Map<BlockPos, BlockPos> heldBy = new HashMap<>();
+		Map<BlockPos, Controller> heldBy = new HashMap<>();
 		for (Controller other : controllersNear(level, mine, controller)) {
 			if (other.isFormed()) {
 				BlockPos otherPos = other.getBlockPos().immutable();
 				for (BlockPos casing : casings(otherPos, other.facing())) {
-					heldBy.putIfAbsent(casing, otherPos);
+					heldBy.putIfAbsent(casing, other);
 				}
 			}
 		}
 		for (BlockPos casing : mine) {
-			BlockPos holder = heldBy.get(casing);
-			setCasing(level, casing, holder != null, holder, controller);
+			Controller holder = heldBy.get(casing);
+			BlockPos holderPos = holder == null ? null : holder.getBlockPos().immutable();
+			setCasing(level, casing, holder != null, holderPos, controller, holder == null ? facing : holder.facing(), controller);
 		}
 	}
 
-	/** 외벽 한 칸: 무늬를 {@code on}으로, 벽돌이면 {@code linkTo}에 잇거나 ({@code linkTo}가 null이면) {@code unlinkFrom}을 가리킬 때만 푼다. */
-	private void setCasing(ServerLevel level, BlockPos casing, boolean on, @Nullable BlockPos linkTo, @Nullable BlockPos unlinkFrom) {
+	/**
+	 * 외벽 한 칸: 무늬를 {@code on}으로, 벽돌이면 {@code linkTo}에 잇거나 ({@code linkTo}가 null이면) {@code unlinkFrom}을 가리킬 때만 푼다.
+	 * 켤 때는 이어진 모양({@link CasingLook})도 {@code linkTo} 구조물({@code linkFacing}) 기준으로 맞춘다 ({@code except} 제어기는 빼고 본다).
+	 */
+	private void setCasing(ServerLevel level, BlockPos casing, boolean on, @Nullable BlockPos linkTo, @Nullable BlockPos unlinkFrom,
+			Direction linkFacing, BlockPos except) {
 		BlockState state = level.getBlockState(casing);
 		if (!isCasing.test(state)) {
 			return;
 		}
-		if (state.getValue(formed) != on) {
-			level.setBlock(casing, state.setValue(formed, on), Block.UPDATE_CLIENTS);
+		BlockState next = state.setValue(formed, on);
+		if (on && linkTo != null) {
+			next = look(level, state, next, casing, linkTo, linkFacing, except);
+		}
+		if (next != state) {
+			level.setBlock(casing, next, Block.UPDATE_CLIENTS);
 		}
 		if (level.getBlockEntity(casing) instanceof LinkedCasing linked) {
 			if (linkTo != null) {
@@ -192,6 +202,25 @@ public final class MultiblockShape {
 				linked.link(null);
 			}
 		}
+	}
+
+	/**
+	 * 확장 M15 R5: 외벽 칸의 이어진 모양을 {@code owner} 구조물 기준으로. 이미 무늬가 켜져 있고 다른 모양 선 구조물 기준 모양이면
+	 * 그대로 둔다 (공유 외벽이 확인할 때마다 번갈아 바뀌지 않게). 그런 구조물이 없으면 (예전 세이브 등) 내 기준으로 고친다.
+	 */
+	private BlockState look(ServerLevel level, BlockState before, BlockState next, BlockPos casing, BlockPos owner, Direction ownerFacing, BlockPos except) {
+		BlockState mine = CasingLook.of(next, this, owner, ownerFacing, casing);
+		if (!before.getValue(formed) || CasingLook.same(mine, before)) {
+			return mine;
+		}
+		for (Controller other : controllersNear(level, List.of(casing), except)) {
+			BlockPos otherPos = other.getBlockPos();
+			if (other.isFormed() && !otherPos.equals(owner) && casings(otherPos, other.facing()).contains(casing)
+					&& CasingLook.same(CasingLook.of(next, this, otherPos, other.facing(), casing), before)) {
+				return next;
+			}
+		}
+		return mine;
 	}
 
 	/** 외벽 한 칸이 바뀌었다 (부서짐): 이 칸을 쓸 수 있는 이 모양의 제어기에 다시 확인하라고 알린다. */
