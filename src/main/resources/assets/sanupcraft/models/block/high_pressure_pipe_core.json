@@ -1,0 +1,7 @@
+{
+  "parent": "sanupcraft:block/steam_pipe_core",
+  "textures": {
+    "pipe": "sanupcraft:block/high_pressure_pipe",
+    "particle": "sanupcraft:block/high_pressure_pipe"
+  }
+}

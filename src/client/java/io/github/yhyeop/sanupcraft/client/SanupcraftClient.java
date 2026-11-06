@@ -34,6 +34,7 @@ public class SanupcraftClient implements ClientModInitializer {
 		// M8 묶음 A: 바닐라 수레 모델에 보일러 · 통을 얹어 그린다 (엔티티의 getDefaultDisplayBlockState)
 		EntityRendererRegistry.register(ModTransport.STEAM_LOCOMOTIVE, context -> new MinecartRenderer(context, ModelLayers.FURNACE_MINECART));
 		EntityRendererRegistry.register(ModTransport.CARGO_WAGON, context -> new MinecartRenderer(context, ModelLayers.CHEST_MINECART));
+		EntityRendererRegistry.register(io.github.yhyeop.sanupcraft.nether.ModNether.LAVA_STEAMBOAT_ENTITY, LavaSteamboatRenderer::new); // M5
 		ItemTooltipCallback.EVENT.register((stack, context, flag, lines) -> addGuideTooltip(stack, lines));
 		JetpackClient.init(); // 확장 M9a
 		// M7 보관 · 제작

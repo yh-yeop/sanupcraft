@@ -47,8 +47,9 @@ public class SteamPipeBlock extends PipeBlock {
 		return state.getBlock() instanceof SteamPipeBlock
 				|| state.getBlock() instanceof BoilerBlock
 				|| state.getBlock() instanceof GeothermalVentBlock
+				|| state.getBlock() instanceof SteamTurbineBlock
 				|| state.getBlock() instanceof io.github.yhyeop.sanupcraft.industry.BigBoilerCasingBlock // M8 묶음 A: 대형 보일러 외벽
-				|| level.getBlockEntity(pos) instanceof SteamConsumer;
+				|| level.getBlockEntity(pos) instanceof SteamConsumer consumer && consumer.takesNormalSteam();
 	}
 
 	@Override

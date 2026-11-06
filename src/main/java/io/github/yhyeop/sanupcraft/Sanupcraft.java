@@ -62,6 +62,7 @@ public class Sanupcraft implements ModInitializer {
 		ModTransport.init();
 		// M7 보관 · 제작
 		ModStorage.init();
+		io.github.yhyeop.sanupcraft.nether.ModNether.init(); // M5 네더 심화 2
 		ModTab.init();
 		CorpseGravesCompat.init();
 		PlaytestCommand.init();

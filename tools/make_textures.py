@@ -1998,6 +1998,287 @@ def main_m8a(made):
     made.append(save(from_art(COUPLER), "item/coupler.png"))
 
 
+# ---------- M5 네더 심화 2 ----------
+SOUL = {"a": "#120d0b", "b": "#2e221c", "c": "#46362c", "d": "#5e4b3d", "e": "#7d6754"}
+HP_STEEL = {"a": "#15171b", "b": "#2b2f36", "c": "#3d424b", "d": "#555c66", "e": "#7a838f"}
+GOLDEN = {"a": "#5a3b06", "b": "#9a6a10", "c": "#d6a21e", "d": "#f2cf4a", "e": "#fff3a0"}
+
+GILDED_QUARTZ_ICON = [
+    "................",
+    "................",
+    "......eeee......",
+    ".....eddddc.....",
+    "....edduddcc....",
+    "...eddudddccc...",
+    "...edddddccbc...",
+    "...eddddcccbc...",
+    "...ddddcccbbc...",
+    "...dddcccbbbc...",
+    "....ddccbbbb....",
+    ".....ccbbbb.....",
+    "......cbbb......",
+    "................",
+    "................",
+    "................",
+]
+
+PRECISION_PART_ICON = [
+    "................",
+    "................",
+    "...aaaaaaaaaa...",
+    "..adeeeeeeeeca..",
+    "..aedgggggdbca..",
+    "..aedgkkkgdbca..",
+    "..aedgkhkgdbca..",
+    "..aedgkkkgdbca..",
+    "..aedgggggdbca..",
+    "..aeddtddtdbca..",
+    "..aedtutdutbca..",
+    "..aeddtddtdbca..",
+    "..abbbbbbbbbba..",
+    "...aaaaaaaaaa...",
+    "................",
+    "................",
+]
+
+DEBRIS_SONAR_ICON = [
+    "................",
+    "........h.......",
+    ".......hgh......",
+    "........g.......",
+    "......aaaaa.....",
+    ".....abbbbba....",
+    "....abkkkkkba...",
+    "....abkghgkba...",
+    "....abkhRhkba...",
+    "....abkghgkba...",
+    "....abkkkkkba...",
+    ".....abbbbba....",
+    "......acdca.....",
+    "......acdca.....",
+    "......aaaaa.....",
+    "................",
+]
+
+LAVA_STEAMBOAT_ICON = [
+    "................",
+    "................",
+    "................",
+    "........mm......",
+    "........mn......",
+    "........mn......",
+    "...a....mn....a.",
+    "..ab..aaaaaa.ba.",
+    "..abaaccccccaba.",
+    "..abccddddddcba.",
+    "...abcdddddcba..",
+    "....abbbbbbbba..",
+    ".....aaaaaaaa...",
+    "...ttsstussts...",
+    "..sttutsstutts..",
+    "................",
+]
+
+
+def soul_face(part, lit=False):
+    im = recolor(panel(seed={"front": 501, "side": 502, "top": 503}[part]), SOUL)
+    flame = ("#5ef2ff", "#1fb8c9", "#0d6b78") if lit else ("#2a2420", "#1f1a17", "#171310")
+    if part == "front":
+        for y in range(6, 14):
+            for x in range(3, 13):
+                im.putpixel((x, y), px("a"))
+        rnd = random.Random(504)
+        for y in range(8, 13):
+            for x in range(4, 12):
+                k = rnd.random() + (12 - y) * 0.12
+                im.putpixel((x, y), hex_px(flame[0] if k > 1.0 else flame[1] if k > 0.6 else flame[2]))
+        for x in range(3, 13):
+            im.putpixel((x, 5), hex_px("#7d6754"))
+    elif part == "top":
+        for y in range(4, 12):
+            for x in range(4, 12):
+                d = math.hypot(x - 7.5, y - 7.5)
+                if d < 3.6:
+                    im.putpixel((x, y), px("a") if d > 2.6 else hex_px("#1fb8c9"))
+    else:
+        for x in range(16):
+            im.putpixel((x, 12), hex_px("#2e8a96"))
+    return im
+
+
+def hp_pipe_texture():
+    im = Image.new("RGBA", (16, 16))
+    noise_fill(im, "ccd", 511)
+    im = recolor(im, HP_STEEL)
+    for i in range(16):
+        im.putpixel((i, 0), hex_px(HP_STEEL["a"]))
+        im.putpixel((i, 15), hex_px(HP_STEEL["a"]))
+    for x in (3, 12):
+        for y in range(16):
+            im.putpixel((x, y), hex_px("#b3262a"))
+    for y in (4, 11):
+        for x in range(4, 12):
+            im.putpixel((x, y), hex_px(HP_STEEL["e"]))
+    return im
+
+
+def precision_front(lit):
+    im = recolor(panel(seed=521), HP_STEEL)
+    for y in range(3, 13):
+        for x in range(3, 13):
+            im.putpixel((x, y), px("a"))
+    # 가는 집게 팔 + 십자 조준선
+    for x, y in ((5, 4), (5, 5), (6, 6), (10, 4), (10, 5), (9, 6)):
+        im.putpixel((x, y), hex_px("#d6a21e"))
+    line = hex_px("#2fb8ef" if lit else "#1b3a48")
+    for i in range(5, 11):
+        im.putpixel((i, 9), line)
+        im.putpixel((7, i + 1), line)
+    for x in range(4, 12):
+        im.putpixel((x, 12), hex_px("#b3262a"))
+    return im
+
+
+def precision_top():
+    im = recolor(panel(seed=522), HP_STEEL)
+    for y in range(5, 11):
+        for x in range(5, 11):
+            im.putpixel((x, y), px("a" if x in (5, 10) or y in (5, 10) else "b"))
+    for x, y in ((7, 7), (8, 7), (7, 8), (8, 8)):
+        im.putpixel((x, y), hex_px("#d6a21e"))
+    return im
+
+
+def turbine_side():
+    im = recolor(panel(seed=531), HP_STEEL)
+    for y in range(2, 14):
+        im.putpixel((7, y), hex_px("#b3262a"))
+        im.putpixel((8, y), hex_px("#b3262a"))
+    for x in range(2, 14):
+        im.putpixel((x, 4), px("a"))
+        im.putpixel((x, 11), px("a"))
+    for x in (3, 4, 11, 12):
+        for y in range(5, 11):
+            im.putpixel((x, y), hex_px(COPPER["c"]))
+    return im
+
+
+def turbine_top(on):
+    im = recolor(panel(seed=532), HP_STEEL)
+    blade = hex_px("#d9e2ea" if on else "#7a838f")
+    for y in range(2, 14):
+        for x in range(2, 14):
+            d = math.hypot(x - 7.5, y - 7.5)
+            if 5.0 < d < 6.0:
+                im.putpixel((x, y), px("a"))
+    # 날개 4장 (켜지면 45도 돌린 모양)
+    for t in range(1, 6):
+        if on:
+            pts = ((7 + t, 7 + t), (8 - t, 8 - t), (8 - t, 7 + t), (7 + t, 8 - t))
+        else:
+            pts = ((7 + t, 7), (8 - t, 8), (8, 7 + t), (7, 8 - t))
+        for x, y in pts:
+            if 0 <= x < 16 and 0 <= y < 16:
+                im.putpixel((x, y), blade)
+    im.putpixel((7, 7), px("a"))
+    im.putpixel((8, 8), px("a"))
+    return im
+
+
+def gold_dispenser_face(part):
+    im = recolor(panel(seed={"top": 541, "side": 542, "bottom": 543}[part]), GOLDEN if part == "top" else COPPER)
+    if part == "top":
+        for y in range(5, 11):
+            for x in range(5, 11):
+                im.putpixel((x, y), px("a") if x in (5, 10) or y in (5, 10) else hex_px("#2a1a05"))
+    elif part == "side":
+        for y in range(5, 11):
+            for x in range(4, 12):
+                im.putpixel((x, y), hex_px(GOLDEN["c" if (x + y) % 3 else "e"]))
+        for x in range(4, 12):
+            im.putpixel((x, 11), hex_px(GOLDEN["a"]))
+    return im
+
+
+def collector_face(part):
+    im = recolor(panel(seed={"top": 551, "side": 552, "bottom": 553}[part]), COPPER if part == "top" else NETHER)
+    if part == "top":
+        for y in range(2, 14):
+            for x in range(2, 14):
+                if x % 3 == 0 or y % 3 == 0:
+                    im.putpixel((x, y), px("a"))
+        for x, y in ((7, 7), (8, 7), (7, 8), (8, 8)):
+            im.putpixel((x, y), hex_px("#2fd3b4"))
+    elif part == "side":
+        for x in range(2, 14):
+            im.putpixel((x, 3), hex_px(COPPER["d"]))
+        for y in range(6, 12):
+            for x in range(5, 11):
+                im.putpixel((x, y), px("a") if y in (6, 11) or x in (5, 10) else hex_px("#3a1f12"))
+    return im
+
+
+def boat_texture():
+    """용암 증기선 텍스처 (128x64, 바닐라 배 모델 BoatModel의 UV 배치). 판은 짙은 강철 + 리벳, 앞뒤는 네더 벽돌색, 노는 구리."""
+    im = Image.new("RGBA", (128, 64), (0, 0, 0, 0))
+    rnd = random.Random(561)
+
+    def box(u, v, w, h, d, colors, rivets=True):
+        # 상자 전개도: 윗줄 높이 d (위 · 아래 면), 아랫줄 높이 h (옆면 넷), 폭 2 * (w + d)
+        for y in range(v, v + d + h):
+            for x in range(u, u + 2 * (w + d)):
+                if y < v + d and not (u + d <= x < u + d + 2 * w):
+                    continue
+                im.putpixel((x, y), hex_px(rnd.choice(colors)))
+        if rivets:
+            for x in range(u + 1, u + 2 * (w + d) - 1, 4):
+                yy = v + d + 1
+                if yy < v + d + h:
+                    im.putpixel((x, yy), hex_px("#c9d2da"))
+
+    plate = ["#3d424b", "#3d424b", "#454b55", "#353a42"]
+    rim = ["#5a1e22", "#6e2a2c", "#4a181b"]
+    box(0, 0, 28, 16, 3, plate)          # 바닥
+    box(0, 19, 18, 6, 2, rim)            # 뒤
+    box(0, 27, 16, 6, 2, rim)            # 앞
+    box(0, 35, 28, 6, 2, plate)          # 오른쪽
+    box(0, 43, 28, 6, 2, plate)          # 왼쪽
+    oar = ["#b06a35", "#7a4423", "#d99a5c"]
+    # 노: 자루(2x2x18) + 날(1x6x7)을 한 자리에. 겹쳐도 같은 색이라 영역만 넉넉히 칠한다
+    for v in (0, 20):
+        for y in range(v, v + 20):
+            for x in range(62, 102):
+                im.putpixel((x, y), hex_px(rnd.choice(oar)))
+    # 옆판 아래쪽에 주황 열 띠
+    for v in (35, 43):
+        for x in range(2, 58):
+            im.putpixel((x, v + 6), hex_px("#de8442"))
+    return im
+
+
+def main_m5(made):
+    made.append(save(soul_face("front"), "block/soul_furnace_front.png"))
+    made.append(save(soul_face("front", True), "block/soul_furnace_front_on.png"))
+    made.append(save(soul_face("side"), "block/soul_furnace_side.png"))
+    made.append(save(soul_face("top"), "block/soul_furnace_top.png"))
+    made.append(save(hp_pipe_texture(), "block/high_pressure_pipe.png"))
+    made.append(save(precision_front(False), "block/precision_assembler_front.png"))
+    made.append(save(precision_front(True), "block/precision_assembler_front_on.png"))
+    made.append(save(precision_top(), "block/precision_assembler_top.png"))
+    made.append(save(turbine_side(), "block/steam_turbine_side.png"))
+    made.append(save(turbine_top(False), "block/steam_turbine_top.png"))
+    made.append(save(turbine_top(True), "block/steam_turbine_top_on.png"))
+    for part in ("top", "side", "bottom"):
+        made.append(save(gold_dispenser_face(part), f"block/gold_dispenser_{part}.png"))
+        made.append(save(collector_face(part), f"block/barter_collector_{part}.png"))
+    quartz = {"b": "#cbbfb1", "c": "#e3d9cc", "d": "#f4efe8", "e": "#ffffff", "u": "#f2cf4a"}
+    made.append(save(recolor(from_art(GILDED_QUARTZ_ICON), quartz), "item/gilded_quartz.png"))
+    made.append(save(from_art(PRECISION_PART_ICON), "item/precision_part.png"))
+    made.append(save(from_art(DEBRIS_SONAR_ICON), "item/debris_sonar.png"))
+    made.append(save(from_art(LAVA_STEAMBOAT_ICON), "item/lava_steamboat.png"))
+    made.append(save(boat_texture(), "entity/lava_steamboat.png"))
+
+
 def save(im, rel, scale=1):
     path = os.path.join(OUT, *rel.split("/"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -2037,6 +2318,7 @@ def main():
     main_m9b(made)
     main_m8a(made)
     main_m7(made)
+    main_m5(made)
 
     if "--sheet" in sys.argv:
         tiles = [Image.open(p) for p in made]

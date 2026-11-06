@@ -1,0 +1,17 @@
+{
+  "type": "sanupcraft:nether_floor",
+  "biomes": "#sanupcraft:has_structure/abandoned_furnace",
+  "spawn_overrides": {},
+  "step": "surface_structures",
+  "terrain_adaptation": "beard_thin",
+  "start_pool": "sanupcraft:abandoned_furnace/start",
+  "start_height": {
+    "type": "minecraft:uniform",
+    "min_inclusive": {
+      "absolute": 40
+    },
+    "max_inclusive": {
+      "absolute": 100
+    }
+  }
+}

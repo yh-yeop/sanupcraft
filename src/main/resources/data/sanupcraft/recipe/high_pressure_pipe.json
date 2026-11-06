@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "S": "sanupcraft:steel_plate",
+    "B": "minecraft:blaze_rod",
+    "P": "sanupcraft:steam_pipe"
+  },
+  "pattern": [
+    "SBS",
+    "PPP",
+    "SBS"
+  ],
+  "result": {
+    "id": "sanupcraft:high_pressure_pipe",
+    "count": 6
+  }
+}

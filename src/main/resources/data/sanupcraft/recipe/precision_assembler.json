@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "S": "sanupcraft:steel_plate",
+    "D": "minecraft:diamond",
+    "G": "sanupcraft:gear_part",
+    "F": "sanupcraft:reinforced_machine_frame",
+    "P": "sanupcraft:high_pressure_pipe",
+    "H": "sanupcraft:warden_heart"
+  },
+  "pattern": [
+    "SDS",
+    "GFG",
+    "PHP"
+  ],
+  "result": {
+    "id": "sanupcraft:precision_assembler"
+  }
+}

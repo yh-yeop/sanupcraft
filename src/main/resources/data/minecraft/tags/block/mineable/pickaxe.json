@@ -35,6 +35,12 @@
     "sanupcraft:storage_terminal",
     "sanupcraft:crafting_terminal",
     "sanupcraft:autocrafter",
-    "sanupcraft:stocker"
+    "sanupcraft:stocker",
+    "sanupcraft:soul_furnace",
+    "sanupcraft:high_pressure_pipe",
+    "sanupcraft:steam_turbine",
+    "sanupcraft:precision_assembler",
+    "sanupcraft:gold_dispenser",
+    "sanupcraft:barter_collector"
   ]
 }

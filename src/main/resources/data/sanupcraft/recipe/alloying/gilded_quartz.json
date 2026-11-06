@@ -1,0 +1,10 @@
+{
+  "type": "sanupcraft:alloying",
+  "ingredient": "minecraft:quartz",
+  "ingredient2": "sanupcraft:gold_dust",
+  "count2": 2,
+  "result": {
+    "id": "sanupcraft:gilded_quartz"
+  },
+  "time": 200
+}

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "minecraft:blaze_rod",
+    "H": "sanupcraft:warden_heart",
+    "P": "sanupcraft:high_pressure_pipe",
+    "F": "sanupcraft:reinforced_machine_frame",
+    "S": "sanupcraft:steel_plate"
+  },
+  "pattern": [
+    "BHB",
+    "PFP",
+    "SSS"
+  ],
+  "result": {
+    "id": "sanupcraft:soul_furnace"
+  }
+}

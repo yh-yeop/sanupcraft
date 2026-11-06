@@ -1,0 +1,32 @@
+{
+  "parent": "sanupcraft:geothermal_vent",
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:soul_furnace"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:soul_furnace"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.soul_furnace.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.soul_furnace.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ]
+}

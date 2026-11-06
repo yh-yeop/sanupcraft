@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": "sanupcraft:core_shard",
+    "B": "minecraft:blaze_rod",
+    "S": "sanupcraft:steel_plate"
+  },
+  "pattern": [
+    "CBC",
+    "SSS"
+  ],
+  "result": {
+    "id": "sanupcraft:lava_steamboat"
+  }
+}

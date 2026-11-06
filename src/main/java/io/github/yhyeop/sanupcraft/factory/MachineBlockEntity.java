@@ -35,6 +35,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.providers.number.ints.ResolvableInt;
 
 import io.github.yhyeop.sanupcraft.config.SanupcraftConfig;
+import io.github.yhyeop.sanupcraft.power.HPSteamConsumer;
 import io.github.yhyeop.sanupcraft.power.SteamConsumer;
 import io.github.yhyeop.sanupcraft.power.SteamFlowMeter;
 import io.github.yhyeop.sanupcraft.power.SteamStorage;
@@ -44,8 +45,9 @@ import io.github.yhyeop.sanupcraft.power.SteamStorage;
  * 증기 파이프가 이어져 있으면 연료 대신 증기로 돈다 (증기가 있으면 연료를 태우지 않음).
  * 깔때기: 위 → 재료(합금로는 두 칸, 이 기계 레시피의 재료만), 옆 → 연료, 아래 ← 결과 · 부산물 · 쓰고 남은 빈 양동이.
  * 업그레이드 칸 2개(속도 · 효율 · 두 배, {@link MachineUpgrade})는 손으로만 넣고 뺀다. 칸 번호는 옛 저장과 맞도록 뒤에 붙였다.
+ * 고압 기계(정밀 조립기, {@link MachineKind#highPressure()})는 고압 파이프의 고압 증기로만 돌고, 보통 증기 · 연료는 받지 않는다.
  */
-public class MachineBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, SteamConsumer, SteamStorage {
+public class MachineBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, SteamConsumer, HPSteamConsumer, SteamStorage {
 	public static final int SLOT_INPUT = 0;
 	public static final int SLOT_FUEL = 1;
 	public static final int SLOT_RESULT = 2;
@@ -163,7 +165,7 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 			machine.totalTime = recipe.value().time();
 			if (machine.litTime <= 0 && machine.useSteam(effects.use())) {
 				machine.steamWorking = true;
-			} else if (machine.litTime <= 0 && !fuel.isEmpty()) {
+			} else if (machine.litTime <= 0 && !fuel.isEmpty() && !machine.kind.highPressure()) {
 				int burn = machine.burnDuration(level, fuel);
 				if (burn > 0) {
 					// 업그레이드: 틱당 연료가 use배 → 한 개가 타는 시간은 1/use
@@ -329,6 +331,25 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 
 	@Override
 	public int acceptSteam(int amount) {
+		return kind.highPressure() ? 0 : store(amount);
+	}
+
+	@Override
+	public boolean takesNormalSteam() {
+		return !kind.highPressure();
+	}
+
+	@Override
+	public int acceptHighPressureSteam(int amount) {
+		return kind.highPressure() ? store(amount) : 0;
+	}
+
+	@Override
+	public boolean takesHighPressureSteam() {
+		return kind.highPressure();
+	}
+
+	private int store(int amount) {
 		int accepted = Math.min(amount, STEAM_CAPACITY - steam);
 		steam += accepted;
 		flow.add(gameTime(), accepted);
@@ -468,7 +489,7 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 		return switch (slot) {
 			case SLOT_INPUT -> true;
 			case SLOT_INPUT2 -> kind.twoInputs();
-			case SLOT_FUEL -> isFuel(stack);
+			case SLOT_FUEL -> isFuel(stack) && !kind.highPressure();
 			case SLOT_UPGRADE, SLOT_UPGRADE + 1 -> isUpgrade(stack);
 			default -> false;
 		};
