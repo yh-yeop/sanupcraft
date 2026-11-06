@@ -1058,3 +1058,42 @@ public Component problemMessage(Level level, Problem problem, String keyPrefix);
   - 멀티블록 ② `M8b.sharedWallTowerSurvivesNeighbourControllerRemoval`: 같은 배치에서 A 제어기를 부숨 → 3틱 뒤 B 그대로 서 있고 공유 벽돌 무늬 · 링크가 B.
   - 시험에서 링크를 보려고 `HeatproofBricksBlockEntity.linkedController()`를 공개한다(`LinkedCasing` 구현을 겸함).
 - 걸음마다 새 시험이 고치기 전에 실패하는지(① 쿨다운 · ② 저장 키는 동작 불변이라 해당 없음, 43 둘은 확인) 되돌려 본다.
+
+### 7-9. 비판적 Sonnet 반론 (2단계 설계)
+대상: 7-8. 판정자(Opus)가 최종 결정한다. 설계가 맞는 곳은 건너뛰고, 결정마다 반론은 한 번씩만 낸다. 코드는 건드리지 않았다(근거는 `b08c16d` + 7-8 커밋 기준 코드와 디컴파일 소스를 직접 읽은 것).
+
+#### 반론 (결정별 1회)
+**(1) ② 부모를 PatternGoal · 공격 틱 · canBeAffected · makeStuckInBlock까지 넓히는 것 — 신뢰도 중**
+넓힌 내용이 "글자 그대로 같다"는 주장은 맞다(세 보스 본문을 대조해 확인: `customServerAiStep` 머리 4줄, `handleEntityEvent`, `aiStep`, `PatternGoal`, 효과 면역). 반론은 내용이 아니라 **한 걸음에 묶는 범위와 그 하나의 부모 계약**이다.
+- 한 걸음 ②가 바꾸는 것이 보스 3 × (보스 바 · 파티 저장 · 전리품 · 피해 후크 · 패턴 목 · 공격 애니 · 효과 면역)이다. 7-7이 정한 범위(보스 바 · `BossParty` · 저장 · 전리품)에서 PatternGoal(추상 `inPattern`)과 공격 애니(`playAttackAnimation` · 이벤트 · 틱)와 효과 두 개가 더 붙었다. 이 중 하나라도 순서가 틀리면 `runClientGameTest`는 크래시만 잡고 모양은 못 본다(아래 (2) 근거 참고). 한 커밋이면 `git bisect`로 못 가른다.
+- `makeStuckInBlock` · `canBeAffected` 빈 몸통의 이유가 원래 **패턴 이동 때문**이다: 수호자 "돌진이 막히지 않게", 파수꾼 "도약이 막히지 않게". 거상은 같은 오버라이드가 있지만 돌진 · 도약 패턴이 없고(끌어당기기 · 일제 사격), 구속 말고 공중 부양 면역까지 따로 가진다. 이걸 `PartyBossMonster`의 기본 동작으로 올리면 "인원 규칙을 따르는 보스 = 거미줄 · 구속 면역"이 클래스 계약이 되어, 네 번째 보스(예: 원거리형)가 말없이 물려받는다. 동작은 지금과 같지만 이름과 뜻이 어긋난다.
+- 제안: ②를 두 커밋으로 쪼갠다. **②a** = 7-7 범위(보스 바 · party · 저장 · 전리품 · `announcePhase`/`keyItem` 추상 · `phaseAnnounced`). **②b** = PatternGoal + 공격 틱/이벤트. 효과 면역 둘은 부모에 올리지 말고 각자 두거나, 올리더라도 `protected boolean ignoresSlowdown()` 같은 이름 붙은 훅 하나로 둔다. ②b에서만 `runClientGameTest`를 돌려도 된다.
+- 반대로 틀리지 않은 것: 부모 생성자 몸통으로 옮겨도 시점이 같다는 판단, `PatternGoal`의 `protected final class`(자식 `registerGoals`에서 `new PatternGoal()`은 `this`가 바깥 객체라 컴파일된다), 이름 충돌 없음(`Entity`/`LivingEntity`/`Mob`/`Monster`/`PathfinderMob`에 `getAttackTick` · `playAttackAnimation` · `inPattern` · `keyItem` · `announcePhase` · `bossEvent` · `isEnraged` 없음 — grep으로 확인).
+
+**(2) 77 클라이언트 공통을 이번에 하는 것 — 신뢰도 중 (부분 반론)**
+- `BossRenderState`(공격 진행 · 들기 식)와 `BossGlowLayer` 사망 페이드 이관은 맞다: 세 모델의 `p` · `raise` 두 줄(앞 40% 들기 / 다음 30% 내리기)과 세 `glow`의 첫 세 줄이 글자 그대로 같음을 확인했다. 단 모델 `body.xRot`가 `p < 0.4F`도 직접 쓰므로 `attackProgress()`는 `p`를 그대로 돌려줘야 하고 `raise`만 대체하면 된다.
+- 반론은 **`BossRenderer<T, S, M>` 제네릭 기반 클래스**다. 줄 수를 세면 득이 거의 없다: 렌더러 하나에서 빠지는 것은 텍스처 상수 2 · `addLayer` 1 · `getTextureLocation` 5 · `scale` 4 정도(약 14줄 × 3 = 40줄), 새로 생기는 기반 클래스가 생성자 6인자 · 필드 3 · 오버라이드 3으로 약 40줄에 형 매개변수 셋이 늘어난다. 줄 수로는 순이득이 0 근처인데 렌더 결과를 확인할 수단이 없다.
+- 결정적 근거: 클라이언트 시험(`M6Client` · `FinClient` · `M11aClient`)은 `takeScreenshot`만 하고 **이미지를 비교하거나 단언하지 않는다**(grep 확인). 그래서 7-8 위험 3의 "runClientGameTest로 확인"은 "크래시 안 남"까지만 보증한다. 글자 레이어 순서(빛 → 보호막)나 `scale`이 어긋나도 통과한다.
+- 제안: (a) `BossRenderState` + 사망 페이드 이관 + 모델 두 줄만 한다. `BossRenderer` 기반 클래스는 보류 유지(7-7의 "가치가 있으면" 단서대로). (b) 이관 전 커밋에서 위 세 시험이 만든 스크린숏을 보관해 두고 이후 바이트/해시로 비교한다(같은 시드 · 시각이라 입자 무작위만 빼면 같다 — 달라지면 사람이 눈으로 확인). 이것이 이 걸음의 유일한 실검증이다. (c) `Jetpack.hasThrustSteam`(`Jetpack.java:86` · `JetpackClient.java:37`의 `Math.max(…, 1)`)은 보스 렌더 걸음과 무관한 증기 장비 코드라 걸음에서 떼어 멀티블록 쪽 소묶음이나 따로 한 줄 커밋으로 한다(보스 걸음에 섞이면 되돌릴 때 같이 떨어진다).
+
+**(3) #43: "끄고 이웃이 다음 틱에 다시 켜게 함" vs "다른 제어기에 이어진 벽돌은 무늬를 유지" — 신뢰도 하**
+정직하게 말하면 설계(D)가 틀린 것은 아니다. 알림 상자 · 소유 범위 계산 · `link` 조건(나를 가리킬 때만 null) 모두 맞게 짜여 있고, 두 새 시험은 고치기 전 실패한다(아래 확인). 다만 대안 K가 더 단순할 수 있어 한 번만 짚는다.
+- D의 약점은 설계가 스스로 적은 "남는 깜빡임"과 **이웃이 틱을 안 돌리는 경우**다. 이웃 B가 있는 청크가 블록 엔티티를 틱하지 않는 가장자리 상태면 B는 `requestCheck`를 받고도 안 돌아서 공유 벽이 B가 다시 틱할 때까지 꺼져 있다. 또 `link`는 "마지막으로 쓴 쪽"일 뿐이라(두 탑이 40틱마다 번갈아 덮어씀) 링크만 보고 "누가 쓰는 벽돌"을 가릴 수 없다 — 그래서 K도 링크가 아니라 **이웃 제어기가 그 칸을 자기 외벽으로 가졌는지**(`neighbour.isFormed() && neighbour.shape().casings(...).contains(칸)`)로 판정해야 하고, 큰 보일러 외벽은 BE가 없어도 이 방식은 된다.
+- K 흐름: `unform`에서 상자 안 이웃 제어기(= 단계 2에서 이미 찾는 것)를 모아 두고, 내 외벽 칸마다 "formed인 이웃이 가진 칸이면 무늬 유지 + `link(이웃)`, 아니면 끄고 링크 해제". `requestCheck` 연쇄도, 깜빡임도, 이웃 틱 순서 의존도 없다. 이웃의 `formed`가 최대 40틱 낡을 수 있으나, 그 이웃이 정말 깨졌다면 같은 부숨이 둘 다에 알림을 보내 한 틱 안에 스스로 `unform`하므로(둘 다 풀리면 마지막 `unform`이 벽을 끈다) 굳을 일은 없다.
+- 그래도 D를 고른다면 다음은 바로잡을 것: 알림 상자 · `unform` 상자 안에서 쓰는 `level.getBlockEntity(near)`는 **청크를 강제로 불러온다**(`Level.getBlockEntity` → `getChunkAt(pos)` → `getChunk(x, z, FULL, true)`, 디컴파일 소스 `Level.java:693~699`, `199~205`). 지금 `notifyControllers`의 ±2는 부순 칸이 불러온 청크에 있어 거의 문제 없지만, 새 `unform` 상자는 제어기에서 최대 4칸까지 뻗어 청크 경계 밖 안 불러온 곳을 강제로 불러올 수 있다. `HeatproofBricksBlockEntity.controller()`가 이미 `level.isLoaded(controller)`로 막고 있으니 같은 식으로 `if (!level.isLoaded(near)) continue;`를 `notifyControllers`와 `unform` 상자 순회 양쪽에 넣는 것을 권한다(신뢰도 중, 비용 한 줄).
+
+#### 확인 결과 (질문받은 점검, 반론 없음)
+- **부모 생성자에서 부르는 가상 함수**: 안전. `Mob` 생성자는 `registerGoals()`만 부르고(`Mob.java:158`), 거기서 `new PatternGoal()`은 바깥 객체 참조만 잡고 보스 바 · 자식 필드를 읽지 않는다. `Entity` 생성자의 `defineSynchedData`(`Entity.java:332`)는 거상만 오버라이드하며 `static DATA_FLAGS`만 쓴다(자식 정적 초기화는 인스턴스 생성 전에 끝남). `getDisplayName()`은 세 보스 다 오버라이드하지 않는다. `setCustomName`은 어떤 상위 생성자도 부르지 않아 `bossEvent`가 널일 때 `refreshBossBar`가 불리는 길은 지금도 없다. `random` 소비 순서도 같다. 단, 지금 필드 초기화식이 "Monster 생성자 뒤, 자식 필드 앞"이고 부모 생성자 몸통도 정확히 같은 자리라 시점은 같다 — 다만 부모의 `private final BossParty party = new BossParty()` 초기화식은 몸통보다 먼저 돈다는 점만 기억할 것.
+- **동기화 데이터 id**: 부모 `PartyBossMonster`가 `EntityDataAccessor`를 정의하지 않으므로 id 변화 없음. 설령 나중에 정의해도 `SynchedEntityData.defineId`는 `ClassTreeIdRegistry`(클래스 계층을 거슬러 올라가 마지막 id + 1)로 id를 주므로 부모 클래스가 항상 먼저 초기화되어 자식 id가 밀릴 뿐이고 저장에는 안 들어간다(NBT에 id 없음). 서버 · 클라이언트가 같은 jar이면 영향 없음.
+- **저장 키 호환**: 키 이름 · 자료형이 `BossParty.save/load`와 거상 `shield_wave` · `crystals` 그대로라 호환된다. 읽기 순서 변화(거상: 부모가 `party.load` → `refreshBossBar` → `phaseAnnounced`를 하고 자식이 `shield_wave` · `crystals`)는 서로 독립이라 무해. 다만 새 시험 `bossSaveKeysStayCompatible`은 **자기 저장 → 자기 읽기**라 키 이름이 바뀌어도 양쪽이 같이 바뀌어 통과할 수 있다 — 설계대로 "태그에 키가 있다"를 단언하되, 파수꾼은 아예 **옛 형식 태그를 손으로 만든 `CompoundTag`/`TagValueInput`**(`party_size`=2 · `party_tier`=1 …)으로 읽어 단계 · 인원 · 보스 바 제목을 확인하는 쪽이 진짜 호환 시험이다. (수호자 · 거상의 자기 왕복은 `C3.tierSurvivesSaveAndLoad` · `Fin` 거상 단계 시험이 이미 있다. 파수꾼 왕복이 없는 것은 맞다.)
+- **이름이 바뀌는 메서드를 쓰는 기존 시험**: 없다. `getAttackAnimationTick`은 `RustyGuardianRenderer`(클라이언트 한 곳)만 쓴다. 시험이 쓰는 `EVENT_ATTACK`은 `FinClient`의 `VoidColossus.EVENT_ATTACK` 하나뿐이고 상속된 정적 필드라 그대로 컴파일된다(`M11aClient`는 자기 지역 상수 4). `SHIELD_BREAK_SECONDS` 이름 사용처는 보스 본 파일 밖에 없다(시험은 `getSecondsToDisableBlocking()`). `new RustyGuardian(…)` 직접 생성 · 리플렉션 · 접근 확장 · 믹스인 없음.
+- **상자 범위 수학**: 맞다. 탑 · 보일러 모두 제어기→외벽 가로 거리는 깊이 방향 0..depth−1, 옆 방향 ±1이라 `r = max(1, depth−1)`(= 2)의 정사각 상자는 방향을 모르는 상태의 상위 집합이다. 세로는 제어기 y = 칸 y − up(0..height−1)이라 `칸.y−(height−1) .. 칸.y`가 맞다(지금 코드 `-2/-3`과 같은 값). `unform` 상자(외벽 최소~최대 ± r, 아래로 height−1)도 "이웃 제어기가 내 외벽 한 칸에서 r 이내"를 덮는다. 또한 `FORMED` 갱신은 같은 블록의 상태 변경(`UPDATE_CLIENTS`만)이라 `affectNeighborsAfterRemoval`(`LevelChunk.java:317`, `blockChanged && (flags & 1)`)을 부르지 않으므로 알림이 되돌아 울리지 않는다.
+- **새 시험 실패 예측**: `sharedWallTowerSurvivesNeighbourBreak`는 고치기 전에도 `B.isFormed()`는 참(B 자신의 `formed`는 B가 돌기 전엔 안 바뀜)이고, 실패하는 것은 "공유 벽돌 무늬 켜짐 · 링크가 B" 단언이다 — 단언이 그 둘을 포함하니 설계대로 잡힌다. 구조물은 x 1..5이므로 기본 빈 구조물(8칸)에 들어간다. 시험 1은 `check` 직접 호출 뒤 B의 `checkTimer`가 40이라 3틱 안에 B가 스스로 안 돈다는 전제에 의존한다(순서를 바꿔 B만 먼저 `check`하지 말 것).
+- **`BoilerBlock.hint` 합치기(#40)**: `boiler.steamCapacity()`가 일반 보일러에서 `STEAM_CAPACITY`를 돌려주는 것(`BoilerBlockEntity.java:275`)을 확인, 힌트 본문 둘이 글자 그대로 같다. `protected static`이면 `industry` 패키지의 자식(`BigBoilerControllerBlock`)에서 접근된다. `LinkedCasing.link`는 지금 패키지 전용 메서드인데 인터페이스 구현이면 `public`이 되어야 한다(설계에 이미 공개한다고 적혀 있다).
+
+#### 요약 (판정자용)
+| 결정 | 반론 | 신뢰도 | 권고 |
+|---|---|---|---|
+| (1) ② 범위 확대 | 내용은 맞음. 한 커밋 묶음 + 효과 면역을 부모 계약으로 올림이 문제 | 중 | ②a/②b 두 커밋, 효과 둘은 각자 또는 이름 붙은 훅 |
+| (2) 77 지금 | 기반 클래스는 줄 수 순이득 0, 클라이언트 시험은 단언 없음 | 중 | 상태 · 레이어 · 모델 식만, `BossRenderer` 보류, 스크린숏 해시 비교, Jetpack 줄은 분리 |
+| (3) #43 규칙 | 설계는 유효. 대안 K(이웃이 가진 칸이면 유지)가 깜빡임 · 틱 의존이 없음 | 하 | D를 유지하되 `unform`/`notifyControllers`에 `isLoaded` 가드(중) |
