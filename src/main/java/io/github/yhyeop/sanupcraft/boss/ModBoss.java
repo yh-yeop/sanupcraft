@@ -44,9 +44,9 @@ public final class ModBoss {
 			.sound(SoundType.METAL));
 
 	/** 제단에 쓰면 녹슨 수호자를 부른다. 장비 부품으로 만든다. */
-	public static final Item GUARDIAN_SUMMONER = ModRegistry.item("guardian_summoner", new Item.Properties().rarity(Rarity.UNCOMMON).stacksTo(16));
+	public static final Item GUARDIAN_SUMMONER = ModRegistry.item("guardian_summoner", BossSummonerItem::new, new Item.Properties().rarity(Rarity.UNCOMMON).stacksTo(16));
 	/** 제단에 쓰면 용광로 파수꾼을 부른다. 핵 조각으로 만든다. */
-	public static final Item WARDEN_SUMMONER = ModRegistry.item("warden_summoner", new Item.Properties().rarity(Rarity.RARE).stacksTo(16).fireResistant());
+	public static final Item WARDEN_SUMMONER = ModRegistry.item("warden_summoner", BossSummonerItem::new, new Item.Properties().rarity(Rarity.RARE).stacksTo(16).fireResistant());
 
 	private ModBoss() {
 	}

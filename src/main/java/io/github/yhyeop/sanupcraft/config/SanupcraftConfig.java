@@ -22,6 +22,7 @@ import net.fabricmc.loader.api.FabricLoader;
 
 import io.github.yhyeop.sanupcraft.Sanupcraft;
 import io.github.yhyeop.sanupcraft.boss.BossParty;
+import io.github.yhyeop.sanupcraft.boss.BossTier;
 import io.github.yhyeop.sanupcraft.factory.MachineUpgrade;
 import io.github.yhyeop.sanupcraft.fluid.PumpBlockEntity;
 import io.github.yhyeop.sanupcraft.gear.ChainsawItem;
@@ -127,6 +128,11 @@ public final class SanupcraftConfig {
 	public double locomotiveMaxSpeed = SteamLocomotive.MAX_SPEED;
 	/** 적재 · 하역 역: 한 번(2틱)에 옮기는 아이템 수. */
 	public int stationItemsPerTransfer = CargoStationBlockEntity.ITEMS_PER_TRANSFER;
+	// C3 강화 소환석
+	/** 강화 소환석: 단계당 보스 최대 체력 증가 (0.5 = +50%, 인원 배율 위에 곱). */
+	public double bossTierHealthPerTier = BossTier.HEALTH_PER_TIER;
+	/** 강화 소환석: 단계당 보스 피해 증가 (0.25 = +25%). */
+	public double bossTierDamagePerTier = BossTier.DAMAGE_PER_TIER;
 
 	/** float 상수를 0.05F -> 0.05처럼 보이는 그대로의 double로 (파일에 0.0500000007...이 안 찍히게). */
 	private static double asDouble(float value) {
@@ -209,7 +215,12 @@ public final class SanupcraftConfig {
 			new Option("locomotive", "maxSpeed", SteamLocomotive.MAX_SPEED, 0.05, 0.4, false,
 					c -> c.locomotiveMaxSpeed, (c, v) -> c.locomotiveMaxSpeed = v),
 			new Option("cargoStation", "itemsPerTransfer", CargoStationBlockEntity.ITEMS_PER_TRANSFER, 1, 64, true,
-					c -> c.stationItemsPerTransfer, (c, v) -> c.stationItemsPerTransfer = (int) v));
+					c -> c.stationItemsPerTransfer, (c, v) -> c.stationItemsPerTransfer = (int) v),
+			// C3 강화 소환석
+			new Option("bossTier", "healthPerTier", BossTier.HEALTH_PER_TIER, 0.0, 5.0, false,
+					c -> c.bossTierHealthPerTier, (c, v) -> c.bossTierHealthPerTier = v),
+			new Option("bossTier", "damagePerTier", BossTier.DAMAGE_PER_TIER, 0.0, 5.0, false,
+					c -> c.bossTierDamagePerTier, (c, v) -> c.bossTierDamagePerTier = v));
 
 	/** 읽은 결과: 설정, 경고 문구, 파일에 빠진 키가 있었는지, 파일을 새로 썼는지. */
 	public record Loaded(SanupcraftConfig config, List<String> warnings, boolean missingKeys, boolean wroteFile) {

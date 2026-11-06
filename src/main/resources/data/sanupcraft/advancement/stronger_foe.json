@@ -1,0 +1,25 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:guardian_summoner"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.stronger_foe.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.stronger_foe.description"
+    },
+    "frame": "challenge"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "parent": "sanupcraft:guardian_core"
+}

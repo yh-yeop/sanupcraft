@@ -417,5 +417,13 @@
   "advancements.sanupcraft.steam_locomotive.title": "기적 소리",
   "advancements.sanupcraft.steam_locomotive.description": "증기 기관차를 만든다. 레일 위에 두고 석탄이나 증기 통을 넣으면 달린다. 연결 고리로 화물칸을 뒤에 잇는다.",
   "advancements.sanupcraft.cargo_station.title": "화물 열차",
-  "advancements.sanupcraft.cargo_station.description": "적재 · 하역 역을 만든다. 레일 옆에 두면 지나가거나 선 화물칸과 아이템을 주고받는다. 꺼진 동력 레일로 기관차를 세운다."
+  "advancements.sanupcraft.cargo_station.description": "적재 · 하역 역을 만든다. 레일 옆에 두면 지나가거나 선 화물칸과 아이템을 주고받는다. 꺼진 동력 레일로 기관차를 세운다.",
+  "item.sanupcraft.boss_tier.name": "%1$s +%2$s",
+  "item.sanupcraft.boss_tier.tooltip": "강화 +%1$s: 보스 체력 +%2$s%% · 피해 +%3$s%% · 보상 핵 · 심장 +%1$s개 + 기계 업그레이드 하나",
+  "item.sanupcraft.guardian_summoner.tooltip2": "작업대에서 핵 조각 4개와 함께 놓으면 한 단계 강화 (+3까지)",
+  "item.sanupcraft.warden_summoner.tooltip2": "작업대에서 파수꾼의 심장 1개와 함께 놓으면 한 단계 강화 (+3까지)",
+  "block.sanupcraft.guardian_altar.tier": "%1$s +%2$s 단계 — 체력 +%3$s%% · 피해 +%4$s%%",
+  "entity.sanupcraft.boss.reward_tier": "%1$s 처치 보상: %2$s ×%3$s + %4$s",
+  "advancements.sanupcraft.stronger_foe.title": "더 강한 적",
+  "advancements.sanupcraft.stronger_foe.description": "+3까지 강화한 소환석으로 보스를 불러내자. 소환석을 작업대에서 핵 조각 4개(수호자) · 파수꾼의 심장(파수꾼)과 함께 놓으면 한 단계씩 오른다."
 }

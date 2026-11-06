@@ -28,6 +28,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.levelgen.Heightmap;
 
+import io.github.yhyeop.sanupcraft.boss.BossTier;
 import io.github.yhyeop.sanupcraft.boss.ModBoss;
 import io.github.yhyeop.sanupcraft.core.ModItems;
 import io.github.yhyeop.sanupcraft.factory.ModMachines;
@@ -70,7 +71,9 @@ public final class PlaytestCommand {
 		PRODUCTION("생산 · 장비: 작물 수확기 · 벌목기 · 증기 드릴 · 전기톱 · 제트팩", null, PlaytestCommand::kitProduction),
 		// M9b 몹 분쇄기 · 경험치 탱크 · 배낭
 		PRODUCTION2("생산 2: 몹 분쇄기 · 경험치 탱크 · 배낭", null, PlaytestCommand::kitProduction2),
-		INDUSTRY("산업 규모: 대형 보일러 · 증기 기관차 · 화물 열차", null, PlaytestCommand::kitIndustry);
+		INDUSTRY("산업 규모: 대형 보일러 · 증기 기관차 · 화물 열차", null, PlaytestCommand::kitIndustry),
+		// C3 강화 소환석
+		TIERS("강화 소환석: +1 ~ +3 소환석 · 재료 · 강철 · 내열 한 벌", null, PlaytestCommand::kitTiers);
 
 		final String description;
 		final ResourceKey<Level> dimension;
@@ -432,6 +435,32 @@ public final class PlaytestCommand {
 		give(p, ModItems.IRON_PLATE, 8);
 		give(p, ModItems.STEEL_PLATE, 8);
 		give(p, Items.IRON_SWORD, 1);
+		food(p);
+	}
+
+	/** C3 강화 소환석: +1 ~ +3 소환석과 재료를 받고, 강철 한 벌을 입고 (내열 한 벌은 가방에) 제단에서 단계마다 보스가 얼마나 세지는지 본다. */
+	private static void kitTiers(ServerPlayer p) {
+		equip(p, SteelGear.STEEL_HELMET, SteelGear.STEEL_CHESTPLATE, SteelGear.STEEL_LEGGINGS, SteelGear.STEEL_BOOTS);
+		give(p, SteelGear.STEEL_SWORD, 1);
+		give(p, SteelGear.STEEL_HAMMER, 1);
+		give(p, Items.SHIELD, 1);
+		give(p, HeatproofGear.HEATPROOF_HELMET, 1);
+		give(p, HeatproofGear.HEATPROOF_CHESTPLATE, 1);
+		give(p, HeatproofGear.HEATPROOF_LEGGINGS, 1);
+		give(p, HeatproofGear.HEATPROOF_BOOTS, 1);
+		give(p, HeatproofGear.HEATPROOF_SWORD, 1);
+		give(p, ModBoss.GUARDIAN_ALTAR.asItem(), 2);
+		for (int tier = 1; tier <= BossTier.MAX; tier++) {
+			give(p, BossTier.stack(ModBoss.GUARDIAN_SUMMONER, tier));
+		}
+		give(p, BossTier.stack(ModBoss.WARDEN_SUMMONER, 1));
+		give(p, BossTier.stack(ModBoss.WARDEN_SUMMONER, 3));
+		// 작업대에서 직접 올려 볼 수 있게: 단계 0 소환석과 재료
+		give(p, ModBoss.GUARDIAN_SUMMONER, 2);
+		give(p, ModBoss.WARDEN_SUMMONER, 2);
+		give(p, ModItems.CORE_SHARD, 12);
+		give(p, ModItems.WARDEN_HEART, 3);
+		give(p, Items.CRAFTING_TABLE, 1);
 		food(p);
 	}
 }

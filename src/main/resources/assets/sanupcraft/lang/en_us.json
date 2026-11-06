@@ -417,5 +417,13 @@
   "advancements.sanupcraft.steam_locomotive.title": "Whistle",
   "advancements.sanupcraft.steam_locomotive.description": "Make a steam locomotive. Put it on rails and give it coal or a steam canister. Link cargo wagons behind it with a coupler.",
   "advancements.sanupcraft.cargo_station.title": "Freight Train",
-  "advancements.sanupcraft.cargo_station.description": "Make a cargo station. Next to a rail it trades items with passing or stopped cargo wagons. Stop the locomotive with an unpowered powered rail."
+  "advancements.sanupcraft.cargo_station.description": "Make a cargo station. Next to a rail it trades items with passing or stopped cargo wagons. Stop the locomotive with an unpowered powered rail.",
+  "item.sanupcraft.boss_tier.name": "%1$s +%2$s",
+  "item.sanupcraft.boss_tier.tooltip": "Tier +%1$s: boss health +%2$s%% · damage +%3$s%% · +%1$s extra core/heart and a machine upgrade as reward",
+  "item.sanupcraft.guardian_summoner.tooltip2": "Combine with 4 core shards in a crafting grid to raise its tier (up to +3)",
+  "item.sanupcraft.warden_summoner.tooltip2": "Combine with 1 warden heart in a crafting grid to raise its tier (up to +3)",
+  "block.sanupcraft.guardian_altar.tier": "%1$s +%2$s — health +%3$s%% · damage +%4$s%%",
+  "entity.sanupcraft.boss.reward_tier": "%1$s defeated — you received %2$s ×%3$s + %4$s",
+  "advancements.sanupcraft.stronger_foe.title": "A Stronger Foe",
+  "advancements.sanupcraft.stronger_foe.description": "Summon a boss with a +3 summoner. Combine a summoner with 4 core shards (guardian) or a warden heart (warden) in a crafting grid to raise its tier."
 }

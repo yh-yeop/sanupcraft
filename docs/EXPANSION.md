@@ -58,3 +58,16 @@ A · B · C · M5 · M6 설계는 [ROADMAP.md](../ROADMAP.md)의 "확장 계획"
 | X1 | 보스 전용 모델 | 녹슨 수호자 · 용광로 파수꾼 · 공허 거상 전용 엔티티 모델(코드로 정의한 모델 레이어)과 도트 텍스처. 지금은 바닐라 모델에 색만 입힘 |
 | X2 | 효과음 · 입자 | 증기 기계 작동음, 보스 패턴 예고음 · 입자 (sounds.json + 바닐라 소리 재사용 가능) |
 | X3 | 밸런스 | 실테스트 결과로 설정 파일 값을 맞춘다 (실테스트 뒤) |
+
+## C3 구현 메모 (강화 소환석)
+**구현.** 수호자 · 파수꾼 소환석에 강화 단계 +1 ~ +3. 코드는 `boss/`의 `BossTier`(단계 컴포넌트 · 배율 · 새 보스 붙이는 법은 이 클래스 주석) · `BossSummonerItem`(이름 "+N" · 툴팁) · `BossTierRecipe`(작업대 레시피 종류).
+- 단계는 아이템 데이터 컴포넌트 `sanupcraft:boss_tier` (정수 0 ~ 3, 0이면 컴포넌트가 없어 강화 전과 똑같이 쌓인다). 단계가 다른 소환석은 서로 안 쌓인다.
+- 강화: 작업대(모양 상관없음)에 소환석 하나 + 재료 → 단계 +1. 수호자 소환석 + **핵 조각 4개**, 파수꾼 소환석 + **파수꾼의 심장 1개**. +3은 더 못 올린다. 재료 수가 다르거나 다른 물건이 섞이면 안 맞는다. 레시피 종류 `sanupcraft:crafting_boss_tier` (`recipe/<보스>_summoner_upgrade.json`: summoner · material · count). 특수 레시피라서 레시피 책 · JEI에는 안 보이고, 소환석 툴팁(`.tooltip2`)이 만드는 법을 알려 준다.
+- 소환: `GuardianAltarBlock`이 소환석 단계를 읽어 `summon(level, pos, type, tier)`에 넘기고, `BossParty.setTier`가 걸어 준다. 최대 체력 = 기본 x 인원 배율 x (1 + 0.5 단계) (수정자 둘이 곱으로 겹침: 인원은 `ADD_MULTIPLIED_BASE`, 단계는 `ADD_MULTIPLIED_TOTAL`), 공격력 속성 x (1 + 0.25 단계) (근접 공격). 패턴 피해(돌진 · 내려찍기 · 폭발 · 고리 · 도약)는 `hitWithRust` / `hitWithHeat`의 패턴 타격에서 `party.damageScale()`을 곱한다. 보스 바 제목은 "이름 +N" (`PartyBoss.refreshBossBar`, 이름표로 바꿔도 유지). 소환할 때 채팅으로 단계 · 체력 · 피해 증가를 알린다.
+- 저장: 단계는 `party_tier`로 보스에 저장 (체력 · 공격력 수정자는 속성 저장으로 같이 돌아온다). 명령어(`summon`)로 부른 보스는 단계 0.
+- 보상: `BossParty.giveKeyItem` 한 곳. 기여자 각자 핵 · 심장 `1 + 단계`개 + 기계 업그레이드 하나(속도 · 효율 · 두 배 중 무작위, 한 번에 하나). 기여자가 없으면 보스 자리에 핵 · 심장만 `1 + 단계`개 떨군다 (업그레이드 없음). 보스 기록(T2)의 `tier`에 단계를 넘겨서 기록판에 "강화 N단계"가 뜬다 (전에는 자리만 있었음).
+- 설정: `bossTier.healthPerTier`(0.5) · `bossTier.damagePerTier`(0.25). 인원 배율 설정과 따로.
+- 발전 과제 "더 강한 적"(`stronger_foe`, 부모 = 수호자의 핵): +3 소환석으로 제단을 쓴 사람이 받는다 (코드에서 줌, 트리거 impossible).
+- 실테스트 단계 `tiers`, GameTest `SanupcraftC3GameTest`.
+- 공허 거상(다른 묶음)을 붙이려면: 소환석을 `BossSummonerItem`으로 등록 → `GuardianAltarBlock.bossFor`에 한 줄 → 보스에 `PartyBoss.refreshBossBar` 구현 + 패턴 피해에 `party().damageScale()` → 레시피 json 하나 (`material`: 공허 핵). 자세한 건 `BossTier` 클래스 주석.
+- 안 한 것: 새 텍스처 · 아이템 모델 (강화 소환석은 같은 모양 + 이름 · 툴팁 표시만), 레시피 책 · JEI 표시.
