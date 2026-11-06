@@ -2,9 +2,7 @@ package io.github.yhyeop.sanupcraft.boss;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
@@ -122,7 +120,8 @@ public class VoidColossus extends Monster implements PartyBoss {
 	/** 0 = 아직 수정 안 띄움, 1 = 처음 수정 띄움, 2 = 절반에서 다시 띄움. */
 	private int shieldWave;
 	private final List<UUID> crystals = new ArrayList<>();
-	private final Map<UUID, Long> shieldMessageAt = new HashMap<>();
+	/** 플레이어별 "수정이 지킨다" 안내 (60틱에 한 번). */
+	private final BossCombat.PlayerCooldown shieldMessage = new BossCombat.PlayerCooldown(SHIELD_MESSAGE_COOLDOWN);
 
 	public VoidColossus(EntityType<? extends VoidColossus> type, Level level) {
 		super(type, level);
@@ -403,8 +402,7 @@ public class VoidColossus extends Monster implements PartyBoss {
 	}
 
 	private List<Player> targets(ServerLevel level, double range) {
-		return level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(range),
-				p -> !p.isSpectator() && !p.isCreative() && p.isAlive() && p.distanceTo(this) <= range);
+		return BossCombat.targets(level, getBoundingBox().inflate(range), p -> p.isAlive() && p.distanceTo(this) <= range);
 	}
 
 	@Override
@@ -427,14 +425,7 @@ public class VoidColossus extends Monster implements PartyBoss {
 		if (!source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) && isShielded(level)) {
 			level.sendParticles(ParticleTypes.WITCH, getX(), getY() + getBbHeight() * 0.6, getZ(), 12, 0.8, 1.0, 0.8, 0.0);
 			playSound(SoundEvents.SHULKER_HURT_CLOSED, 1.0F, 0.6F);
-			if (source.getEntity() instanceof ServerPlayer player) {
-				long now = level.getGameTime();
-				Long last = shieldMessageAt.get(player.getUUID());
-				if (last == null || now - last >= SHIELD_MESSAGE_COOLDOWN) {
-					shieldMessageAt.put(player.getUUID(), now);
-					player.sendOverlayMessage(Component.translatable("entity.sanupcraft.void_colossus.shielded"));
-				}
-			}
+			BossCombat.warn(level, source.getEntity(), shieldMessage, "entity.sanupcraft.void_colossus.shielded");
 			return false;
 		}
 		boolean hurt = super.hurtServer(level, source, damage);

@@ -2,14 +2,10 @@ package io.github.yhyeop.sanupcraft.boss;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
 
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerBossEvent;
@@ -22,7 +18,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -38,8 +33,6 @@ import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
@@ -68,8 +61,6 @@ public class FurnaceWarden extends Monster implements PartyBoss {
 	public static final float HEAT_MULTIPLIER = 1.5F;
 	public static final float HEATPROOF_SWORD_MULTIPLIER = 1.5F;
 	public static final int HEAT_FIRE_TICKS = 100;
-	/** 패턴 타격이 방패를 깨는 시간 (초). 바닐라 워든과 같다. */
-	public static final float SHIELD_BREAK_SECONDS = 5.0F;
 	public static final float BLAST_DAMAGE = 10.0F;
 	public static final double BLAST_RANGE = 7.0;
 	public static final double BLAST_HALF_ANGLE = Math.toRadians(35.0);
@@ -115,8 +106,8 @@ public class FurnaceWarden extends Monster implements PartyBoss {
 	private boolean blastLocked;
 	private float blastYaw;
 	private Vec3 leapLanding = Vec3.ZERO;
-	/** 플레이어별 과열 경고를 마지막으로 보낸 게임 시간. */
-	private final Map<UUID, Long> warnedAt = new HashMap<>();
+	/** 플레이어별 과열 경고 (200틱에 한 번). */
+	private final BossCombat.PlayerCooldown heatWarning = new BossCombat.PlayerCooldown(WARNING_COOLDOWN);
 	private final BossParty party = new BossParty();
 
 	public FurnaceWarden(EntityType<? extends FurnaceWarden> type, Level level) {
@@ -184,7 +175,7 @@ public class FurnaceWarden extends Monster implements PartyBoss {
 			}
 			case FIRE_RINGS -> {
 				rings.clear();
-				for (Player player : level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(20.0), p -> !p.isSpectator() && !p.isCreative())) {
+				for (Player player : BossCombat.targets(level, getBoundingBox().inflate(20.0))) {
 					if (rings.size() < maxRings()) {
 						rings.add(player.position());
 					}
@@ -305,7 +296,7 @@ public class FurnaceWarden extends Monster implements PartyBoss {
 		}
 		playSound(SoundEvents.FIRE_EXTINGUISH, 2.0F, 0.5F);
 		int hits = 0;
-		for (Player player : level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(BLAST_RANGE, 2.0, BLAST_RANGE), EntitySelector.NO_CREATIVE_OR_SPECTATOR)) {
+		for (Player player : BossCombat.targets(level, getBoundingBox().inflate(BLAST_RANGE, 2.0, BLAST_RANGE))) {
 			Vec3 to = player.position().subtract(position());
 			Vec3 flat = new Vec3(to.x, 0.0, to.z);
 			if (flat.length() > BLAST_RANGE + getBbWidth() / 2 || flat.lengthSqr() < 1.0E-4) {
@@ -349,8 +340,8 @@ public class FurnaceWarden extends Monster implements PartyBoss {
 		for (Vec3 center : rings) {
 			level.sendParticles(ParticleTypes.LAVA, center.x, center.y + 0.2, center.z, 12, RING_RADIUS / 2, 0.1, RING_RADIUS / 2, 0.0);
 			level.sendParticles(ParticleTypes.FLAME, center.x, center.y + 0.3, center.z, 30, RING_RADIUS / 2, 0.3, RING_RADIUS / 2, 0.05);
-			for (Player player : level.getEntitiesOfClass(Player.class, new AABB(center, center).inflate(RING_RADIUS, 2.0, RING_RADIUS), EntitySelector.NO_CREATIVE_OR_SPECTATOR)) {
-				if (!hit.contains(player) && horizontalDistance(player.position(), center) <= RING_RADIUS) {
+			for (Player player : BossCombat.targets(level, new AABB(center, center).inflate(RING_RADIUS, 2.0, RING_RADIUS))) {
+				if (!hit.contains(player) && BossCombat.horizontalDistance(player.position(), center) <= RING_RADIUS) {
 					hitWithHeat(level, player, RING_DAMAGE, true);
 					player.push(0.0, 0.5, 0.0);
 					hit.add(player);
@@ -430,8 +421,8 @@ public class FurnaceWarden extends Monster implements PartyBoss {
 		level.sendParticles(ParticleTypes.EXPLOSION, getX(), getY() + 0.2, getZ(), 6, LEAP_RADIUS / 2, 0.1, LEAP_RADIUS / 2, 0.0);
 		level.sendParticles(ParticleTypes.FLAME, getX(), getY() + 0.2, getZ(), 40, LEAP_RADIUS / 2, 0.2, LEAP_RADIUS / 2, 0.05);
 		int hits = 0;
-		for (Player player : level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(LEAP_RADIUS, 2.0, LEAP_RADIUS), EntitySelector.NO_CREATIVE_OR_SPECTATOR)) {
-			if (horizontalDistance(player.position(), position()) > LEAP_RADIUS + getBbWidth() / 2) {
+		for (Player player : BossCombat.targets(level, getBoundingBox().inflate(LEAP_RADIUS, 2.0, LEAP_RADIUS))) {
+			if (BossCombat.horizontalDistance(player.position(), position()) > LEAP_RADIUS + getBbWidth() / 2) {
 				continue;
 			}
 			hitWithHeat(level, player, LEAP_DAMAGE, true);
@@ -454,46 +445,22 @@ public class FurnaceWarden extends Monster implements PartyBoss {
 	 */
 	public boolean hitWithHeat(ServerLevel level, LivingEntity target, float damage, boolean pattern) {
 		if (pattern) {
-			breakShield(level, target);
+			BossCombat.breakShield(level, target);
 			damage *= (float) party.outgoingDamageScale(); // 강화 단계 (근접은 공격력 속성에 이미 들어 있다)
 		}
 		boolean heatproof = HeatproofGear.wearsFullSet(target);
 		boolean hurt = target.hurtServer(level, damageSources().mobAttack(this), heatproof ? damage : damage * HEAT_MULTIPLIER);
 		if (hurt && !heatproof) {
 			target.igniteForTicks(HEAT_FIRE_TICKS);
-			warnHeat(level, target);
+			BossCombat.warn(level, target, heatWarning, "entity.sanupcraft.furnace_warden.heat_warning"); // 세트 없이 맞은 플레이어에게 안내
 		}
 		return hurt;
-	}
-
-	/** 막는 중인 방패를 깨고 쿨다운을 건다. */
-	private static void breakShield(ServerLevel level, LivingEntity target) {
-		ItemStack shield = target.getItemBlockingWith();
-		if (shield == null) {
-			return;
-		}
-		BlocksAttacks blocksAttacks = shield.get(DataComponents.BLOCKS_ATTACKS);
-		if (blocksAttacks != null) {
-			blocksAttacks.disable(level, target, SHIELD_BREAK_SECONDS, shield);
-		}
-	}
-
-	/** 세트 없이 과열을 맞은 플레이어에게 안내한다 (플레이어마다 200틱에 한 번). */
-	private void warnHeat(ServerLevel level, LivingEntity target) {
-		if (!(target instanceof ServerPlayer player)) {
-			return;
-		}
-		long now = level.getGameTime();
-		warnedAt.values().removeIf(last -> now - last >= WARNING_COOLDOWN);
-		if (warnedAt.putIfAbsent(player.getUUID(), now) == null) {
-			player.sendOverlayMessage(Component.translatable("entity.sanupcraft.furnace_warden.heat_warning"));
-		}
 	}
 
 	/** 근접으로 한 번 막히면 방패가 5초 꺼진다 (바닐라 워든과 같다). */
 	@Override
 	public float getSecondsToDisableBlocking() {
-		return SHIELD_BREAK_SECONDS;
+		return BossCombat.SHIELD_BREAK_SECONDS;
 	}
 
 	/** 거미줄 같은 블록에 느려지지 않는다 (도약이 막히지 않게). */
@@ -525,12 +492,6 @@ public class FurnaceWarden extends Monster implements PartyBoss {
 	private Vec3 mouth() {
 		Vec3 forward = Vec3.directionFromRotation(0.0F, getYHeadRot());
 		return position().add(forward.scale(getBbWidth() * 0.7)).add(0.0, getBbHeight() * 0.55, 0.0);
-	}
-
-	private static double horizontalDistance(Vec3 a, Vec3 b) {
-		double dx = a.x - b.x;
-		double dz = a.z - b.z;
-		return Math.sqrt(dx * dx + dz * dz);
 	}
 
 	@Override

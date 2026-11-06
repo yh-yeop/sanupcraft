@@ -1,16 +1,13 @@
 package io.github.yhyeop.sanupcraft.boss;
 
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
 
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerBossEvent;
@@ -25,7 +22,6 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
@@ -42,8 +38,6 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.Silverfish;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.BlocksAttacks;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
@@ -74,8 +68,6 @@ public class RustyGuardian extends Monster implements PartyBoss {
 	public static final float SLAM_DAMAGE = 10.0F;
 	public static final double SLAM_RADIUS = 5.0;
 	public static final int MINIONS_PER_SUMMON = 3;
-	/** 패턴 타격이 방패를 깨는 시간 (초). 바닐라 워든과 같다. */
-	public static final float SHIELD_BREAK_SECONDS = 5.0F;
 	private static final int MAX_MINIONS_NEARBY = 8;
 	/** 공격 동작 이벤트 id (클라이언트 휘두르기 애니메이션). 파수꾼과 같은 이름. */
 	public static final byte EVENT_ATTACK = 4;
@@ -108,8 +100,8 @@ public class RustyGuardian extends Monster implements PartyBoss {
 	private Vec3 chargeDirection = Vec3.ZERO;
 	private final Set<UUID> hitThisCharge = new HashSet<>();
 	private int attackAnimationTick;
-	/** 플레이어별 녹 경고를 마지막으로 보낸 게임 시간. */
-	private final Map<UUID, Long> warnedAt = new HashMap<>();
+	/** 플레이어별 녹 경고 (200틱에 한 번). */
+	private final BossCombat.PlayerCooldown rustWarning = new BossCombat.PlayerCooldown(WARNING_COOLDOWN);
 	private final BossParty party = new BossParty();
 
 	public RustyGuardian(EntityType<? extends RustyGuardian> type, Level level) {
@@ -249,7 +241,7 @@ public class RustyGuardian extends Monster implements PartyBoss {
 		if (patternTick < CHARGE_END) {
 			setDeltaMovement(chargeDirection.x * 0.9, getDeltaMovement().y, chargeDirection.z * 0.9);
 			faceChargeDirection();
-			for (Player player : level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(0.6), EntitySelector.NO_CREATIVE_OR_SPECTATOR)) {
+			for (Player player : BossCombat.targets(level, getBoundingBox().inflate(0.6))) {
 				if (hitThisCharge.add(player.getUUID())) {
 					hitWithRust(level, player, CHARGE_DAMAGE, true);
 					player.push(chargeDirection.x * 1.2, 0.4, chargeDirection.z * 1.2);
@@ -303,9 +295,9 @@ public class RustyGuardian extends Monster implements PartyBoss {
 		level.sendParticles(ParticleTypes.EXPLOSION, getX(), getY() + 0.2, getZ(), 6, SLAM_RADIUS / 2, 0.1, SLAM_RADIUS / 2, 0.0);
 		int hits = 0;
 		double reach = slamReach();
-		List<Player> players = level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(reach, 2.0, reach), EntitySelector.NO_CREATIVE_OR_SPECTATOR);
+		List<Player> players = BossCombat.targets(level, getBoundingBox().inflate(reach, 2.0, reach));
 		for (Player player : players) {
-			if (horizontalDistance(player.position(), position()) > reach) {
+			if (BossCombat.horizontalDistance(player.position(), position()) > reach) {
 				continue;
 			}
 			hitWithRust(level, player, SLAM_DAMAGE, true);
@@ -366,52 +358,22 @@ public class RustyGuardian extends Monster implements PartyBoss {
 	 */
 	public boolean hitWithRust(ServerLevel level, LivingEntity target, float damage, boolean pattern) {
 		if (pattern) {
-			breakShield(level, target);
+			BossCombat.breakShield(level, target);
 			damage *= (float) party.outgoingDamageScale(); // 강화 단계 (근접은 공격력 속성에 이미 들어 있다)
 		}
 		boolean rustproof = SteelGear.wearsFullSet(target);
 		boolean hurt = target.hurtServer(level, damageSources().mobAttack(this), rustproof ? damage : damage * RUST_MULTIPLIER);
 		if (hurt && !rustproof) {
 			target.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 60, 1), this);
-			warnRust(level, target);
+			BossCombat.warn(level, target, rustWarning, "entity.sanupcraft.rusty_guardian.rust_warning"); // 세트 없이 맞은 플레이어에게 안내
 		}
 		return hurt;
-	}
-
-	/** 막는 중인 방패를 깨고 쿨다운을 건다. */
-	private static void breakShield(ServerLevel level, LivingEntity target) {
-		ItemStack shield = target.getItemBlockingWith();
-		if (shield == null) {
-			return;
-		}
-		BlocksAttacks blocksAttacks = shield.get(DataComponents.BLOCKS_ATTACKS);
-		if (blocksAttacks != null) {
-			blocksAttacks.disable(level, target, SHIELD_BREAK_SECONDS, shield);
-		}
-	}
-
-	/** 세트 없이 녹 공격을 맞은 플레이어에게 안내한다 (플레이어마다 200틱에 한 번). */
-	private void warnRust(ServerLevel level, LivingEntity target) {
-		if (!(target instanceof ServerPlayer player)) {
-			return;
-		}
-		long now = level.getGameTime();
-		warnedAt.values().removeIf(last -> now - last >= WARNING_COOLDOWN);
-		if (warnedAt.putIfAbsent(player.getUUID(), now) == null) {
-			player.sendOverlayMessage(Component.translatable("entity.sanupcraft.rusty_guardian.rust_warning"));
-		}
-	}
-
-	private static double horizontalDistance(Vec3 a, Vec3 b) {
-		double dx = a.x - b.x;
-		double dz = a.z - b.z;
-		return Math.sqrt(dx * dx + dz * dz);
 	}
 
 	/** 근접으로 한 번 막히면 방패가 5초 꺼진다 (바닐라 워든과 같다). */
 	@Override
 	public float getSecondsToDisableBlocking() {
-		return SHIELD_BREAK_SECONDS;
+		return BossCombat.SHIELD_BREAK_SECONDS;
 	}
 
 	/** 거미줄 같은 블록에 느려지지 않는다 (돌진이 막히지 않게). */

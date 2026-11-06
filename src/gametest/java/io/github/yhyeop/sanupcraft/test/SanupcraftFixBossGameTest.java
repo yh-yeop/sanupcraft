@@ -1,5 +1,7 @@
 package io.github.yhyeop.sanupcraft.test;
 
+import java.util.UUID;
+
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 
 import net.minecraft.core.BlockPos;
@@ -19,6 +21,7 @@ import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.phys.Vec3;
 
+import io.github.yhyeop.sanupcraft.boss.BossCombat;
 import io.github.yhyeop.sanupcraft.boss.FurnaceWarden;
 import io.github.yhyeop.sanupcraft.boss.GuardianAltarBlock;
 import io.github.yhyeop.sanupcraft.boss.ModBoss;
@@ -286,5 +289,21 @@ public class SanupcraftFixBossGameTest {
 		warden.setYRot(0.0F);
 		warden.setYHeadRot(0.0F);
 		warden.setYBodyRot(0.0F);
+	}
+
+	// ---- 3차 2단계 (REFACTOR.md 7-8, 7-10) ----
+
+	/** 안내 쿨다운은 플레이어마다 따로: 같은 사람은 200틱 안에 한 번, 다른 사람은 바로, 200틱이 지나면 다시. */
+	@GameTest
+	public void bossWarningCooldownPerPlayer(GameTestHelper helper) {
+		BossCombat.PlayerCooldown cooldown = new BossCombat.PlayerCooldown(200);
+		UUID a = UUID.randomUUID();
+		UUID b = UUID.randomUUID();
+		helper.assertTrue(cooldown.tryUse(a, 1000L), "처음인데 막힘");
+		helper.assertFalse(cooldown.tryUse(a, 1000L), "같은 시각 두 번째가 통과");
+		helper.assertTrue(cooldown.tryUse(b, 1000L), "다른 사람이 막힘");
+		helper.assertFalse(cooldown.tryUse(a, 1199L), "199틱 뒤에 통과");
+		helper.assertTrue(cooldown.tryUse(a, 1200L), "200틱 뒤에 막힘");
+		helper.succeed();
 	}
 }
