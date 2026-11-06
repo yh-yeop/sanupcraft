@@ -25,7 +25,8 @@
 		],
 		"fabric-client-gametest": [
 			"io.github.yhyeop.sanupcraft.test.SanupcraftClientGameTest",
-			"io.github.yhyeop.sanupcraft.test.SanupcraftPromoShots"
+			"io.github.yhyeop.sanupcraft.test.SanupcraftPromoShots",
+			"io.github.yhyeop.sanupcraft.test.SanupcraftM8aClientGameTest"
 		]
 	},
 	"depends": {
