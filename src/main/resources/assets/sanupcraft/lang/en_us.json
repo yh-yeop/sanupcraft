@@ -711,5 +711,22 @@
   "subtitles.sanupcraft.boss.colossus.pull": "Void Colossus gathers the void",
   "subtitles.sanupcraft.boss.colossus.crystals": "Void Colossus summons crystals",
   "subtitles.sanupcraft.boss.colossus.rage": "Void Colossus rages",
-  "subtitles.sanupcraft.boss.colossus.death": "Void Colossus crumbles"
+  "subtitles.sanupcraft.boss.colossus.death": "Void Colossus crumbles",
+  "block.sanupcraft.blast_charge": "Blasting Charge",
+  "block.sanupcraft.blast_charge.tooltip": "Given a redstone signal or the remote detonator, it mines a 5x5x5 cube after a short fuse and drops the result as items",
+  "block.sanupcraft.blast_charge.tooltip2": "Machines, chests and unbreakable blocks are left alone. Nearby creatures take 4 damage. Facing does not matter",
+  "item.sanupcraft.remote_detonator": "Remote Detonator",
+  "item.sanupcraft.remote_detonator.tooltip": "Sneak + right-click a blasting charge: link it (again to unlink, up to 8)",
+  "item.sanupcraft.remote_detonator.tooltip2": "Right-click the air: light every linked charge within 64 blocks",
+  "item.sanupcraft.remote_detonator.links": "Linked charges %s/%s",
+  "item.sanupcraft.remote_detonator.linked": "Linked charge (%s, %s, %s) (%s/%s)",
+  "item.sanupcraft.remote_detonator.unlinked": "Unlinked charge (%s, %s, %s)",
+  "item.sanupcraft.remote_detonator.full": "Cannot link more (max %s)",
+  "item.sanupcraft.remote_detonator.none": "No charge to light (none linked, other dimension, or beyond %s blocks)",
+  "item.sanupcraft.remote_detonator.fired": "Lit %s charge(s)",
+  "block.sanupcraft.toxic_gas": "Toxic Gas",
+  "block.sanupcraft.loose_rock": "Loose Rock",
+  "block.sanupcraft.loose_rock.tooltip": "Cracked stone in deep cave ceilings: falls when unsupported. Drops cobbled deepslate",
+  "advancements.sanupcraft.blast.title": "Fire in the Hole",
+  "advancements.sanupcraft.blast.description": "Set off a blasting charge with redstone or the remote detonator to mine a 5x5x5 cube at once."
 }

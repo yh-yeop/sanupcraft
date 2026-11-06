@@ -49,6 +49,8 @@
     "sanupcraft:void_condenser",
     "sanupcraft:chorus_harvester",
     "sanupcraft:dimensional_vault",
-    "sanupcraft:breath_collector"
+    "sanupcraft:breath_collector",
+    "sanupcraft:blast_charge",
+    "sanupcraft:loose_rock"
   ]
 }

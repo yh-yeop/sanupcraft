@@ -3175,6 +3175,96 @@ def main_fin(made):
     made.append(save(void_shield_texture(), "entity/void_colossus_shield.png"))
 
 
+# ---------- 확장 3: 발파 (D3) · 위험 요소 (D5) ----------
+def blast_charge_texture(lit):
+    """발파 장약: 붉은 통에 강철 띠 둘. 불이 붙으면 윗줄에 불똥."""
+    im = Image.new("RGBA", (16, 16))
+    rnd = random.Random(7301)
+    for y in range(16):
+        for x in range(16):
+            base = (150, 40, 36) if (x + y) % 5 else (132, 34, 32)
+            n = rnd.randint(-8, 8)
+            im.putpixel((x, y), (base[0] + n, base[1] + n // 2, base[2] + n // 2, 255))
+    for y in (3, 4, 11, 12):
+        for x in range(16):
+            tone = (92, 100, 112) if y in (3, 11) else (60, 66, 76)
+            im.putpixel((x, y), tone + (255,))
+    for x in (1, 14):
+        for y in (3, 11):
+            im.putpixel((x, y), (200, 208, 218, 255))
+    for x in range(16):
+        im.putpixel((x, 0), (70, 18, 18, 255))
+        im.putpixel((x, 15), (70, 18, 18, 255))
+    # 가운데 노란 TNT 표시
+    for x in range(5, 11):
+        for y in range(6, 10):
+            im.putpixel((x, y), (232, 196, 70, 255) if (x + y) % 2 == 0 else (212, 170, 50, 255))
+    if lit:
+        for x, y in ((7, 1), (8, 1), (7, 2), (8, 2), (6, 14), (9, 14), (8, 13)):
+            im.putpixel((x, y), (255, 214, 90, 255))
+        im.putpixel((7, 1), (255, 255, 200, 255))
+        for x in range(5, 11):
+            for y in range(6, 10):
+                im.putpixel((x, y), (255, 232, 120, 255) if (x + y) % 2 == 0 else (255, 205, 80, 255))
+    return im
+
+
+REMOTE_DETONATOR_ART = [
+    "................",
+    "..........s.....",
+    "..........t.....",
+    "..........a.....",
+    "..........a.....",
+    "...aaaaaaaaaa...",
+    "..abbbbbbbbbba..",
+    "..abccccccccba..",
+    "..abcRRccdddba..",
+    "..abcRQccdeeba..",
+    "..abccccccccba..",
+    "..abbbbbbbbbba..",
+    "...aaaaaaaaaa...",
+    "................",
+    "................",
+    "................",
+]
+REMOTE_DETONATOR_LEGEND = {"a": "#2a2f36", "b": "#5a636f", "c": "#8d97a3", "d": "#4b535d", "e": "#e0b84a", "R": "#a3262a", "Q": "#e04848", "s": "#ffc27a", "t": "#de8442"}
+
+
+def loose_rock_texture():
+    """무른 바위: 어두운 심층암 바탕에 밝은 금."""
+    im = Image.new("RGBA", (16, 16))
+    rnd = random.Random(7302)
+    for y in range(16):
+        for x in range(16):
+            v = 62 + rnd.randint(-9, 9) + (6 if (x // 4 + y // 4) % 2 else 0)
+            im.putpixel((x, y), (v, v, v + 6, 255))
+    crack = [(2, 0), (3, 1), (3, 2), (4, 3), (5, 4), (5, 5), (6, 6), (7, 7), (8, 7), (9, 8), (9, 9), (10, 10), (11, 11), (11, 12), (12, 13), (13, 14), (13, 15),
+             (7, 8), (6, 9), (6, 10), (5, 11), (4, 12), (9, 5), (10, 4), (11, 3), (12, 2)]
+    for x, y in crack:
+        im.putpixel((x, y), (150, 150, 160, 255))
+        if x + 1 < 16:
+            r, g, b, _ = im.getpixel((x + 1, y))
+            im.putpixel((x + 1, y), (max(r - 22, 0), max(g - 22, 0), max(b - 22, 0), 255))
+    return im
+
+
+def toxic_gas_texture():
+    """유독 가스: 투명한 바탕에 옅은 초록 점 (깨질 때 입자 색)."""
+    im = Image.new("RGBA", (16, 16), (0, 0, 0, 0))
+    rnd = random.Random(7303)
+    for _ in range(40):
+        im.putpixel((rnd.randrange(16), rnd.randrange(16)), (140, 198, 63, rnd.randint(90, 180)))
+    return im
+
+
+def main_blast(made):
+    made.append(save(blast_charge_texture(False), "block/blast_charge.png"))
+    made.append(save(blast_charge_texture(True), "block/blast_charge_lit.png"))
+    made.append(save(art_hex(REMOTE_DETONATOR_ART, REMOTE_DETONATOR_LEGEND), "item/remote_detonator.png"))
+    made.append(save(loose_rock_texture(), "block/loose_rock.png"))
+    made.append(save(toxic_gas_texture(), "block/toxic_gas.png"))
+
+
 def save(im, rel, scale=1):
     path = os.path.join(OUT, *rel.split("/"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -3220,6 +3310,7 @@ def main():
     main_m6(made)
     main_m8c(made)
     main_fin(made)
+    main_blast(made)
 
     if "--sheet" in sys.argv:
         tiles = [Image.open(p) for p in made]
