@@ -39,7 +39,7 @@ import io.github.yhyeop.sanupcraft.config.SanupcraftConfig;
  *   <li>체력: 소환할 때 제단 48칸 안의 플레이어 수 n으로 최대 체력 × min(3, 1 + 0.5(n − 1)). 혼자 300이면 3명 600, 5명 이상 900.</li>
  *   <li>패턴 규모: {@link #size()}로 화염 장판 수 · 졸개 수를 늘린다 (보스 쪽에서 쓴다).</li>
  *   <li>보상: 최대 체력의 5% 이상을 깎은 플레이어 각자에게 진행 필수품(핵 · 심장) 하나씩 인벤토리로 준다.
- *       기여자가 없으면 (명령어 · 환경 피해로 죽음) 보스 자리에 하나만 떨군다. 나머지 전리품(판 · 부품 · 조각)은 전리품 표 그대로.</li>
+ *       기여자가 없으면 (명령어 · 환경 피해로 죽음) 보스 자리에 필수품 {@code 1 + 단계}개만 떨군다. 나머지 전리품(판 · 부품 · 조각)은 전리품 표 그대로.</li>
  *   <li>강화 (C3, {@link BossTier}): 강화 소환석으로 불렀으면 {@link #setTier}로 단계 1 ~ 3을 건다. 최대 체력은 인원 배율 위에
  *       × (1 + 0.5 · 단계), 공격력 속성 × (1 + 0.25 · 단계) (패턴 피해는 {@link #outgoingDamageScale()}로 보스가 직접 곱한다).
  *       보상은 핵 · 심장 {@code 1 + 단계}개 + 기계 업그레이드 하나, 보스 기록에도 단계가 남는다.</li>
@@ -221,7 +221,7 @@ public final class BossParty {
 
 	/**
 	 * 진행 필수품을 기여자 각자에게 준다 ({@code 1 + 단계}개, 강화했으면 기계 업그레이드 하나 더).
-	 * 줄 사람이 없으면 보스 자리에 필수품만 떨군다. 받은 사람 수를 돌려준다.
+	 * 줄 사람이 없으면 보스 자리에 필수품({@code 1 + 단계}개)만 떨군다. 받은 사람 수를 돌려준다.
 	 */
 	public int giveKeyItem(ServerLevel level, Monster boss, Item key) {
 		List<ServerPlayer> players = contributors(level, boss.getMaxHealth());

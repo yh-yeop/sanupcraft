@@ -22,6 +22,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -152,7 +153,7 @@ public class FurnaceWarden extends Monster implements PartyBoss {
 		return party;
 	}
 
-	/** 화염 장판 상한 (인원수, 3 ~ 6). 장판은 20칸 안 플레이어 발밑마다 하나. */
+	/** 화염 장판 상한 (인원수, 3 ~ 6). 장판은 가로 · 세로 ±20칸 상자 안 플레이어 발밑마다 하나. */
 	public int maxRings() {
 		return Mth.clamp(party.size(), MIN_RINGS, MAX_RINGS);
 	}
@@ -304,7 +305,7 @@ public class FurnaceWarden extends Monster implements PartyBoss {
 		}
 		playSound(SoundEvents.FIRE_EXTINGUISH, 2.0F, 0.5F);
 		int hits = 0;
-		for (Player player : level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(BLAST_RANGE, 2.0, BLAST_RANGE))) {
+		for (Player player : level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(BLAST_RANGE, 2.0, BLAST_RANGE), EntitySelector.NO_CREATIVE_OR_SPECTATOR)) {
 			Vec3 to = player.position().subtract(position());
 			Vec3 flat = new Vec3(to.x, 0.0, to.z);
 			if (flat.length() > BLAST_RANGE + getBbWidth() / 2 || flat.lengthSqr() < 1.0E-4) {
@@ -348,7 +349,7 @@ public class FurnaceWarden extends Monster implements PartyBoss {
 		for (Vec3 center : rings) {
 			level.sendParticles(ParticleTypes.LAVA, center.x, center.y + 0.2, center.z, 12, RING_RADIUS / 2, 0.1, RING_RADIUS / 2, 0.0);
 			level.sendParticles(ParticleTypes.FLAME, center.x, center.y + 0.3, center.z, 30, RING_RADIUS / 2, 0.3, RING_RADIUS / 2, 0.05);
-			for (Player player : level.getEntitiesOfClass(Player.class, new AABB(center, center).inflate(RING_RADIUS, 2.0, RING_RADIUS))) {
+			for (Player player : level.getEntitiesOfClass(Player.class, new AABB(center, center).inflate(RING_RADIUS, 2.0, RING_RADIUS), EntitySelector.NO_CREATIVE_OR_SPECTATOR)) {
 				if (!hit.contains(player) && horizontalDistance(player.position(), center) <= RING_RADIUS) {
 					hitWithHeat(level, player, RING_DAMAGE, true);
 					player.push(0.0, 0.5, 0.0);
@@ -429,7 +430,7 @@ public class FurnaceWarden extends Monster implements PartyBoss {
 		level.sendParticles(ParticleTypes.EXPLOSION, getX(), getY() + 0.2, getZ(), 6, LEAP_RADIUS / 2, 0.1, LEAP_RADIUS / 2, 0.0);
 		level.sendParticles(ParticleTypes.FLAME, getX(), getY() + 0.2, getZ(), 40, LEAP_RADIUS / 2, 0.2, LEAP_RADIUS / 2, 0.05);
 		int hits = 0;
-		for (Player player : level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(LEAP_RADIUS, 2.0, LEAP_RADIUS))) {
+		for (Player player : level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(LEAP_RADIUS, 2.0, LEAP_RADIUS), EntitySelector.NO_CREATIVE_OR_SPECTATOR)) {
 			if (horizontalDistance(player.position(), position()) > LEAP_RADIUS + getBbWidth() / 2) {
 				continue;
 			}
