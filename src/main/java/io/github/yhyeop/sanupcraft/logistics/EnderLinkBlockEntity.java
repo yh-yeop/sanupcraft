@@ -39,7 +39,7 @@ import net.minecraft.world.level.storage.ValueOutput;
  *   <li>송신기: 깔때기 · 벨트가 넣는 아이템을 같은 채널의 수신기로 보낸다. 받을 수신기가 없으면 받지 않는다.</li>
  *   <li>수신기: 9칸 상자. 우클릭으로 열고, 깔때기로 뽑아 갈 수 있다.</li>
  * </ul>
- * 잠금: 놓은 사람(주인)이 웅크리고 빈손 우클릭으로 잠그면 주인 · OP만 수신기를 열고 채널을 바꾼다 (기본 열림).
+ * 잠금: 놓은 사람(주인)이 웅크리고 빈손 우클릭으로 잠그면 주인 · 같은 팀 · OP만 수신기를 열고 채널을 바꾼다 (기본 열림).
  * 깔때기 · 송신기를 통한 자동 운반은 잠금과 상관없이 그대로 돈다.
  */
 public class EnderLinkBlockEntity extends BaseContainerBlockEntity {

@@ -42,7 +42,7 @@ import io.github.yhyeop.sanupcraft.power.ModPower;
 /**
  * 증기 기관차. 화로 광산 수레처럼 스스로 밀고 가지만 더 빠르고, 연결 고리로 이은 칸들을 끈다.
  * 연료 칸 하나 (석탄 · 숯 3600틱, 석탄 가루 1800틱, 한 묶음까지)를 먼저 태우고, 없으면 증기 통에서 받은 증기를 틱당 {@link #STEAM_PER_TICK} 쓴다.
- * 우클릭: 연료 · 증기 통이면 넣고 출발, 빈손이면 출발 / 멈춤 + 상태. 출발 방향은 화물칸 반대쪽 (칸이 없으면 누른 사람 반대쪽).
+ * 우클릭: 연료 · 증기 통이면 넣고 출발, 그 밖(빈손 · 다른 아이템)이면 출발 / 멈춤 + 상태. 출발 방향은 화물칸 반대쪽 (칸이 없으면 누른 사람 반대쪽).
  * 꺼진 동력 레일(정거장) 위에서는 연료를 아끼며 기다렸다가, 레일에 신호가 들어오면 다시 간다.
  * 연결된 칸 목록(UUID)은 기관차가 들고, 틱마다 앞 칸과의 간격을 용수철처럼 맞춘다 ({@link TrainCoupling}).
  */
@@ -67,6 +67,8 @@ public class SteamLocomotive extends AbstractMinecart {
 	private Vec3 push = Vec3.ZERO;
 	private final List<UUID> cars = new ArrayList<>();
 	private int missingTicks;
+	/** 지금 기다리는 빈 칸의 순번 (칸이 바뀌면 유예를 처음부터 센다). */
+	private int missingIndex = -1;
 
 	public SteamLocomotive(EntityType<? extends SteamLocomotive> type, Level level) {
 		super(type, level);
@@ -170,6 +172,10 @@ public class SteamLocomotive extends AbstractMinecart {
 			Entity found = level.getEntity(cars.get(i));
 			if (found == null) {
 				// 막 불러온 청크라 아직 없을 수도 있다: 잠깐 기다렸다가 떼어 낸다
+				if (i != missingIndex) {
+					missingIndex = i;
+					missingTicks = 0;
+				}
 				if (++missingTicks > MISSING_GRACE_TICKS) {
 					detachFrom(i);
 				}
@@ -183,6 +189,7 @@ public class SteamLocomotive extends AbstractMinecart {
 			front = car;
 		}
 		missingTicks = 0;
+		missingIndex = -1;
 	}
 
 	/** {@code index}번째 칸부터 뒤를 모두 떼어 낸다. 떼어 낸 칸 수를 돌려준다. */
@@ -193,6 +200,7 @@ public class SteamLocomotive extends AbstractMinecart {
 			removed++;
 		}
 		missingTicks = 0;
+		missingIndex = -1;
 		return removed;
 	}
 

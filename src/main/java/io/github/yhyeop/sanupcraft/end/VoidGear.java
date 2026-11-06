@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 
 import net.minecraft.core.BlockPos;
@@ -84,6 +85,11 @@ public final class VoidGear {
 				}
 				rescue(player, player.level().getGameTime());
 			}
+		});
+		// 한 JVM에서 월드를 바꾸면 다른 월드의 게임 시각 · 자리가 남는다 (로그아웃 때는 지우지 않는다: 쿨다운 우회 방지)
+		ServerLifecycleEvents.SERVER_STARTING.register(server -> {
+			LAST_SAFE.clear();
+			LAST_RESCUE.clear();
 		});
 	}
 

@@ -19,7 +19,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
-import net.minecraft.world.Containers;
 import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -208,7 +207,7 @@ public class EnderAnchorBlockEntity extends BlockEntity implements WorldlyContai
 		return ownChunks.size();
 	}
 
-	/** 블록이 부서질 때 (청크가 내려갈 때가 아니라): 청크를 놓고 연료를 떨군다. */
+	/** 블록이 부서질 때 (청크가 내려갈 때가 아니라): 청크를 놓는다. 연료는 `super`(바닐라)가 떨군다. */
 	@Override
 	public void preRemoveSideEffects(BlockPos pos, BlockState state) {
 		super.preRemoveSideEffects(pos, state);
@@ -216,7 +215,6 @@ public class EnderAnchorBlockEntity extends BlockEntity implements WorldlyContai
 			if (forced) {
 				setForced(serverLevel, pos, false);
 			}
-			Containers.dropContents(serverLevel, pos, this);
 		}
 	}
 

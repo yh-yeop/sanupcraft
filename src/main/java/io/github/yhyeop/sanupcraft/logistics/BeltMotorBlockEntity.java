@@ -120,7 +120,7 @@ public class BeltMotorBlockEntity extends BlockEntity implements SteamConsumer, 
 		return level != null ? level.getGameTime() : 0L;
 	}
 
-	/** 마지막 펄스 때 이어진 벨트 칸 수 (테스트 · 디버그용). 줄이 비어 안 돌렸어도 칸 수는 센다. */
+	/** 마지막 펄스 때 이어진 벨트 칸 수 (테스트 · 디버그용). 줄이 비어 안 돌렸어도 칸 수는 센다. 증기가 모자라면 0. */
 	public int poweredBelts() {
 		return belts;
 	}
