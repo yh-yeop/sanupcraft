@@ -49,7 +49,7 @@ public class RustyGuardianRenderer extends MobRenderer<RustyGuardian, RustyGuard
 	@Override
 	public void extractRenderState(RustyGuardian entity, RustyGuardianRenderState state, float partialTicks) {
 		super.extractRenderState(entity, state, partialTicks);
-		state.attackTicksRemaining = entity.getAttackAnimationTick() > 0 ? entity.getAttackAnimationTick() - partialTicks : 0.0F;
+		state.attackTicksRemaining = entity.getAttackTick() > 0 ? entity.getAttackTick() - partialTicks : 0.0F;
 		state.enraged = entity.isEnraged();
 	}
 

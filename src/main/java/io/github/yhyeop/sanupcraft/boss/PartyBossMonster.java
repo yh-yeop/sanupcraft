@@ -1,5 +1,7 @@
 package io.github.yhyeop.sanupcraft.boss;
 
+import java.util.EnumSet;
+
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.network.chat.Component;
@@ -10,6 +12,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.BossEvent;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
@@ -23,10 +26,17 @@ import net.minecraft.world.level.storage.ValueOutput;
  * 저장 키는 {@link BossParty#save}의 {@code party_*} 그대로 (부모로 옮겨도 이름이 같다).
  */
 public abstract class PartyBossMonster extends Monster implements PartyBoss {
+	/** 공격 동작 이벤트 id (클라이언트 휘두르기 · 내려치기 애니메이션). */
+	public static final byte EVENT_ATTACK = 4;
+	/** 공격 동작 길이 (틱). 렌더러가 남은 틱으로 자세를 잡는다. */
+	public static final int ATTACK_ANIMATION_TICKS = 10;
+
 	private final ServerBossEvent bossEvent;
 	private final BossParty party = new BossParty();
 	/** 화남(체력 절반 아래)을 알렸는가 (M11 X2). 불러올 때 체력으로 다시 정한다. */
 	private boolean phaseAnnounced;
+	/** 공격 동작 남은 틱 (서버 · 클라이언트 둘 다, 저장하지 않음). */
+	private int attackTick;
 
 	/** 보스 바는 {@code Monster} 생성자 뒤에 만든다 (지금 이름 · 무작위 UUID가 필요하다). 자식 필드는 아직 없으니 여기서 읽지 않는다. */
 	protected PartyBossMonster(EntityType<? extends PartyBossMonster> type, Level level, BossEvent.BossBarColor color, int xpReward) {
@@ -41,6 +51,9 @@ public abstract class PartyBossMonster extends Monster implements PartyBoss {
 
 	/** 체력이 처음 절반 아래로 내려갈 때 한 번: 화남 소리 · 입자 (M11 X2). */
 	protected abstract void announcePhase(ServerLevel level);
+
+	/** 패턴을 쓰는 중인가 ({@link PatternGoal}이 걷기 · 근접 공격을 멈춘다). */
+	protected abstract boolean inPattern();
 
 	@Override
 	public final BossParty party() {
@@ -102,6 +115,34 @@ public abstract class PartyBossMonster extends Monster implements PartyBoss {
 		phaseAnnounced = isEnraged();
 	}
 
+	/** 공격 동작을 시작하고 클라이언트에 알린다. */
+	protected void playAttackAnimation(ServerLevel level) {
+		attackTick = ATTACK_ANIMATION_TICKS;
+		level.broadcastEntityEvent(this, EVENT_ATTACK);
+	}
+
+	/** 공격 동작 남은 틱 (렌더러용). */
+	public int getAttackTick() {
+		return attackTick;
+	}
+
+	@Override
+	public void handleEntityEvent(byte id) {
+		if (id == EVENT_ATTACK) {
+			attackTick = ATTACK_ANIMATION_TICKS;
+		} else {
+			super.handleEntityEvent(id);
+		}
+	}
+
+	@Override
+	public void aiStep() {
+		super.aiStep();
+		if (attackTick > 0) {
+			attackTick--;
+		}
+	}
+
 	/** 이름표로 이름을 바꾸면 보스 바 제목도 바꾼다 (저장된 이름을 불러올 때도 이 경로를 지난다). */
 	@Override
 	public void setCustomName(@Nullable Component name) {
@@ -129,5 +170,22 @@ public abstract class PartyBossMonster extends Monster implements PartyBoss {
 	public void stopSeenByPlayer(ServerPlayer player) {
 		super.stopSeenByPlayer(player);
 		bossEvent.removePlayer(player);
+	}
+
+	/** 패턴 중에는 걷기 · 근접 공격을 멈춘다. 보스마다 {@code registerGoals}에서 우선순위 1로 넣는다. */
+	protected final class PatternGoal extends Goal {
+		public PatternGoal() {
+			setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
+		}
+
+		@Override
+		public boolean canUse() {
+			return inPattern();
+		}
+
+		@Override
+		public boolean requiresUpdateEveryTick() {
+			return true;
+		}
 	}
 }

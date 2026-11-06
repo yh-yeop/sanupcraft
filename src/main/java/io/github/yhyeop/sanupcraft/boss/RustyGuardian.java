@@ -1,6 +1,5 @@
 package io.github.yhyeop.sanupcraft.boss;
 
-import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -24,7 +23,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
-import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
@@ -63,8 +61,6 @@ public class RustyGuardian extends PartyBossMonster {
 	public static final double SLAM_RADIUS = 5.0;
 	public static final int MINIONS_PER_SUMMON = 3;
 	private static final int MAX_MINIONS_NEARBY = 8;
-	/** 공격 동작 이벤트 id (클라이언트 휘두르기 애니메이션). 파수꾼과 같은 이름. */
-	public static final byte EVENT_ATTACK = 4;
 
 	private static final int CHARGE_LOCK = 12;
 	private static final int CHARGE_WINDUP = 20;
@@ -89,7 +85,6 @@ public class RustyGuardian extends PartyBossMonster {
 	private int cycleIndex;
 	private Vec3 chargeDirection = Vec3.ZERO;
 	private final Set<UUID> hitThisCharge = new HashSet<>();
-	private int attackAnimationTick;
 	/** 플레이어별 녹 경고 (200틱에 한 번). */
 	private final BossCombat.PlayerCooldown rustWarning = new BossCombat.PlayerCooldown(WARNING_COOLDOWN);
 
@@ -132,6 +127,11 @@ public class RustyGuardian extends PartyBossMonster {
 	/** 한 번에 부르는 졸개 수. 3명마다 하나씩 는다 (혼자 3, 10명 6). */
 	public int minionsPerSummon() {
 		return MINIONS_PER_SUMMON + (party().size() - 1) / 3;
+	}
+
+	@Override
+	protected boolean inPattern() {
+		return pattern != Pattern.NONE;
 	}
 
 	public Pattern pattern() {
@@ -248,7 +248,7 @@ public class RustyGuardian extends PartyBossMonster {
 				}
 			}
 			if (patternTick == SLAM_WINDUP - 10) {
-				swingArms(level);
+				playAttackAnimation(level);
 			}
 			return;
 		}
@@ -365,7 +365,7 @@ public class RustyGuardian extends PartyBossMonster {
 
 	@Override
 	public boolean doHurtTarget(ServerLevel level, Entity target) {
-		swingArms(level);
+		playAttackAnimation(level);
 		float damage = (float) getAttributeValue(Attributes.ATTACK_DAMAGE);
 		boolean hurt = target instanceof LivingEntity living
 				? hitWithRust(level, living, damage)
@@ -375,11 +375,6 @@ public class RustyGuardian extends PartyBossMonster {
 		}
 		playSound(SoundEvents.IRON_GOLEM_ATTACK, 1.0F, 0.7F);
 		return hurt;
-	}
-
-	private void swingArms(ServerLevel level) {
-		attackAnimationTick = 10;
-		level.broadcastEntityEvent(this, EVENT_ATTACK);
 	}
 
 	@Override
@@ -403,41 +398,4 @@ public class RustyGuardian extends PartyBossMonster {
 		return ModSounds.GUARDIAN_DEATH; // M11 X2
 	}
 
-	@Override
-	public void handleEntityEvent(byte id) {
-		if (id == EVENT_ATTACK) {
-			attackAnimationTick = 10;
-		} else {
-			super.handleEntityEvent(id);
-		}
-	}
-
-	@Override
-	public void aiStep() {
-		super.aiStep();
-		if (attackAnimationTick > 0) {
-			attackAnimationTick--;
-		}
-	}
-
-	public int getAttackAnimationTick() {
-		return attackAnimationTick;
-	}
-
-	/** 패턴 중에는 걷기 · 근접 공격을 멈춘다. */
-	private class PatternGoal extends Goal {
-		PatternGoal() {
-			setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
-		}
-
-		@Override
-		public boolean canUse() {
-			return pattern != Pattern.NONE;
-		}
-
-		@Override
-		public boolean requiresUpdateEveryTick() {
-			return true;
-		}
-	}
 }

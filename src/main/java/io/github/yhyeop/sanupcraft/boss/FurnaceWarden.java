@@ -1,7 +1,6 @@
 package io.github.yhyeop.sanupcraft.boss;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 
 import net.minecraft.core.particles.ParticleTypes;
@@ -20,7 +19,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
-import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
@@ -62,7 +60,6 @@ public class FurnaceWarden extends PartyBossMonster {
 	public static final double RING_RADIUS = 2.5;
 	public static final float LEAP_DAMAGE = 11.0F;
 	public static final double LEAP_RADIUS = 4.0;
-	public static final byte EVENT_ATTACK = 4;
 	public static final byte EVENT_ROAR = 61;
 
 	private static final int BLAST_LOCK = 10;
@@ -91,7 +88,6 @@ public class FurnaceWarden extends PartyBossMonster {
 	private int cycleIndex;
 	private final List<Vec3> rings = new ArrayList<>();
 	private boolean airborne;
-	private int attackTick;
 	private int roarTick;
 	private boolean blastLocked;
 	private float blastYaw;
@@ -139,6 +135,11 @@ public class FurnaceWarden extends PartyBossMonster {
 	/** 화염 장판 상한 (인원수, 3 ~ 6). 장판은 가로 · 세로 ±20칸 상자 안 플레이어 발밑마다 하나. */
 	public int maxRings() {
 		return Mth.clamp(party().size(), MIN_RINGS, MAX_RINGS);
+	}
+
+	@Override
+	protected boolean inPattern() {
+		return pattern != Pattern.NONE;
 	}
 
 	public Pattern pattern() {
@@ -393,7 +394,7 @@ public class FurnaceWarden extends PartyBossMonster {
 
 	/** 착지 판정: 반경 안 플레이어에게 피해 + 띄우기. 맞은 수를 돌려준다. */
 	public int leapSlam(ServerLevel level) {
-		swingHead(level);
+		playAttackAnimation(level);
 		playSound(SoundEvents.ANVIL_LAND, 2.0F, 0.4F);
 		level.sendParticles(ParticleTypes.EXPLOSION, getX(), getY() + 0.2, getZ(), 6, LEAP_RADIUS / 2, 0.1, LEAP_RADIUS / 2, 0.0);
 		level.sendParticles(ParticleTypes.FLAME, getX(), getY() + 0.2, getZ(), 40, LEAP_RADIUS / 2, 0.2, LEAP_RADIUS / 2, 0.05);
@@ -452,18 +453,13 @@ public class FurnaceWarden extends PartyBossMonster {
 
 	@Override
 	public boolean doHurtTarget(ServerLevel level, Entity target) {
-		swingHead(level);
+		playAttackAnimation(level);
 		float damage = (float) getAttributeValue(Attributes.ATTACK_DAMAGE);
 		boolean hurt = target instanceof LivingEntity living
 				? hitWithHeat(level, living, damage)
 				: target.hurtServer(level, damageSources().mobAttack(this), damage);
 		playSound(SoundEvents.RAVAGER_ATTACK, 1.0F, 0.7F);
 		return hurt;
-	}
-
-	private void swingHead(ServerLevel level) {
-		attackTick = 10;
-		level.broadcastEntityEvent(this, EVENT_ATTACK);
 	}
 
 	private Vec3 mouth() {
@@ -494,9 +490,7 @@ public class FurnaceWarden extends PartyBossMonster {
 
 	@Override
 	public void handleEntityEvent(byte id) {
-		if (id == EVENT_ATTACK) {
-			attackTick = 10;
-		} else if (id == EVENT_ROAR) {
+		if (id == EVENT_ROAR) {
 			roarTick = BLAST_WINDUP;
 		} else {
 			super.handleEntityEvent(id);
@@ -506,9 +500,6 @@ public class FurnaceWarden extends PartyBossMonster {
 	@Override
 	public void aiStep() {
 		super.aiStep();
-		if (attackTick > 0) {
-			attackTick--;
-		}
 		if (roarTick > 0) {
 			roarTick--;
 		}
@@ -518,28 +509,8 @@ public class FurnaceWarden extends PartyBossMonster {
 		}
 	}
 
-	public int getAttackTick() {
-		return attackTick;
-	}
-
 	public int getRoarTick() {
 		return roarTick;
 	}
 
-	/** 패턴 중에는 걷기 · 근접 공격을 멈춘다. */
-	private class PatternGoal extends Goal {
-		PatternGoal() {
-			setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
-		}
-
-		@Override
-		public boolean canUse() {
-			return pattern != Pattern.NONE;
-		}
-
-		@Override
-		public boolean requiresUpdateEveryTick() {
-			return true;
-		}
-	}
 }

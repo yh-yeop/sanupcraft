@@ -1,7 +1,6 @@
 package io.github.yhyeop.sanupcraft.boss;
 
 import java.util.ArrayList;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.UUID;
 
@@ -31,7 +30,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
-import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
@@ -76,7 +74,6 @@ public class VoidColossus extends PartyBossMonster {
 	public static final double PULL_STRENGTH = 0.16;
 	/** 셜커 탄 피해 (바닐라 값). 강화 단계면 배율을 곱한다. */
 	public static final float BULLET_DAMAGE = 4.0F;
-	public static final byte EVENT_ATTACK = 4;
 	/** 클라이언트 동작용 상태 비트: 수정이 지키는 중 · 끌어당기기 예고 · 끌어당기는 중. */
 	public static final int FLAG_SHIELDED = 1;
 	public static final int FLAG_PULL_WINDUP = 2;
@@ -105,7 +102,6 @@ public class VoidColossus extends PartyBossMonster {
 	private int patternTick;
 	private int cooldown = 60;
 	private int cycleIndex;
-	private int attackTick;
 	/** 클라이언트 동작 (0 → 1로 천천히): 끌어당기기 자세 · 수정 보호막 일렁임. 이전 틱 값은 보간용. */
 	private float pullAnim;
 	private float pullAnimO;
@@ -207,6 +203,11 @@ public class VoidColossus extends PartyBossMonster {
 		goalSelector.addGoal(8, new RandomLookAroundGoal(this));
 		targetSelector.addGoal(1, new HurtByTargetGoal(this));
 		targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, Player.class, true));
+	}
+
+	@Override
+	protected boolean inPattern() {
+		return pattern != Pattern.NONE;
 	}
 
 	public Pattern pattern() {
@@ -391,8 +392,7 @@ public class VoidColossus extends PartyBossMonster {
 
 	@Override
 	public boolean doHurtTarget(ServerLevel level, Entity target) {
-		attackTick = 10;
-		level.broadcastEntityEvent(this, EVENT_ATTACK);
+		playAttackAnimation(level);
 		boolean hurt = super.doHurtTarget(level, target);
 		if (hurt) {
 			target.push(0.0, 0.4, 0.0);
@@ -459,20 +459,8 @@ public class VoidColossus extends PartyBossMonster {
 	}
 
 	@Override
-	public void handleEntityEvent(byte id) {
-		if (id == EVENT_ATTACK) {
-			attackTick = 10;
-		} else {
-			super.handleEntityEvent(id);
-		}
-	}
-
-	@Override
 	public void aiStep() {
 		super.aiStep();
-		if (attackTick > 0) {
-			attackTick--;
-		}
 		if (level().isClientSide()) {
 			int flags = flags();
 			pullAnimO = pullAnim;
@@ -484,10 +472,6 @@ public class VoidColossus extends PartyBossMonster {
 						(random.nextDouble() - 0.5) * 2.0, -random.nextDouble(), (random.nextDouble() - 0.5) * 2.0);
 			}
 		}
-	}
-
-	public int getAttackTick() {
-		return attackTick;
 	}
 
 	/** 끌어당기기 자세 (클라이언트, 0 ~ 1). */
@@ -533,20 +517,4 @@ public class VoidColossus extends PartyBossMonster {
 		}
 	}
 
-	/** 패턴 중에는 걷기 · 근접 공격을 멈춘다. */
-	private class PatternGoal extends Goal {
-		PatternGoal() {
-			setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
-		}
-
-		@Override
-		public boolean canUse() {
-			return pattern != Pattern.NONE;
-		}
-
-		@Override
-		public boolean requiresUpdateEveryTick() {
-			return true;
-		}
-	}
 }
