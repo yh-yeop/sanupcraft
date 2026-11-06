@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "sanupcraft:iron_plate",
+    "G": "minecraft:glass",
+    "C": "minecraft:popped_chorus_fruit",
+    "O": "minecraft:hopper"
+  },
+  "pattern": [
+    "PGP",
+    "GCG",
+    "POP"
+  ],
+  "result": {
+    "id": "sanupcraft:breath_collector"
+  }
+}

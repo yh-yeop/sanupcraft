@@ -45,6 +45,10 @@
     "sanupcraft:washer",
     "sanupcraft:hp_refiner",
     "sanupcraft:heatproof_bricks",
-    "sanupcraft:furnace_tower_controller"
+    "sanupcraft:furnace_tower_controller",
+    "sanupcraft:void_condenser",
+    "sanupcraft:chorus_harvester",
+    "sanupcraft:dimensional_vault",
+    "sanupcraft:breath_collector"
   ]
 }

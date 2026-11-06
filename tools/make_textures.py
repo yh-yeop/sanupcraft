@@ -2812,6 +2812,140 @@ def main_m8b(made):
     made.append(save(recolor(dust, {"a": "#2b1347", "b": "#5b2a8c", "c": "#8a4fd0", "d": "#b98cf0", "e": "#ecdcff"}), "item/rare_dust.png"))
 
 
+# ---------- M6 엔드 최종 ----------
+VOID = {"a": "#0d0716", "b": "#24133a", "c": "#43255f", "d": "#73479e", "e": "#c7a2ff"}
+CHORUS = {"a": "#2a1a2e", "b": "#5b3d63", "c": "#8a6390", "d": "#b48fb8", "e": "#e6d2e8"}
+
+
+def void_core_icon():
+    """공허 핵: 짙은 보라 구슬 안에 밝은 점, 둘레에 은은한 테."""
+    im = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        for x in range(16):
+            r = math.hypot(x - 7.5, y - 7.5)
+            hl = math.hypot(x - 6.0, y - 6.0)
+            if r < 2.4:
+                im.putpixel((x, y), hex_px("#f2e6ff" if hl < 1.5 else "#c7a2ff"))
+            elif r < 4.6:
+                im.putpixel((x, y), hex_px("#73479e" if hl < 3.4 else "#43255f"))
+            elif r < 5.6:
+                im.putpixel((x, y), hex_px("#24133a"))
+            elif r < 6.6 and (x * 3 + y) % 4 == 0:
+                im.putpixel((x, y), hex_px("#c7a2ff"))
+    return im
+
+
+def void_condenser_face(part, on=False):
+    im = recolor(panel(seed={"top": 601, "side": 602, "bottom": 603}[part]), VOID)
+    glow = "#d9b8ff" if on else "#4a3366"
+    if part == "top":
+        for y in range(4, 12):
+            for x in range(4, 12):
+                d = math.hypot(x - 7.5, y - 7.5)
+                if d < 3.6:
+                    im.putpixel((x, y), hex_px(VOID["a"]) if d > 2.6 else hex_px("#b3262a"))
+    elif part == "side":
+        for x in range(3, 13):
+            im.putpixel((x, 4), hex_px(VOID["a"]))
+            im.putpixel((x, 11), hex_px(VOID["a"]))
+        for y in range(5, 11):
+            for x in range(3, 13):
+                if (x + y) % 3 == 0:
+                    im.putpixel((x, y), hex_px(glow))
+    else:
+        # 아래로 열린 깔때기 입: 공허를 빨아들인다
+        for y in range(2, 14):
+            for x in range(2, 14):
+                d = math.hypot(x - 7.5, y - 7.5)
+                if d < 5.5:
+                    im.putpixel((x, y), hex_px("#05030a") if d < 3.0 else hex_px(glow if (int(d * 2) % 2) else VOID["b"]))
+    return im
+
+
+def chorus_harvester_front():
+    im = recolor(panel(seed=611), VOID)
+    for y in range(3, 12):
+        for x in range(3, 13):
+            im.putpixel((x, y), hex_px(VOID["a"]))
+    # 후렴 줄기와 꽃
+    for y in range(6, 11):
+        im.putpixel((7, y), hex_px(CHORUS["c"]))
+        im.putpixel((8, y), hex_px(CHORUS["b"]))
+    for x in range(5, 7):
+        im.putpixel((x, 7), hex_px(CHORUS["c"]))
+    for x in range(9, 11):
+        im.putpixel((x, 8), hex_px(CHORUS["c"]))
+    for x, y in ((7, 4), (8, 4), (7, 5), (8, 5), (5, 6), (10, 7)):
+        im.putpixel((x, y), hex_px(CHORUS["e"]))
+    for x in range(4, 12):
+        im.putpixel((x, 13), hex_px("#6fd0f0" if x % 2 else VOID["a"]))
+    return im
+
+
+def chorus_harvester_top():
+    im = recolor(panel(seed=612), VOID)
+    for y in range(4, 12):
+        for x in range(4, 12):
+            im.putpixel((x, y), hex_px(VOID["a"] if x in (4, 11) or y in (4, 11) else CHORUS["b"]))
+    return im
+
+
+def vault_face(part):
+    im = recolor(panel(seed={"top": 621, "side": 622, "bottom": 623}[part]), VOID)
+    if part == "side":
+        for y in range(3, 13):
+            for x in range(3, 13):
+                im.putpixel((x, y), hex_px(VOID["a"] if x in (3, 12) or y in (3, 12) else VOID["b"]))
+        # 가운데 열쇠 구멍 같은 엔더 눈
+        for x, y in ((7, 6), (8, 6), (6, 7), (9, 7), (6, 8), (9, 8), (7, 9), (8, 9)):
+            im.putpixel((x, y), hex_px("#2fd3b4"))
+        for x, y in ((7, 7), (8, 7), (7, 8), (8, 8)):
+            im.putpixel((x, y), hex_px("#0f6d5e"))
+    elif part == "top":
+        for y in range(4, 12):
+            for x in range(4, 12):
+                d = math.hypot(x - 7.5, y - 7.5)
+                if d < 3.8:
+                    im.putpixel((x, y), hex_px("#c7a2ff") if d < 1.6 else hex_px(VOID["a"]))
+    return im
+
+
+def breath_face(part):
+    im = recolor(panel(seed={"top": 631, "side": 632, "bottom": 633}[part]), CHORUS if part != "side" else VOID)
+    if part == "side":
+        # 유리창 안의 분홍 숨결
+        for y in range(3, 13):
+            for x in range(4, 12):
+                edge = x in (4, 11) or y in (3, 12)
+                im.putpixel((x, y), hex_px(VOID["a"] if edge else ("#e07ad0" if (x * 7 + y * 3) % 5 < 2 else "#8a3f8f")))
+    elif part == "top":
+        for y in range(5, 11):
+            for x in range(5, 11):
+                im.putpixel((x, y), hex_px(VOID["a"] if x in (5, 10) or y in (5, 10) else "#3a2040"))
+    return im
+
+
+def main_m6(made):
+    made.append(save(recolor(from_art(ITEMS["guardian_summoner"]), {**VOID, "R": "#7a2fbf", "Q": "#c77dff", "u": "#f2e6ff",
+                                                                   "k": "#24133a", "g": "#9d5cff", "h": "#e2c8ff"}),
+                     "item/colossus_summoner.png"))
+    made.append(save(void_core_icon(), "item/void_core.png"))
+    for part in ("helmet", "chestplate", "leggings", "boots", "sword"):
+        made.append(save(recolor(from_art(ITEMS[f"steel_{part}"]), VOID), f"item/void_{part}.png"))
+    made.append(save(recolor(armor_layer(False), VOID), "entity/equipment/humanoid/void.png"))
+    made.append(save(recolor(armor_layer(True), VOID), "entity/equipment/humanoid_leggings/void.png"))
+    made.append(save(void_condenser_face("top"), "block/void_condenser_top.png"))
+    made.append(save(void_condenser_face("side"), "block/void_condenser_side.png"))
+    made.append(save(void_condenser_face("side", True), "block/void_condenser_side_on.png"))
+    made.append(save(void_condenser_face("bottom"), "block/void_condenser_bottom.png"))
+    made.append(save(void_condenser_face("bottom", True), "block/void_condenser_bottom_on.png"))
+    made.append(save(chorus_harvester_front(), "block/chorus_harvester_front.png"))
+    made.append(save(chorus_harvester_top(), "block/chorus_harvester_top.png"))
+    for part in ("top", "side", "bottom"):
+        made.append(save(vault_face(part), f"block/dimensional_vault_{part}.png"))
+        made.append(save(breath_face(part), f"block/breath_collector_{part}.png"))
+
+
 def save(im, rel, scale=1):
     path = os.path.join(OUT, *rel.split("/"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -2854,6 +2988,7 @@ def main():
     main_m5(made)
     main_m11a(made)
     main_m8b(made)
+    main_m6(made)
 
     if "--sheet" in sys.argv:
         tiles = [Image.open(p) for p in made]

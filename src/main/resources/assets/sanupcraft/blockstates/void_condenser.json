@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "sanupcraft:block/void_condenser"
+    },
+    "lit=true": {
+      "model": "sanupcraft:block/void_condenser_on"
+    }
+  }
+}

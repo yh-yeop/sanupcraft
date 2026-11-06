@@ -1,0 +1,9 @@
+{
+  "type": "sanupcraft:crushing",
+  "ingredient": "minecraft:popped_chorus_fruit",
+  "count": 4,
+  "result": {
+    "id": "minecraft:ender_pearl"
+  },
+  "time": 120
+}

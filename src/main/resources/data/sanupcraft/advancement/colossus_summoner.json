@@ -1,0 +1,32 @@
+{
+  "parent": "sanupcraft:shulker_shell",
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:colossus_summoner"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:colossus_summoner"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.colossus_summoner.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.colossus_summoner.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ]
+}

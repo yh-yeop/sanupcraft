@@ -1,0 +1,38 @@
+{
+  "parent": "sanupcraft:void_core",
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "sanupcraft:void_helmet",
+              "sanupcraft:void_chestplate",
+              "sanupcraft:void_leggings",
+              "sanupcraft:void_boots",
+              "sanupcraft:void_sword"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:void_chestplate"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.void_gear.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.void_gear.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ]
+}

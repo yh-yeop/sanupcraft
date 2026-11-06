@@ -40,6 +40,9 @@ public class SanupcraftClient implements ClientModInitializer {
 		// M7 보관 · 제작
 		StorageClient.init();
 		io.github.yhyeop.sanupcraft.client.boss.BossModelLayers.init(); // 확장 M11a: 보스 전용 모델
+		// M6 엔드 최종: 공허 거상 · 공허 수정 (임시 렌더러, M11에서 전용 모델)
+		EntityRendererRegistry.register(io.github.yhyeop.sanupcraft.end.ModEnd.VOID_COLOSSUS, io.github.yhyeop.sanupcraft.client.end.VoidColossusRenderer::new);
+		EntityRendererRegistry.register(io.github.yhyeop.sanupcraft.end.ModEnd.VOID_CRYSTAL, io.github.yhyeop.sanupcraft.client.end.VoidCrystalRenderer::new);
 	}
 
 	/**

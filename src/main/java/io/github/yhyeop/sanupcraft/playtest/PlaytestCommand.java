@@ -79,7 +79,9 @@ public final class PlaytestCommand {
 		// C3 강화 소환석
 		TIERS("강화 소환석: +1 ~ +3 소환석 · 재료 · 강철 · 내열 한 벌", null, PlaytestCommand::kitTiers),
 		// M8 묶음 B
-		INDUSTRY2("산업 규모 2: 용광로 탑 · 세척기 · 고압 정련기 · 정제 가루", null, PlaytestCommand::kitIndustry2);
+		INDUSTRY2("산업 규모 2: 용광로 탑 · 세척기 · 고압 정련기 · 정제 가루", null, PlaytestCommand::kitIndustry2),
+		// M6 엔드 최종
+		END2("엔드 최종: 공허 거상 · 공허 응축기 · 공허 장비 · 후렴 수확기 · 차원 창고 · 겉날개 가속 · 숨결 수집기", Level.END, PlaytestCommand::kitEnd2);
 
 		final String description;
 		final ResourceKey<Level> dimension;
@@ -548,6 +550,50 @@ public final class PlaytestCommand {
 		give(p, Items.CHEST, 2);
 		give(p, Items.COMPARATOR, 1);
 		give(p, ModPower.STEAM_GAUGE.asItem(), 1);
+		food(p);
+	}
+
+	/**
+	 * M6 엔드 최종: 원점에서 600칸 떨어진 엔드 공허 위 발판으로 옮긴다 (거상은 500칸 밖에서만 깨어남, 발판 옆이 공허라 응축기를 매단다).
+	 * 제단 · 거상 소환석, 공허 응축기 · 고압 파이프 · 정밀 조립기 · 터빈, 네더라이트 한 벌 · 공허 핵(공허 장비 시험), 리벳총 · 리벳 · 증기 통,
+	 * 겉날개, 후렴 수확기 · 엔드 돌 · 후렴 꽃, 차원 창고 · 염료, 숨결 수집기 · 유리병, 활 · 화살.
+	 */
+	private static void kitEnd2(ServerPlayer p) {
+		ServerLevel end = p.level().getServer().getLevel(Level.END);
+		if (end != null) {
+			BlockPos spot = safePlatform(end, new BlockPos(600, 64, 0));
+			p.teleportTo(end, spot.getX() + 0.5, spot.getY(), spot.getZ() + 0.5, Set.<Relative>of(), p.getYRot(), 0.0F, true);
+		}
+		give(p, ModBoss.GUARDIAN_ALTAR.asItem(), 1);
+		give(p, io.github.yhyeop.sanupcraft.end.ModEnd.COLOSSUS_SUMMONER, 2);
+		give(p, io.github.yhyeop.sanupcraft.end.ModEnd.VOID_CONDENSER.asItem(), 2);
+		give(p, io.github.yhyeop.sanupcraft.nether.ModNether.HIGH_PRESSURE_PIPE.asItem(), 16);
+		give(p, ModMachines.PRECISION_ASSEMBLER.asItem(), 1);
+		give(p, io.github.yhyeop.sanupcraft.nether.ModNether.STEAM_TURBINE.asItem(), 1);
+		give(p, ModPower.STEAM_PIPE.asItem(), 16);
+		give(p, ModPower.STEAM_GAUGE.asItem(), 1);
+		for (Item netherite : List.of(Items.NETHERITE_HELMET, Items.NETHERITE_CHESTPLATE, Items.NETHERITE_LEGGINGS, Items.NETHERITE_BOOTS, Items.NETHERITE_SWORD)) {
+			give(p, netherite, 1);
+		}
+		give(p, io.github.yhyeop.sanupcraft.end.ModEnd.VOID_CORE, 5);
+		give(p, SteamGear.RIVET_GUN, 1);
+		give(p, SteamGear.RIVET, 64);
+		give(p, charged(SteamGear.STEAM_CANISTER));
+		give(p, charged(SteamGear.STEAM_CANISTER));
+		give(p, Items.ELYTRA, 1);
+		give(p, io.github.yhyeop.sanupcraft.end.ModEnd.CHORUS_HARVESTER.asItem(), 1);
+		give(p, Items.END_STONE, 16);
+		give(p, Items.CHORUS_FLOWER, 4);
+		give(p, io.github.yhyeop.sanupcraft.end.ModEnd.DIMENSIONAL_VAULT.asItem(), 2);
+		give(p, Items.DYE.red(), 4);
+		give(p, Items.DYE.blue(), 4);
+		give(p, io.github.yhyeop.sanupcraft.end.ModEnd.BREATH_COLLECTOR.asItem(), 1);
+		give(p, Items.GLASS_BOTTLE, 16);
+		give(p, Items.HOPPER, 2);
+		give(p, Items.CHEST, 2);
+		give(p, Items.BOW, 1);
+		give(p, Items.ARROW, 64);
+		give(p, Items.COBBLESTONE, 64);
 		food(p);
 	}
 }

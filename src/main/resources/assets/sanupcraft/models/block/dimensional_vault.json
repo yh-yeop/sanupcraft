@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "sanupcraft:block/dimensional_vault_top",
+    "side": "sanupcraft:block/dimensional_vault_side",
+    "bottom": "sanupcraft:block/dimensional_vault_bottom"
+  }
+}

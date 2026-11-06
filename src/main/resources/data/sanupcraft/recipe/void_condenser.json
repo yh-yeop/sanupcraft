@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "sanupcraft:steel_plate",
+    "S": "minecraft:shulker_shell",
+    "H": "sanupcraft:high_pressure_pipe",
+    "F": "sanupcraft:reinforced_machine_frame",
+    "G": "sanupcraft:precision_part"
+  },
+  "pattern": [
+    "PSP",
+    "HFH",
+    "PGP"
+  ],
+  "result": {
+    "id": "sanupcraft:void_condenser"
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "type": "sanupcraft:precision",
+  "ingredient": "minecraft:netherite_boots",
+  "ingredient2": "sanupcraft:void_core",
+  "result": {
+    "id": "sanupcraft:void_boots"
+  },
+  "time": 600
+}

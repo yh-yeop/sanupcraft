@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "sanupcraft:block/breath_collector_top",
+    "side": "sanupcraft:block/breath_collector_side",
+    "bottom": "sanupcraft:block/breath_collector_bottom"
+  }
+}
