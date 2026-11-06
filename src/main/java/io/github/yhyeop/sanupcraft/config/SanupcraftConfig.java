@@ -183,6 +183,9 @@ public final class SanupcraftConfig {
 	public int elytraBoostSteamCost = io.github.yhyeop.sanupcraft.end.ElytraBoost.STEAM_COST;
 	/** 공허 장비: 공허에서 구해 준 뒤 다시 구할 때까지(틱). */
 	public int voidGearRescueCooldownTicks = io.github.yhyeop.sanupcraft.end.VoidGear.RESCUE_COOLDOWN;
+	// M11 X2 효과음
+	/** 기계 작동음 크기 배율 (0 = 끔, 1 = 기본). 보스 소리는 그대로. */
+	public double machineSoundVolume = 1.0;
 
 	/** float 상수를 0.05F -> 0.05처럼 보이는 그대로의 double로 (파일에 0.0500000007...이 안 찍히게). */
 	private static double asDouble(float value) {
@@ -314,7 +317,10 @@ public final class SanupcraftConfig {
 			new Option("elytraBoost", "steamCost", io.github.yhyeop.sanupcraft.end.ElytraBoost.STEAM_COST, 0, io.github.yhyeop.sanupcraft.gear.SteamCharge.CANISTER_CAPACITY, true,
 					c -> c.elytraBoostSteamCost, (c, v) -> c.elytraBoostSteamCost = (int) v),
 			new Option("voidGear", "rescueCooldownTicks", io.github.yhyeop.sanupcraft.end.VoidGear.RESCUE_COOLDOWN, 0, 1_000_000, true,
-					c -> c.voidGearRescueCooldownTicks, (c, v) -> c.voidGearRescueCooldownTicks = (int) v));
+					c -> c.voidGearRescueCooldownTicks, (c, v) -> c.voidGearRescueCooldownTicks = (int) v),
+			// M11 X2 효과음
+			new Option("sounds", "machineVolume", 1.0, 0.0, 2.0, false,
+					c -> c.machineSoundVolume, (c, v) -> c.machineSoundVolume = v));
 
 	/** 읽은 결과: 설정, 경고 문구, 파일에 빠진 키가 있었는지, 파일을 새로 썼는지. */
 	public record Loaded(SanupcraftConfig config, List<String> warnings, boolean missingKeys, boolean wroteFile) {

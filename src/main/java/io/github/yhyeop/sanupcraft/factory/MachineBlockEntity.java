@@ -90,6 +90,11 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 	private static final int[] SLOTS_FOR_UP = {SLOT_INPUT, SLOT_INPUT2};
 	private static final int[] SLOTS_FOR_DOWN = {SLOT_RESULT, SLOT_BYPRODUCT, SLOT_FUEL};
 	private static final int[] SLOTS_FOR_SIDES = {SLOT_FUEL};
+	// 면 설정 (M8 I4): 넣기 = 재료 · 연료, 빼기 = 결과 · 부산물 · 연료(빈 양동이), 둘 다 = 전부, 막기 = 없음
+	private static final int[] SLOTS_IN = {SLOT_INPUT, SLOT_INPUT2, SLOT_FUEL};
+	private static final int[] SLOTS_OUT = {SLOT_RESULT, SLOT_BYPRODUCT, SLOT_FUEL};
+	private static final int[] SLOTS_BOTH = {SLOT_INPUT, SLOT_INPUT2, SLOT_FUEL, SLOT_RESULT, SLOT_BYPRODUCT};
+	private static final int[] SLOTS_NONE = {};
 
 	private final MachineKind kind;
 	private final RecipeManager.CachedCheck<MachineInput, MachineRecipe> quickCheck;
@@ -102,6 +107,8 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 	/** 물을 쓰는 기계만 쓴다 (mB). */
 	private int water;
 	private final SteamFlowMeter flow = new SteamFlowMeter();
+	/** 면 설정 (M8 I4). 기계가 보는 쪽 기준으로 저장한다. */
+	private final MachineFaces faces = new MachineFaces();
 	private boolean steamWorking;
 	/** 일하지 않은 연속 틱 수 (저장하지 않음). 처음에는 쉬는 상태. */
 	private int idleTicks = LIT_HOLD_TICKS;
@@ -157,6 +164,16 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 
 	public MachineKind kind() {
 		return kind;
+	}
+
+	/** 면 설정 (M8 I4). 바꾼 뒤에는 {@link #setChanged()}. */
+	public MachineFaces faces() {
+		return faces;
+	}
+
+	/** 실제 방향 면의 모드. */
+	public MachineFaces.Mode faceMode(Direction direction) {
+		return faces.get(getBlockState().getValue(MachineBlock.FACING), direction);
 	}
 
 	private MachineInput input() {
@@ -223,6 +240,9 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 		boolean active = machine.litTime > 0 || machine.steamWorking;
 		machine.idleTicks = active ? 0 : Math.min(machine.idleTicks + 1, LIT_HOLD_TICKS);
 		boolean isLit = active || machine.idleTicks < LIT_HOLD_TICKS;
+		if (active) {
+			io.github.yhyeop.sanupcraft.sound.ModSounds.machine(level, pos, machine.kind); // M11 X2 작동음
+		}
 		if (state.getValue(MachineBlock.LIT) != isLit) {
 			state = state.setValue(MachineBlock.LIT, isLit);
 			level.setBlockAndUpdate(pos, state);
@@ -525,6 +545,7 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 		totalTime = input.getIntOr("total_time", 0);
 		steam = input.getIntOr("steam", 0);
 		water = input.getIntOr("water", 0);
+		faces.load(input);
 	}
 
 	@Override
@@ -538,6 +559,7 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 		if (water > 0) {
 			output.putInt("water", water);
 		}
+		faces.save(output);
 		ContainerHelper.saveAllItems(output, items);
 	}
 
@@ -588,6 +610,22 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 
 	@Override
 	public int[] getSlotsForFace(Direction direction) {
+		switch (faceMode(direction)) {
+			case IN -> {
+				return SLOTS_IN;
+			}
+			case OUT -> {
+				return SLOTS_OUT;
+			}
+			case BOTH -> {
+				return SLOTS_BOTH;
+			}
+			case NONE -> {
+				return SLOTS_NONE;
+			}
+			default -> {
+			}
+		}
 		return switch (direction) {
 			case UP -> SLOTS_FOR_UP;
 			case DOWN -> SLOTS_FOR_DOWN;
@@ -599,6 +637,10 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 	public boolean canPlaceItemThroughFace(int slot, ItemStack stack, @Nullable Direction direction) {
 		// 업그레이드 칸은 어느 면에도 없지만, 혹시 직접 불려도 넣지 않는다
 		if (slot >= SLOT_UPGRADE || !canPlaceItem(slot, stack)) {
+			return false;
+		}
+		// 면 설정: 빼기 · 막기 면으로는 넣지 않는다
+		if (direction != null && faceMode(direction) != MachineFaces.Mode.DEFAULT && !faceMode(direction).canInsert()) {
 			return false;
 		}
 		if (slot != SLOT_INPUT && slot != SLOT_INPUT2) {
@@ -626,6 +668,11 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 
 	@Override
 	public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction direction) {
+		MachineFaces.Mode mode = faceMode(direction);
+		if (mode != MachineFaces.Mode.DEFAULT) {
+			// 면 설정: 빼기 · 둘 다 면은 결과 · 부산물 · 빈 양동이, 넣기 · 막기 면은 아무것도
+			return mode.canExtract() && (slot == SLOT_RESULT || slot == SLOT_BYPRODUCT || (slot == SLOT_FUEL && stack.is(Items.BUCKET)));
+		}
 		// 연료 칸에는 쓰고 남은 빈 양동이만 아래로 꺼낼 수 있다 (바닐라 화로와 같음)
 		return slot == SLOT_RESULT || slot == SLOT_BYPRODUCT || (slot == SLOT_FUEL && direction == Direction.DOWN && stack.is(Items.BUCKET));
 	}

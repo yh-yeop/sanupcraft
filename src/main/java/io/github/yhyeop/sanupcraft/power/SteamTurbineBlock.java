@@ -3,6 +3,7 @@ package io.github.yhyeop.sanupcraft.power;
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -70,6 +71,12 @@ public class SteamTurbineBlock extends BaseEntityBlock {
 		}
 		level.addParticle(ParticleTypes.CLOUD, pos.getX() + 0.5 + random.nextDouble() * 0.4 - 0.2, pos.getY() + 1.05,
 				pos.getZ() + 0.5 + random.nextDouble() * 0.4 - 0.2, 0.0, 0.1, 0.0);
+		if (random.nextFloat() < 0.15F) {
+			// M11 X2: 돌 때 옆으로 김이 빠진다
+			Direction side = Direction.Plane.HORIZONTAL.getRandomDirection(random);
+			level.addParticle(ParticleTypes.WHITE_SMOKE, pos.getX() + 0.5 + side.getStepX() * 0.55, pos.getY() + 0.5, pos.getZ() + 0.5 + side.getStepZ() * 0.55,
+					side.getStepX() * 0.1, 0.02, side.getStepZ() * 0.1);
+		}
 		if (random.nextDouble() < 0.06) {
 			level.playLocalSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, SoundEvents.MINECART_INSIDE, SoundSource.BLOCKS, 0.15F, 1.6F, false);
 		}

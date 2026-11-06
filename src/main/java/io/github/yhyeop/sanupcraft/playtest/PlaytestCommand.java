@@ -81,7 +81,9 @@ public final class PlaytestCommand {
 		// M8 묶음 B
 		INDUSTRY2("산업 규모 2: 용광로 탑 · 세척기 · 고압 정련기 · 정제 가루", null, PlaytestCommand::kitIndustry2),
 		// M6 엔드 최종
-		END2("엔드 최종: 공허 거상 · 공허 응축기 · 공허 장비 · 후렴 수확기 · 차원 창고 · 겉날개 가속 · 숨결 수집기", Level.END, PlaytestCommand::kitEnd2);
+		END2("엔드 최종: 공허 거상 · 공허 응축기 · 공허 장비 · 후렴 수확기 · 차원 창고 · 겉날개 가속 · 숨결 수집기", Level.END, PlaytestCommand::kitEnd2),
+		// M8 I4
+		WRENCH("렌치 · 면 설정: 돌리기 · 내용물째 집기 · 기계 면마다 넣기 / 빼기 / 막기", null, PlaytestCommand::kitWrench);
 
 		final String description;
 		final ResourceKey<Level> dimension;
@@ -594,6 +596,20 @@ public final class PlaytestCommand {
 		give(p, Items.BOW, 1);
 		give(p, Items.ARROW, 64);
 		give(p, Items.COBBLESTONE, 64);
+		food(p);
+	}
+
+	/** M8 I4: 렌치, 깔때기로 면 설정을 볼 기계 둘 · 재료 · 연료, 잠금을 볼 엔더 수신기. */
+	private static void kitWrench(ServerPlayer p) {
+		give(p, io.github.yhyeop.sanupcraft.wrench.ModWrench.WRENCH, 1);
+		give(p, ModMachines.CRUSHER.asItem(), 2);
+		give(p, ModMachines.PRESS.asItem(), 1);
+		give(p, Items.HOPPER, 6);
+		give(p, Items.CHEST, 4);
+		give(p, Items.RAW_IRON, 64);
+		give(p, Items.COAL, 32);
+		give(p, io.github.yhyeop.sanupcraft.logistics.ModLogistics.ENDER_RECEIVER.asItem(), 1);
+		give(p, io.github.yhyeop.sanupcraft.logistics.ModLogistics.BELT.asItem(), 8);
 		food(p);
 	}
 }

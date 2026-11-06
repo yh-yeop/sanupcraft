@@ -15,6 +15,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
@@ -47,6 +48,7 @@ import net.minecraft.world.phys.Vec3;
 
 import io.github.yhyeop.sanupcraft.core.ModItems;
 import io.github.yhyeop.sanupcraft.gear.HeatproofGear;
+import io.github.yhyeop.sanupcraft.sound.ModSounds;
 
 /**
  * 용광로 파수꾼. 두 번째 보스. 패턴 3개를 돌아가며 쓴다.
@@ -102,6 +104,8 @@ public class FurnaceWarden extends Monster implements PartyBoss {
 	private Pattern pattern = Pattern.NONE;
 	private int patternTick;
 	private int cooldown = 60;
+	/** 화남(체력 절반 아래)을 알렸는가 (M11 X2). 불러올 때 체력으로 다시 정한다. */
+	private boolean phaseAnnounced;
 	private int cycleIndex;
 	private final List<Vec3> rings = new ArrayList<>();
 	private boolean airborne;
@@ -202,6 +206,10 @@ public class FurnaceWarden extends Monster implements PartyBoss {
 	protected void customServerAiStep(ServerLevel level) {
 		super.customServerAiStep(level);
 		bossEvent.setProgress(getHealth() / getMaxHealth());
+		if (!phaseAnnounced && isEnraged()) {
+			phaseAnnounced = true;
+			ModSounds.bossPhase(level, this, ParticleTypes.FLAME); // M11 X2
+		}
 
 		if (pattern == Pattern.NONE) {
 			LivingEntity target = getTarget();
@@ -246,6 +254,7 @@ public class FurnaceWarden extends Monster implements PartyBoss {
 			return;
 		}
 		if (patternTick == BLAST_LOCK) {
+			playSound(ModSounds.WARDEN_BURST, 2.0F, 0.8F); // M11 X2 분출 방향을 잠금
 			blastYaw = getYHeadRot();
 			blastLocked = true;
 		}
@@ -565,6 +574,12 @@ public class FurnaceWarden extends Monster implements PartyBoss {
 		super.readAdditionalSaveData(input);
 		party.load(input);
 		refreshBossBar();
+		phaseAnnounced = isEnraged();
+	}
+
+	@Override
+	protected SoundEvent getDeathSound() {
+		return ModSounds.WARDEN_DEATH; // M11 X2
 	}
 
 	@Override

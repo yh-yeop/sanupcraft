@@ -128,5 +128,27 @@ public class MachineBlock extends BaseEntityBlock {
 			level.playLocalSound(x, y, z, SoundEvents.FURNACE_FIRE_CRACKLE, SoundSource.BLOCKS, 0.6F, 0.8F, false);
 		}
 		level.addParticle(ParticleTypes.SMOKE, x + random.nextDouble() * 0.4 - 0.2, y, z + random.nextDouble() * 0.4 - 0.2, 0.0, 0.05, 0.0);
+		kindParticles(state, level, pos, random);
+	}
+
+	/** M11 X2: 종류마다 덧붙이는 입자. 정밀 조립기 = 앞면 불꽃 튐, 세척기 = 위로 물방울, 고압 정련기 = 김. */
+	private void kindParticles(BlockState state, Level level, BlockPos pos, RandomSource random) {
+		Direction front = state.getValue(FACING);
+		switch (kind) {
+			case PRECISION -> {
+				if (random.nextFloat() < 0.6F) {
+					double fx = pos.getX() + 0.5 + front.getStepX() * 0.52 + (front.getStepX() == 0 ? random.nextDouble() * 0.6 - 0.3 : 0.0);
+					double fz = pos.getZ() + 0.5 + front.getStepZ() * 0.52 + (front.getStepZ() == 0 ? random.nextDouble() * 0.6 - 0.3 : 0.0);
+					level.addParticle(ParticleTypes.ELECTRIC_SPARK, fx, pos.getY() + 0.4 + random.nextDouble() * 0.4, fz,
+							front.getStepX() * 0.05, 0.02, front.getStepZ() * 0.05);
+				}
+			}
+			case WASHER -> level.addParticle(ParticleTypes.SPLASH, pos.getX() + 0.3 + random.nextDouble() * 0.4, pos.getY() + 1.02,
+					pos.getZ() + 0.3 + random.nextDouble() * 0.4, 0.0, 0.1, 0.0);
+			case REFINER -> level.addParticle(ParticleTypes.CLOUD, pos.getX() + 0.5 + random.nextDouble() * 0.3 - 0.15, pos.getY() + 1.05,
+					pos.getZ() + 0.5 + random.nextDouble() * 0.3 - 0.15, 0.0, 0.1, 0.0);
+			default -> {
+			}
+		}
 	}
 }

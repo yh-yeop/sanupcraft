@@ -113,6 +113,9 @@ public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer, 
 		steam = distributeSteam(level, pos, steam);
 
 		boolean isLit = isLit();
+		if (isLit) {
+			io.github.yhyeop.sanupcraft.sound.ModSounds.working(level, pos, io.github.yhyeop.sanupcraft.sound.ModSounds.STEAM_HISS, 80, 0.3F); // M11 X2
+		}
 		if (state.getValue(BoilerBlock.LIT) != isLit) {
 			level.setBlockAndUpdate(pos, state.setValue(BoilerBlock.LIT, isLit));
 		}
