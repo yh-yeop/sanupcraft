@@ -1149,3 +1149,73 @@ public Component problemMessage(Level level, Problem problem, String keyPrefix);
 
 주요 실제 버그: 서랍을 부수면 내용물이 쏟아지고 폭발 때 복제됨(#81, 곡괭이 제한도 없앰), 목표판에 깔때기 · 벨트로 넘친 몫이 사라짐(#65), 용광로 탑이 재료를 빼도 증기를 계속 씀(#37), 벌목기가 다시 심을 자리를 저장 안 함(#66), 재고 유지기가 기계에 넣은 재료를 저장 표시 안 함(#14).
 흔들리던 시험 정리: 분쇄기 경험치(같은 틱에 모음, 1 이상), 보스 기록(먼저 비움), 수확기(무작위 성장 허용), 경험치 시험 전용 환경.
+
+## 8. 4차 리팩터링 1단계 · 확장 3 (M12 ~ M15) (2026-11-06)
+
+대상: 릴리스 v0.3.0-beta.1(`e9fa2e0`) 이후 바뀐 본 코드 전부 (확장 3: 채굴 · 전투 · 장비 · 리소스, 약 1만 5천 줄).
+절차: Haiku 6기 병렬 → Opus 판정 → 비판적 Sonnet 반론 → Opus 최종 결정 → Sonnet n기 수정 (병렬 worktree).
+기준 시험: `./gradlew build` (GameTest 409개), `runClientGameTest` (편의 모드 12개 포함 통과, 스크린샷 157장).
+
+### 8-1. 지적 (Haiku 6기)
+
+#### H1 보스 (`boss/` · `boss/gear/` · `boss/phase/`)
+1. gear/RustyHammerItem.java:16-26 · FurnaceShieldItem.java:18-37 · VoidBolt.java:23-61 · 중복/설정 불일치 · 중 — 보스는 효과 시간 · 단계를 설정에서 읽는데 보스 장비는 같은 수치를 상수로 따로 가져, 설정을 바꿔도 장비 효과는 그대로.
+2. RustyGuardian.java:60-61 vs :488-490 · 주석 불일치 · 하 — 크롬강 검도 1.5배인데 주석은 강철 · 내열만.
+3. VoidColossus.java:380-383 · 버그 · 하 — 32칸 안에 아무도 없으면 48칸 대상에게도 탄을 쏨 (문서는 32칸 안만).
+4. PartyBossMonster.java:110 vs :92 · VoidColossus.java:273 · 주석 불일치 · 하 — 체력이 정확히 절반이면 2페이즈엔 들어가지만 isEnraged는 거짓 → 거상의 두 번째 수정 · 쿨다운 단축이 빠짐.
+5. FurnaceWarden.java:539-552 vs RustyGuardian.java:437-451 · 중복 · 중하 — hitWithHeat · hitWithRust 같은 구조 (부모로).
+6. 원 둘레 입자 루프 여러 곳 · 중복 · 하.
+7. phase/BossHazard.java:95-97 · 죽은 코드 · 하 — lifetime() 미사용.
+8. gear/ModBossGear.java:116-119 · 죽은 코드 · 하 — moduleSlots(stack)은 시험만 씀 (실제는 ModuleSlots 표).
+9. VoidColossus.java:441 · 기타 · 하 — 균열 기본 반경이 수정 반경 상수에 묶임.
+10. FurnaceWarden.java:55 vs :588 · 주석 불일치 · 하 — 익사 면역이 문서에 없음 (수호자도).
+
+#### H2 클라이언트 (`client/`)
+11. 보스 렌더러 3종 · 중복 · 하 — 텍스처 · 렌더 상태 · 추출 · 크기 골격 반복. ※ 3차 2단계에서 BossRenderer 기반 클래스 보류로 결정.
+12. BossCrackLayer:37 · BossGlowLayer:40 · EliteAuraLayer:38 · 중복 · 하 — 사망 페이드 20틱 매직 넘버 셋.
+13. machine/MachinePartLayers.java:43 · 주석 불일치 · 하 — "톱니 8개"인데 박스 4개.
+14. MachineScreen:21 · GuiPanels:37 · AutocrafterScreen:58-61 · 중복 · 하 — 같은 텍스처 경로 상수 둘, 자동 제작대 좌표 하드코딩.
+15. GearWorkbenchScreen · AutocrafterScreen · TerminalScreen · 중복 · 하 — 라벨 그리기 · inventoryLabelY 복사.
+16. storage/TerminalScreen.java:90-92 · 기타 · 하 — 정렬마다 이름 Component 생성 (내용 바뀔 때만).
+(서버 검증: 새 C2S 패킷 없음, 기존 3종 검증 확인)
+
+#### H3 모듈 · 효과 (`module/` · `effect/`)
+17. module/RepairStationBlockEntity.java:160-166 · 버그 · 중 — 장비가 비어 있으면 재료 칸이 아무 아이템이나 받아(위 깔때기), 흙 등이 끼면 진짜 재료를 못 넣고 영구 정체.
+18. module/GearInheritance.java:41-42 · 기타 · 하 — 닳은 정도를 원시값으로 옮겨 최대 내구도가 다르면 닳은 비율이 바뀜 (의도 확인).
+19. module/RepairStationBlockEntity.java:49, 88-94 · 죽은 코드 · 하 — working() · pool() 미사용.
+20. module/GearUpgradeRecipes.java:26-27 vs 42-49 · 주석 불일치 · 하 — 클래스 주석은 "첫 장비", 실제는 마법 부여 · 모듈 · 이름 있는 칸 우선.
+21. module/RepairStationBlockEntity.java:84, 129-130 · 기타 · 하 — 수리 중 · 증기 받을 때 매 틱 setChanged.
+
+#### H4 장비 · 전투 (`gear/` · `combat/`)
+22. combat/SteamSyringeItem.java:60-67 · 버그 · 중 — 주사기 증기가 비용보다 적으면 주사기 잔량을 안 쓰고 통에서 200을 전부 뺀다 (주석은 "주사기 먼저, 모자라면 통"). 통이 없으면 150이 있어도 실패.
+23. gear/AreaMining.java:37-48 · 기타 · 하 — FACES를 AFTER에서만 지워, 다른 BEFORE 리스너(쓰러짐 캐기 차단)가 취소하면 낡은 항목이 남는다. ※ 3차 판정 오탐(결과 같음).
+24. gear/SteelGear.java:25 · 주석 불일치 · 하 — "내구도 철의 1.5배"인데 실제 2배(500/250).
+25. combat/Downed.java:79, 208-215, 288 · 기타 · 하 — LAST_HIT 맵이 쓰러진 채 나가면 안 지워진다.
+26. combat/Downed.java:254-260 · 버그 · 하 — 쓰러진 동안 토템을 주우면 출혈사 때 토템이 막아 쓰러짐이 조용히 풀림.
+27. combat/FlamethrowerItem.java:142-157 · 기타 · 하 — 물속에서는 증기 · 연료를 쓰고 효과 없음 (주석에 없음).
+28. gear/special/HeadLamp.java:66-116 · 기타 · 하 — 청크가 안 불러와졌을 때 빛 블록을 못 지우고 추적만 지워 고아 빛 블록이 남을 수 있다.
+29. AreaMining · Downed BEFORE 리스너 등록 순서 의존 · 기타 · 하 — 2번과 같은 묶음.
+30. BronzeGear · HeatproofGear · SteelGear · ModSpecialGear · 중복 · 하 — 갑옷 방어 EnumMap 도우미 · armor(name,type) 반복. ※ 3차 판정 오탐(지난번 #64).
+31. HeatproofGear · SteelGear · PowerArmor · MinerGear · 중복 · 하 — 네 부위 한 벌 검사 반복.
+
+#### H5 몹 · 위험 요소 · 자원 · 채굴 (`mob/` · `hazard/` · `resource/` · `mining/`)
+32. mob/VoidShade.java:83-90 · 버그(성능) · 중 — 등 뒤 순간이동이 실패하면 쿨다운이 안 걸려 매 틱 9번 randomTeleport를 시도한다.
+33. mob/EliteMonster.java:127-133 · 주석 불일치 · 하 — 반사 30%가 방어 전 원본 피해 기준.
+34. resource/vein/ProspectorItem.java:48-54 · 기타 · 하 — 클라이언트 · 서버의 성공/실패 판정이 어긋나 팔 휘두름 예측이 틀림.
+35. mining/blast/RemoteDetonatorItem.java:62-77 · 기타 · 하 — 3번과 같은 패턴.
+36. mob/EliteMonster.java:161-169 · ModBlast.java:63-69 · 중복 · 하 — 발전 과제 수여 코드 둘.
+37. hazard/ToxicGasPocketFeature.java:26 · 주석 불일치 · 하 — 모닥불 · 영혼불도 불씨로 보는데 주석에 없음.
+38. mob/EmberWisp.java:105-131 · 중복 · 하 — 낙하 피해 없음을 두 번 구현.
+39. resource/vein/Veins.java:115-129 · 중복 · 하 — rollBonus가 광맥 조회 · 생성을 채굴 1회에 두 번.
+
+#### H6 기계 · 산업 · 생산 · 소리 · 설정 · 실테스트
+40. industry/MultiblockShape.java:166-173 · 버그 · 하 — unform이 불러온 제어기만 heldBy로 보아, 안 불러온 청크의 제어기가 쥔 공유 외벽 무늬가 꺼진 채 남을 수 있다 (주석과 차이).
+41. playtest/PlaytestCommand.java:172 · 버그 · 하 — 네더 목적지를 현재 좌표 /8 (엔드에서 부르면 엉뚱한 곳). ※ 2차 리팩터링 16번 오탐 판정.
+42. playtest/PlaytestCommand.java:215-216 · 중복 · 하 — 석탄 64 두 줄. ※ 이전 판정 오탐.
+43. playtest/PlaytestCommand.java:588-589, 163 · 중복 · 하 — END2: apply()의 엔드 발판 뒤 kitEnd2가 다시 이동. ※ 3차 판정 오탐(무해).
+44. playtest/PlaytestCommand.java:346-348 · 주석 불일치 · 하 — "외벽 33"인데 40개 줌.
+45. sound/ModSounds.java:107-109 · 주석 불일치 · 하 — "40틱에 한 번쯤"인데 분쇄기 30틱.
+46. sound/ModSounds.java:39-40 · 주석 불일치 · 하 — 대형 보일러도 STEAM_HISS를 쓴다는 주석 (상속 경로 확인 필요).
+47. config/SanupcraftConfig.java:276-280 외 · 중복 · 하 — 기본값 리터럴이 필드 초기값과 OPTIONS 표에 따로 (상수로 묶기).
+48. factory/MachineBlockEntity.java:124 · 기타 · 하 — static recipeCache가 이전 서버 RecipeManager를 붙잡음.
+
