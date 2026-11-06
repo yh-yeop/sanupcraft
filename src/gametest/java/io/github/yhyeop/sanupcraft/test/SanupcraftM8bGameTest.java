@@ -29,6 +29,7 @@ import io.github.yhyeop.sanupcraft.fluid.TankBlockEntity;
 import io.github.yhyeop.sanupcraft.industry.FurnaceTowerControllerBlock;
 import io.github.yhyeop.sanupcraft.industry.FurnaceTowerControllerBlockEntity;
 import io.github.yhyeop.sanupcraft.industry.HeatproofBricksBlock;
+import io.github.yhyeop.sanupcraft.industry.HeatproofBricksBlockEntity;
 import io.github.yhyeop.sanupcraft.industry.ModFoundry;
 import io.github.yhyeop.sanupcraft.industry.MultiblockShape;
 import io.github.yhyeop.sanupcraft.nether.ModNether;
@@ -275,10 +276,64 @@ public class SanupcraftM8bGameTest {
 	}
 
 	static FurnaceTowerControllerBlockEntity buildTower(GameTestHelper helper) {
-		helper.setBlock(CONTROLLER, ModFoundry.FURNACE_TOWER_CONTROLLER.defaultBlockState().setValue(FurnaceTowerControllerBlock.FACING, FACING));
-		for (BlockPos casing : FurnaceTowerControllerBlockEntity.SHAPE.casings(CONTROLLER, FACING)) {
+		return buildTowerAt(helper, CONTROLLER);
+	}
+
+	static FurnaceTowerControllerBlockEntity buildTowerAt(GameTestHelper helper, BlockPos controller) {
+		helper.setBlock(controller, ModFoundry.FURNACE_TOWER_CONTROLLER.defaultBlockState().setValue(FurnaceTowerControllerBlock.FACING, FACING));
+		for (BlockPos casing : FurnaceTowerControllerBlockEntity.SHAPE.casings(controller, FACING)) {
 			helper.setBlock(casing, ModFoundry.HEATPROOF_BRICKS);
 		}
-		return helper.getBlockEntity(CONTROLLER, FurnaceTowerControllerBlockEntity.class);
+		return helper.getBlockEntity(controller, FurnaceTowerControllerBlockEntity.class);
+	}
+
+	// ---- 외벽 공유 (3차 2단계 #43, REFACTOR.md 7-10) ----
+
+	/** 이웃 탑 B의 제어기 자리: A(제어기 (2,1,1))와 동쪽 벽 x 3을 같이 쓴다 (둘 다 북향, B는 x 3..5). */
+	private static final BlockPos NEIGHBOUR = new BlockPos(4, 1, 1);
+	private static final BlockPos SHARED_BRICK = new BlockPos(3, 2, 2);
+	private static final BlockPos A_ONLY_BRICK = new BlockPos(1, 3, 3);
+
+	/** 둘 다 세우고(A 먼저, B가 나중에 벽돌을 잇는다) A를 돌려준다. B는 3틱 안에 스스로 확인하지 않는다 (방금 확인해 40틱 뒤). */
+	private static FurnaceTowerControllerBlockEntity[] buildSharedTowers(GameTestHelper helper) {
+		ServerLevel level = helper.getLevel();
+		FurnaceTowerControllerBlockEntity a = buildTower(helper);
+		FurnaceTowerControllerBlockEntity b = buildTowerAt(helper, NEIGHBOUR);
+		BlockPos aAbs = helper.absolutePos(CONTROLLER);
+		BlockPos bAbs = helper.absolutePos(NEIGHBOUR);
+		helper.assertTrue(a.check(level, aAbs, level.getBlockState(aAbs)), "A가 서지 않음: " + a.problem());
+		helper.assertTrue(b.check(level, bAbs, level.getBlockState(bAbs)), "B가 서지 않음: " + b.problem());
+		helper.assertValueEqual(helper.getBlockEntity(SHARED_BRICK, HeatproofBricksBlockEntity.class).linkedController(), bAbs, "공유 벽돌이 B에 이어지지 않음");
+		return new FurnaceTowerControllerBlockEntity[] {a, b};
+	}
+
+	private static void assertNeighbourKeepsSharedWall(GameTestHelper helper, FurnaceTowerControllerBlockEntity b) {
+		helper.assertTrue(b.isFormed(), "B가 풀림");
+		helper.assertTrue(helper.getBlockState(SHARED_BRICK).getValue(HeatproofBricksBlock.FORMED), "공유 벽돌 무늬가 꺼짐");
+		helper.assertValueEqual(helper.getBlockEntity(SHARED_BRICK, HeatproofBricksBlockEntity.class).linkedController(), helper.absolutePos(NEIGHBOUR), "공유 벽돌의 제어기");
+		helper.assertFalse(helper.getBlockState(A_ONLY_BRICK).getValue(HeatproofBricksBlock.FORMED), "A만의 벽돌 무늬가 켜져 있음");
+	}
+
+	/** A만의 벽돌(서쪽 벽)을 부숴 A가 풀려도 B는 그대로: 공유 벽돌 무늬가 켜진 채 B에 이어져 있다 (B는 부순 칸 알림을 못 받는 거리). */
+	@GameTest(maxTicks = 20)
+	public void sharedWallTowerSurvivesNeighbourBreak(GameTestHelper helper) {
+		FurnaceTowerControllerBlockEntity[] towers = buildSharedTowers(helper);
+		helper.destroyBlock(new BlockPos(1, 2, 2));
+		helper.runAfterDelay(3, () -> {
+			helper.assertFalse(towers[0].isFormed(), "벽돌을 부쉈는데 A가 그대로");
+			assertNeighbourKeepsSharedWall(helper, towers[1]);
+			helper.succeed();
+		});
+	}
+
+	/** A의 제어기를 부숴도 B는 그대로: 공유 벽돌 무늬 · 링크가 B에 남는다. */
+	@GameTest(maxTicks = 20)
+	public void sharedWallTowerSurvivesNeighbourControllerRemoval(GameTestHelper helper) {
+		FurnaceTowerControllerBlockEntity[] towers = buildSharedTowers(helper);
+		helper.destroyBlock(CONTROLLER);
+		helper.runAfterDelay(3, () -> {
+			assertNeighbourKeepsSharedWall(helper, towers[1]);
+			helper.succeed();
+		});
 	}
 }

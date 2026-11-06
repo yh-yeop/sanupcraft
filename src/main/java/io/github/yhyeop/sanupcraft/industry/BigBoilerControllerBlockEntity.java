@@ -7,7 +7,6 @@ import org.jspecify.annotations.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
 import io.github.yhyeop.sanupcraft.config.SanupcraftConfig;
@@ -21,7 +20,7 @@ import io.github.yhyeop.sanupcraft.power.SteamOutlet;
  * 모양은 40틱마다, 그리고 외벽이 부서지거나 제어기 옆이 바뀌면 바로 다시 확인한다.
  * 모양이 맞으면 증기를 제어기와 모든 외벽에 붙은 파이프 · 기계로 내보낸다.
  */
-public class BigBoilerControllerBlockEntity extends BoilerBlockEntity {
+public class BigBoilerControllerBlockEntity extends BoilerBlockEntity implements MultiblockShape.Controller {
 	public static final int BOILERS = 6;
 	public static final int STEAM_PER_TICK = BoilerBlockEntity.STEAM_PER_TICK * BOILERS;
 	public static final int WATER_CAPACITY = BoilerBlockEntity.WATER_CAPACITY * BOILERS;
@@ -40,7 +39,7 @@ public class BigBoilerControllerBlockEntity extends BoilerBlockEntity {
 			return MultiblockShape.Part.CONTROLLER;
 		}
 		return side == 0 && depth == 1 && (up == 1 || up == 2) ? MultiblockShape.Part.HOLLOW : MultiblockShape.Part.CASING;
-	}, state -> state.getBlock() instanceof BigBoilerCasingBlock);
+	}, state -> state.getBlock() instanceof BigBoilerCasingBlock, BigBoilerCasingBlock.FORMED);
 
 	private boolean formed;
 	private MultiblockShape.@Nullable Problem problem;
@@ -61,7 +60,18 @@ public class BigBoilerControllerBlockEntity extends BoilerBlockEntity {
 		super.tick(level, pos, state);
 	}
 
+	@Override
+	public MultiblockShape shape() {
+		return SHAPE;
+	}
+
+	@Override
+	public Direction facing() {
+		return getBlockState().getValue(BoilerBlock.FACING);
+	}
+
 	/** 다음 틱에 모양을 다시 확인한다 (외벽이 부서짐 · 제어기 옆이 바뀜). */
+	@Override
 	public void requestCheck() {
 		checkTimer = 0;
 	}
@@ -78,23 +88,16 @@ public class BigBoilerControllerBlockEntity extends BoilerBlockEntity {
 			outletStarts = now ? SHAPE.positions(pos, facing) : List.of();
 			setChanged();
 		}
-		// 맞았을 때는 매번 (다른 제어기가 풀어 놓은 외벽도) 맞추고, 풀렸을 때는 풀린 그 순간에만 끈다
-		if (now || changed) {
-			setCasingsFormed(level, pos, facing, now);
+		// 맞으면 매번 (이웃 보일러가 끈 공유 외벽도) 켠다. 풀린 순간에는 이웃 보일러가 쓰는 외벽만 남기고 끈다
+		if (now) {
+			SHAPE.form(level, pos, facing);
+		} else if (changed) {
+			SHAPE.unform(level, pos, facing);
 		}
 		return formed;
 	}
 
-	/** 외벽 무늬를 켜거나 끈다. 이웃 갱신 없이 (파이프 · 제어기를 다시 건드리지 않게). */
-	static void setCasingsFormed(ServerLevel level, BlockPos controller, Direction facing, boolean formed) {
-		for (BlockPos casing : SHAPE.casings(controller, facing)) {
-			BlockState state = level.getBlockState(casing);
-			if (state.getBlock() instanceof BigBoilerCasingBlock && state.getValue(BigBoilerCasingBlock.FORMED) != formed) {
-				level.setBlock(casing, state.setValue(BigBoilerCasingBlock.FORMED, formed), Block.UPDATE_CLIENTS);
-			}
-		}
-	}
-
+	@Override
 	public boolean isFormed() {
 		return formed;
 	}

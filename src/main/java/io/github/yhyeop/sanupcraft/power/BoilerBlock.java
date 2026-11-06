@@ -94,13 +94,13 @@ public class BoilerBlock extends BaseEntityBlock {
 		return InteractionResult.SUCCESS;
 	}
 
-	/** 상태 줄 끝에 붙일 힌트 키: 가장 먼저 해결할 것 하나만 알려 준다. */
-	private static String hint(BoilerBlockEntity boiler) {
+	/** 상태 줄 끝에 붙일 힌트 키: 가장 먼저 해결할 것 하나만 알려 준다. 대형 보일러 제어기도 같은 규칙을 쓴다. */
+	protected static String hint(BoilerBlockEntity boiler) {
 		if (boiler.water() <= 0) {
 			return "block.sanupcraft.boiler.hint.no_water";
 		}
 		// 증기가 가득이면 연료를 아끼려고 불이 잠시 멎는다 (isLit 거짓) — 연료 없음보다 먼저 본다
-		if (boiler.steam() >= BoilerBlockEntity.STEAM_CAPACITY) {
+		if (boiler.steam() >= boiler.steamCapacity()) {
 			return "block.sanupcraft.boiler.hint.steam_full";
 		}
 		if (!boiler.isLit() && boiler.fuelCount() <= 0) {

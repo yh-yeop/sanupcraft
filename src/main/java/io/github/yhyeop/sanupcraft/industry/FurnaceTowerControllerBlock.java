@@ -76,11 +76,7 @@ public class FurnaceTowerControllerBlock extends BaseEntityBlock {
 	static Component status(ServerLevel level, FurnaceTowerControllerBlockEntity tower) {
 		MultiblockShape.Problem problem = tower.problem();
 		if (!tower.isFormed() && problem != null) {
-			BlockPos at = problem.pos();
-			String key = problem.expected() == MultiblockShape.Part.CASING
-					? "block.sanupcraft.furnace_tower_controller.need_casing"
-					: "block.sanupcraft.furnace_tower_controller.need_hollow";
-			return Component.translatable(key, at.getX(), at.getY(), at.getZ(), level.getBlockState(at).getBlock().getName());
+			return MultiblockShape.problemMessage(level, problem, "block.sanupcraft.furnace_tower_controller");
 		}
 		Component line = Component.translatable("block.sanupcraft.furnace_tower_controller.status",
 				tower.steam(), FurnaceTowerControllerBlockEntity.STEAM_CAPACITY, tower.batchUnits(), tower.progressPercent());
@@ -110,7 +106,7 @@ public class FurnaceTowerControllerBlock extends BaseEntityBlock {
 	@Override
 	protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
 		Containers.updateNeighboursAfterDestroy(state, level, pos);
-		FurnaceTowerControllerBlockEntity.setCasingsFormed(level, pos, state.getValue(FACING), false);
+		FurnaceTowerControllerBlockEntity.SHAPE.unform(level, pos, state.getValue(FACING));
 	}
 
 	@Override

@@ -30,17 +30,7 @@ public class HeatproofBricksBlock extends BaseEntityBlock {
 
 	@Override
 	protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
-		notifyControllers(level, pos);
-	}
-
-	/** 이 칸을 쓸 수 있는 제어기 (가로 ±2, 아래로 0..2칸)에 다시 확인하라고 알린다. */
-	static void notifyControllers(ServerLevel level, BlockPos pos) {
-		int below = FurnaceTowerControllerBlockEntity.SHAPE.height() - 1;
-		for (BlockPos near : BlockPos.betweenClosed(pos.offset(-2, -below, -2), pos.offset(2, 0, 2))) {
-			if (level.getBlockEntity(near) instanceof FurnaceTowerControllerBlockEntity controller) {
-				controller.requestCheck();
-			}
-		}
+		FurnaceTowerControllerBlockEntity.SHAPE.notifyControllers(level, pos);
 	}
 
 	@Override

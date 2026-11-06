@@ -45,7 +45,7 @@ import io.github.yhyeop.sanupcraft.power.SteamStorage;
  * 고압 증기는 제어기 또는 아무 외벽에 붙은 고압 파이프로 받는다. 깔때기: 아래 ← 결과, 나머지 면 → 재료 (구울 수 있는 것만).
  * 경험치는 주지 않는다.
  */
-public class FurnaceTowerControllerBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, HPSteamConsumer, SteamStorage {
+public class FurnaceTowerControllerBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, HPSteamConsumer, SteamStorage, MultiblockShape.Controller {
 	public static final int INPUT_SLOTS = 9;
 	public static final int OUTPUT_SLOTS = 9;
 	public static final int SLOT_COUNT = INPUT_SLOTS + OUTPUT_SLOTS;
@@ -64,7 +64,7 @@ public class FurnaceTowerControllerBlockEntity extends BaseContainerBlockEntity 
 			return MultiblockShape.Part.CONTROLLER;
 		}
 		return side == 0 && depth == 1 ? MultiblockShape.Part.HOLLOW : MultiblockShape.Part.CASING;
-	}, state -> state.getBlock() instanceof HeatproofBricksBlock);
+	}, state -> state.getBlock() instanceof HeatproofBricksBlock, HeatproofBricksBlock.FORMED);
 
 	private static final int[] SLOTS_INPUT = {0, 1, 2, 3, 4, 5, 6, 7, 8};
 	private static final int[] SLOTS_OUTPUT = {9, 10, 11, 12, 13, 14, 15, 16, 17};
@@ -302,7 +302,18 @@ public class FurnaceTowerControllerBlockEntity extends BaseContainerBlockEntity 
 
 	// ---- 모양 ----
 
+	@Override
+	public MultiblockShape shape() {
+		return SHAPE;
+	}
+
+	@Override
+	public Direction facing() {
+		return getBlockState().getValue(FurnaceTowerControllerBlock.FACING);
+	}
+
 	/** 다음 틱에 모양을 다시 확인한다 (벽돌이 부서짐 · 제어기 옆이 바뀜). */
+	@Override
 	public void requestCheck() {
 		checkTimer = 0;
 	}
@@ -318,28 +329,16 @@ public class FurnaceTowerControllerBlockEntity extends BaseContainerBlockEntity 
 			formed = now;
 			setChanged();
 		}
-		if (now || changed) {
-			setCasingsFormed(level, pos, facing, now);
+		// 맞으면 매번 (이웃 탑이 끈 공유 벽돌도) 켜고 잇는다. 풀린 순간에는 이웃 탑이 쓰는 벽돌만 남기고 끈다
+		if (now) {
+			SHAPE.form(level, pos, facing);
+		} else if (changed) {
+			SHAPE.unform(level, pos, facing);
 		}
 		return formed;
 	}
 
-	/** 벽돌 무늬를 켜거나 끄고, 고압 증기를 넘길 제어기를 알려 준다. 이웃 갱신 없이. */
-	static void setCasingsFormed(ServerLevel level, BlockPos controller, Direction facing, boolean formed) {
-		for (BlockPos casing : SHAPE.casings(controller, facing)) {
-			BlockState state = level.getBlockState(casing);
-			if (!(state.getBlock() instanceof HeatproofBricksBlock)) {
-				continue;
-			}
-			if (state.getValue(HeatproofBricksBlock.FORMED) != formed) {
-				level.setBlock(casing, state.setValue(HeatproofBricksBlock.FORMED, formed), Block.UPDATE_CLIENTS);
-			}
-			if (level.getBlockEntity(casing) instanceof HeatproofBricksBlockEntity bricks) {
-				bricks.link(formed ? controller.immutable() : null);
-			}
-		}
-	}
-
+	@Override
 	public boolean isFormed() {
 		return formed;
 	}
