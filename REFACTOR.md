@@ -1387,3 +1387,13 @@ Opus 샘플링(직접 읽음, Haiku 담당 영역): `boss/gear/VoidStaffItem` ·
 
 ### 8-7. 2단계 계획
 **2단계 없음.** 8-2에서 올린 셋은 반론으로 모두 닫았다: 1은 설계상 장비 상수(주석 한 줄, L1), 5 · 6은 #62 기준 오탐. 3단계도 없음. 다음 라운드 후보는 보류 11(렌더러 기반 클래스, 보스가 넷이 될 때)과 보류 메모 17b · 27b · 28b.
+
+### 8-8. L3 수정 기록 (전투 · 기타 주석, 브랜치 r4-l3)
+- **#22** `SteamSyringeItem.inject`: 주사기 몫 `have = min(주사기, 비용)`, 모자란 `need`는 `drain` 먼저(모자라면 아무것도 안 빠지고 `NO_STEAM`) 뒤 `take(have)`. 클래스 문서 갱신. 새 시험 `SanupcraftM13GameTest.syringeUsesCanisterOnlyForShortfall`(주사기 150 + 통 100 → 살림 · 주사기 0 · 통 50 / 주사기 50 + 통 100 → `NO_STEAM` · 둘 다 그대로). 고치기 전 실패 확인: "주사기 150 + 통 100으로 못 살림".
+- **#25** `Downed.goDown`에 `LAST_HIT.remove(player.getUUID())` 한 줄 (`SERVER_STARTING` 훅 없음).
+- **#27** `FlamethrowerItem` 클래스 문서에 물속 동작 한 줄 (주석만, 27b 보류).
+- **#37** `ToxicGasPocketFeature` 문서: 불씨(`ToxicGasBlock#isIgnitionSource`) 옆 칸.
+- **#40** `MultiblockShape.unform` 문서: 안 불러온 청크의 이웃 제어기가 가진 공유 외벽은 잠시 꺼졌다 다음 확인에서 켜짐 (주석만).
+- **#44** `PlaytestCommand.kitIndustry` 문서: 외벽 33(여분 포함 40개).
+- **#45** `ModSounds.machine` 문서: 40틱(분쇄기 30틱).
+- 결과: `./gradlew build` GameTest 410개 전부 통과(409 + 새 시험 1), `runClientGameTest` 종료 코드 0.

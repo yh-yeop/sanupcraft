@@ -16,7 +16,7 @@ import io.github.yhyeop.sanupcraft.gear.SteamChargedItem;
 
 /**
  * 응급 증기 주사기 (C5). 쓰러진 동료를 우클릭하면 체력 4 + 재생으로 일으킨다. 한 번에 증기 200.
- * 증기는 주사기 자신(600, 증기 충전대)에서 먼저 쓰고, 모자라면 인벤토리의 증기 통에서 쓴다. 창작 모드는 공짜.
+ * 증기는 주사기 자신(600, 증기 충전대)에서 먼저 쓰고, 모자란 몫만 인벤토리의 증기 통에서 쓴다 (합쳐도 모자라면 아무것도 안 쓴다). 창작 모드는 공짜.
  * 쓰러진 사람은 아이템을 못 쓰므로 스스로는 못 일어난다.
  */
 public class SteamSyringeItem extends SteamChargedItem {
@@ -59,11 +59,13 @@ public class SteamSyringeItem extends SteamChargedItem {
 		}
 		int cost = SanupcraftConfig.current().syringeSteam;
 		if (!user.hasInfiniteMaterials()) {
-			if (SteamCharge.get(syringe) >= cost) {
-				SteamCharge.take(syringe, cost);
-			} else if (!SteamCharge.drain(user, cost)) {
+			int have = Math.min(SteamCharge.get(syringe), cost);
+			int need = cost - have;
+			// 통에서 먼저 빼 보고(모자라면 아무것도 안 빠진다) 성공했을 때만 주사기 몫을 뺀다
+			if (need > 0 && !SteamCharge.drain(user, need)) {
 				return Result.NO_STEAM;
 			}
+			SteamCharge.take(syringe, have);
 		}
 		Downed.revive(target, user);
 		return Result.REVIVED;

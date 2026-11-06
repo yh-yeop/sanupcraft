@@ -343,7 +343,7 @@ public final class PlaytestCommand {
 		food(p);
 	}
 
-	/** M8 묶음 A: 외벽 33 + 제어기로 대형 보일러, 레일 위 기관차 + 화물칸 + 역 (꺼진 동력 레일 = 정거장). */
+	/** M8 묶음 A: 외벽 33(여분 포함 40개) + 제어기로 대형 보일러, 레일 위 기관차 + 화물칸 + 역 (꺼진 동력 레일 = 정거장). */
 	private static void kitIndustry(ServerPlayer p) {
 		give(p, ModIndustry.BIG_BOILER_CASING.asItem(), 40);
 		give(p, ModIndustry.BIG_BOILER_CONTROLLER.asItem(), 1);

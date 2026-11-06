@@ -271,6 +271,47 @@ public class SanupcraftM13GameTest {
 		helper.succeed();
 	}
 
+	/** 주사기 증기가 비용(200)보다 적으면 모자란 몫만 증기 통에서 쓴다: 150 + 통 100 → 살림(주사기 0 · 통 50), 50 + 통 100(합 150) → 아무것도 안 쓰고 실패. */
+	@GameTest
+	public void syringeUsesCanisterOnlyForShortfall(GameTestHelper helper) {
+		ServerLevel level = helper.getLevel();
+		MinecraftServer server = level.getServer();
+		Vec3 base = helper.absoluteVec(new Vec3(3.5, 1.0, 3.5));
+		ServerPlayer first = inLevel(helper, "sf", base);
+		ServerPlayer second = inLevel(helper, "ss", base.add(0, 0, 2));
+		ServerPlayer user = inLevel(helper, "su", base.add(2, 0, 0));
+		try {
+			first.hurtServer(level, first.damageSources().generic(), 1000.0F);
+			second.hurtServer(level, second.damageSources().generic(), 1000.0F);
+			helper.assertTrue(Downed.isDowned(first) && Downed.isDowned(second), "둘 다 쓰러지지 않음");
+
+			ItemStack canister = new ItemStack(io.github.yhyeop.sanupcraft.gear.SteamGear.STEAM_CANISTER);
+			SteamCharge.set(canister, 100);
+			user.getInventory().setItem(5, canister);
+
+			// 합쳐도 모자람: 아무것도 안 빠진다
+			ItemStack poor = new ItemStack(ModCombat.STEAM_SYRINGE);
+			SteamCharge.set(poor, 50);
+			helper.assertTrue(SteamSyringeItem.inject(level, user, poor, first) == SteamSyringeItem.Result.NO_STEAM, "합이 모자란데 살림");
+			helper.assertValueEqual(SteamCharge.get(poor), 50, "실패했는데 주사기 증기가 빠짐");
+			helper.assertValueEqual(SteamCharge.get(canister), 100, "실패했는데 증기 통이 빠짐");
+			helper.assertTrue(Downed.isDowned(first), "실패했는데 일어남");
+
+			// 주사기 150 + 통 100: 주사기를 다 쓰고 통에서 50만 쓴다
+			ItemStack syringe = new ItemStack(ModCombat.STEAM_SYRINGE);
+			SteamCharge.set(syringe, 150);
+			helper.assertTrue(SteamSyringeItem.inject(level, user, syringe, second) == SteamSyringeItem.Result.REVIVED, "주사기 150 + 통 100으로 못 살림");
+			helper.assertFalse(Downed.isDowned(second), "살렸는데 아직 쓰러짐");
+			helper.assertValueEqual(SteamCharge.get(syringe), 0, "주사기 증기를 다 안 씀");
+			helper.assertValueEqual(SteamCharge.get(canister), 50, "통에서 모자란 50만 안 빠짐");
+		} finally {
+			server.getPlayerList().remove(first);
+			server.getPlayerList().remove(second);
+			server.getPlayerList().remove(user);
+		}
+		helper.succeed();
+	}
+
 	/** 실테스트 combat 꾸러미: 무기 셋 · 신호기 · 주사기가 들어 있고 해머 · 화염 방사기는 증기가 가득. */
 	@GameTest
 	public void playtestCombatKit(GameTestHelper helper) {
