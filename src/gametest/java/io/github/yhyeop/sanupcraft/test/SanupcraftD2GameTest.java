@@ -251,7 +251,7 @@ public class SanupcraftD2GameTest {
 	 * 광맥 청크의 굴착기가 캘 때마다 덤 광석을 상자로 올려 보내고 남은 양을 줄인다. 바닥나면 더 안 나온다.
 	 * 확률 100%로 돌린다 (3x3 돌 9칸, 매장량 6 → 덤 정확히 6, 바닥난 뒤 캔 3칸은 덤 없음).
 	 */
-	@GameTest(environment = "sanupcraft-test:alone_quarry", maxTicks = 300)
+	@GameTest(environment = "sanupcraft-test:alone_veins", maxTicks = 300) // 전용 환경: 설정(덤 확률)을 바꾸므로 다른 시험과 같은 묶음에서 돌지 않게
 	public void quarryGetsVeinBonusUntilDepleted(GameTestHelper helper) {
 		int oldChance = SanupcraftConfig.current().veinBonusPercent;
 		BlockPos quarryPos = new BlockPos(3, 3, 3);
