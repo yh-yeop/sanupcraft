@@ -2812,6 +2812,29 @@ def main_m8b(made):
     made.append(save(recolor(dust, {"a": "#2b1347", "b": "#5b2a8c", "c": "#8a4fd0", "d": "#b98cf0", "e": "#ecdcff"}), "item/rare_dust.png"))
 
 
+def main_m8c(made):
+    """M8 I4 렌치 (+ X2는 텍스처 없음)."""
+    wrench = [
+        "................",
+        "..........cd.de.",
+        ".........cdc.dc.",
+        ".........bc..cb.",
+        ".........bcbcbb.",
+        "..........bcbb..",
+        ".........bcb....",
+        "........bcb.....",
+        ".......bcb......",
+        "......bcb.......",
+        ".....bcb........",
+        "....bcb.........",
+        "...acb..........",
+        "..aba...........",
+        "..aa............",
+        "................",
+    ]
+    made.append(save(from_art(wrench), "item/wrench.png"))
+
+
 def save(im, rel, scale=1):
     path = os.path.join(OUT, *rel.split("/"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -2854,6 +2877,7 @@ def main():
     main_m5(made)
     main_m11a(made)
     main_m8b(made)
+    main_m8c(made)
 
     if "--sheet" in sys.argv:
         tiles = [Image.open(p) for p in made]

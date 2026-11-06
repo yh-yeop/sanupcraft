@@ -16,6 +16,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import io.github.yhyeop.sanupcraft.factory.MachineBlockEntity;
+import io.github.yhyeop.sanupcraft.factory.MachineFaces;
 
 /**
  * 벨트 한 칸. 모터가 {@link #power}로 잠깐씩 켜 준다.
@@ -112,10 +113,14 @@ public class BeltBlockEntity extends BlockEntity implements Container {
 	/**
 	 * {@code travel} 방향으로 나르던 {@code stack}을 {@code target}에 넣고 남은 것을 돌려준다 (벨트 끝 · 분류기 출구가 같이 쓴다).
 	 * 대상이 기계이면 연료는 옆면(연료 칸) 먼저, 남으면 위(재료 칸)로 넣고, 연료가 아닌 것은 위로만 넣는다.
+	 * 단, 닿은 면에 면 설정(렌치)이 있으면 그 면으로만 넣는다.
 	 */
 	public static ItemStack insert(Container target, ItemStack stack, Direction travel) {
 		ItemStack rest = stack;
-		if (target instanceof MachineBlockEntity) {
+		if (target instanceof MachineBlockEntity machine && machine.faceMode(travel.getOpposite()) != MachineFaces.Mode.DEFAULT) {
+			// 면 설정 (M8 I4): 닿은 면을 정해 두었으면 그 면의 규칙만 따른다
+			rest = HopperBlockEntity.addItem(null, target, rest, travel.getOpposite());
+		} else if (target instanceof MachineBlockEntity) {
 			if (MachineBlockEntity.isFuel(rest)) {
 				rest = HopperBlockEntity.addItem(null, target, rest, travel.getOpposite());
 			}
