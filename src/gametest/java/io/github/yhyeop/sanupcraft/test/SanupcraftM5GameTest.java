@@ -273,11 +273,13 @@ public class SanupcraftM5GameTest {
 		pig.startRiding(boat);
 		double surface = helper.absoluteVec(new Vec3(0, 3, 0)).y + 8.0F / 9.0F;
 		helper.assertTrue(boat.fireImmune(), "증기선이 불 면역이 아님");
+		double[] earlier = new double[1];
+		helper.runAfterDelay(90, () -> earlier[0] = boat.getY());
 		helper.runAfterDelay(100, () -> {
 			helper.assertTrue(boat.isAlive(), "증기선이 부서짐");
-			helper.assertTrue(boat.getY() > surface - 0.6 && boat.getY() < surface + 0.2,
-					"용암 위에 안 떠 있음: y=" + boat.getY() + " 용암 윗면=" + surface);
-			helper.assertTrue(Math.abs(boat.getDeltaMovement().y) < 0.05, "아직 출렁임: " + boat.getDeltaMovement().y);
+			helper.assertTrue(boat.getY() > surface - 0.3 && boat.getY() < surface,
+					"용암 위에 얕게 안 떠 있음: y=" + boat.getY() + " 용암 윗면=" + surface);
+			helper.assertTrue(Math.abs(boat.getY() - earlier[0]) < 0.02, "아직 출렁임: " + earlier[0] + " → " + boat.getY());
 			helper.assertFalse(boat.isOnFire(), "증기선이 탐");
 			helper.assertTrue(pig.isPassenger(), "돼지가 내림");
 			helper.assertTrue(pig.hasEffect(MobEffects.FIRE_RESISTANCE), "탄 돼지에게 화염 저항이 없음");
@@ -295,6 +297,16 @@ public class SanupcraftM5GameTest {
 		helper.assertTrue(structure instanceof NetherFloorStructure, "버려진 용광로 구조물이 없거나 종류가 다름: " + structure);
 		helper.assertTrue(access.lookupOrThrow(Registries.STRUCTURE_SET)
 				.get(ResourceKey.create(Registries.STRUCTURE_SET, Sanupcraft.id("abandoned_furnaces"))).isPresent(), "구조물 묶음이 등록 안 됨");
+		// 실제로 조각이 든 구조물이 생기는지 (시험 서버의 네더는 평지라 바닥은 늘 찾는다). 직소 깊이 0이면 조각이 비어 생기지 않았다
+		ServerLevel nether = helper.getLevel().getServer().getLevel(net.minecraft.world.level.Level.NETHER);
+		var generator = nether.getChunkSource().getGenerator();
+		var randomState = nether.getChunkSource().randomState();
+		var holder = access.lookupOrThrow(Registries.STRUCTURE).getOrThrow(ModNether.ABANDONED_FURNACE);
+		var start = structure.generate(holder, net.minecraft.world.level.Level.NETHER, access, generator, generator.getBiomeSource(),
+				randomState.createClimateSampler(net.minecraft.world.level.levelgen.densityfunction.SamplerContext.builder().enableCaches().build()),
+				randomState, nether.getStructureTemplateManager(), nether.getSeed(), new net.minecraft.world.level.ChunkPos(3, 3), 0, nether, b -> true);
+		helper.assertTrue(start.isValid(), "버려진 용광로 구조물이 비어 있음 (조각 없음)");
+		helper.assertValueEqual(start.getPieces().size(), 1, "조각 수");
 		helper.succeed();
 	}
 

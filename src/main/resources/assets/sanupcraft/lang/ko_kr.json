@@ -311,5 +311,7 @@
   "advancements.sanupcraft.lava_steamboat.title": "용암 뱃놀이",
   "advancements.sanupcraft.lava_steamboat.description": "용암 증기선을 만든다. 네더의 용암 바다를 배로 건넌다.",
   "advancements.sanupcraft.abandoned_furnace.title": "식어 버린 용광로",
-  "advancements.sanupcraft.abandoned_furnace.description": "네더 황무지 · 현무암 삼각주에서 버려진 용광로를 찾는다. 상자에 파수꾼 소환석이 들어 있을 때가 있다."
+  "advancements.sanupcraft.abandoned_furnace.description": "네더 황무지 · 현무암 삼각주에서 버려진 용광로를 찾는다. 상자에 파수꾼 소환석이 들어 있을 때가 있다.",
+  "gui.sanupcraft.machine.steam_hp": "고압 증기 %s/%s",
+  "jei.sanupcraft.machine_time_hp": "%s초 · 고압 증기"
 }

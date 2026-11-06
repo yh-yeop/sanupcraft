@@ -311,5 +311,7 @@
   "advancements.sanupcraft.lava_steamboat.title": "Lava Cruise",
   "advancements.sanupcraft.lava_steamboat.description": "Make a Lava Steamboat and sail across the Nether's lava seas.",
   "advancements.sanupcraft.abandoned_furnace.title": "Gone Cold",
-  "advancements.sanupcraft.abandoned_furnace.description": "Find an Abandoned Furnace in the Nether Wastes or Basalt Deltas. Its chest sometimes holds a Warden Summoner."
+  "advancements.sanupcraft.abandoned_furnace.description": "Find an Abandoned Furnace in the Nether Wastes or Basalt Deltas. Its chest sometimes holds a Warden Summoner.",
+  "gui.sanupcraft.machine.steam_hp": "High-pressure steam %s/%s",
+  "jei.sanupcraft.machine_time_hp": "%ss · high-pressure steam"
 }

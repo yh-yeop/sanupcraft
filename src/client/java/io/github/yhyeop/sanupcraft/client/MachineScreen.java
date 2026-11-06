@@ -50,7 +50,7 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
 				graphics.setTooltipForNextFrame(font, Component.translatable(key), mouseX, mouseY);
 			}
 		} else if (hoveredSlot == null && isHovering(FLAME_X, FLAME_Y, FLAME_SIZE, FLAME_SIZE, mouseX, mouseY)) {
-			graphics.setTooltipForNextFrame(font, Component.translatable("gui.sanupcraft.machine.steam", menu.steam(), MachineBlockEntity.STEAM_CAPACITY), mouseX, mouseY);
+			graphics.setTooltipForNextFrame(font, Component.translatable(menu.kind().highPressure() ? "gui.sanupcraft.machine.steam_hp" : "gui.sanupcraft.machine.steam", menu.steam(), MachineBlockEntity.STEAM_CAPACITY), mouseX, mouseY);
 		}
 	}
 

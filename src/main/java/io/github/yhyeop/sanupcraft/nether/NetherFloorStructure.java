@@ -73,9 +73,10 @@ public class NetherFloorStructure extends Structure {
 		if (similar < 3) {
 			return Optional.empty();
 		}
-		// JigsawPlacement는 틀의 y=1을 이 높이에 맞춘다 → y=0이 바닥 블록 자리
+		// JigsawPlacement는 틀의 y=1을 이 높이에 맞춘다 → y=0이 바닥 블록 자리.
+		// 깊이는 1이어야 한다: 0이면 JigsawPlacement가 시작 조각조차 넣지 않아 구조물이 비어 버린다 (틀에 직소 블록이 없어 더 붙지는 않음)
 		BlockPos start = new BlockPos(x, floor + 1, z);
-		return JigsawPlacement.addPieces(context, startPool, Optional.empty(), 0, start, false, Optional.empty(),
+		return JigsawPlacement.addPieces(context, startPool, Optional.empty(), 1, start, false, Optional.empty(),
 				new JigsawStructure.MaxDistance(16), PoolAliasLookup.EMPTY, DimensionPadding.ZERO, LiquidSettings.IGNORE_WATERLOGGING);
 	}
 
