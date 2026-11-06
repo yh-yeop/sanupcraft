@@ -958,3 +958,103 @@ Opus 샘플링: 판정 단계에서 Opus가 지적 밖 코드(굴착기 flush �
 - ① 41 단독(기계적): `BigBoilerShape`를 `MultiblockShape` 인스턴스(`BIG_BOILER = new MultiblockShape(…)`, 3x3x4 · 가운데 기둥 · 빈칸 `Layout`)로 바꾸고 `BigBoilerShape` 삭제. 호출처(`BigBoilerCasingBlock` · `BigBoilerControllerBlock` · `BigBoilerControllerBlockEntity` · `SanupcraftM8aGameTest`)를 옮긴다.
 - ② 40 · 42: 두 제어기 공통으로 `MultiblockShape`(또는 작은 `MultiblockController` 도우미)에 `setCasingsFormed(level, controller, facing, formed, owns)` · `notifyControllers(level, casingPos)` · 힌트 문구 만들기를 하나로. 외벽 블록 둘(큰 보일러 외벽 · 내열 벽돌)의 이웃 변화 → 제어기 알림도 그 도우미를 부른다.
 - **43 규칙 결정: 외벽 공유를 허용한다** (금지하면 모양 확인이 이웃 제어기를 찾아야 하고 큰 보일러 외벽에는 소유 기록이 없어 BE를 새로 달아야 함 → 이득보다 변경이 큼). 규칙: 끌 때 ⓐ 벽돌 `link`는 **나를 가리킬 때만** `null`로, ⓑ FORMED를 끈 외벽마다 둘레 제어기에 `notifyControllers`(= `requestCheck`)를 보내 이웃이 **다음 틱에** 다시 켜고 다시 잇게 한다(지금의 `CHECK_INTERVAL`만큼의 공백을 1틱으로). 시험: 벽돌 한 면을 공유하는 탑 둘을 세우고 A의 벽돌 하나를 부숨 → 1~2틱 뒤 B가 여전히 `isFormed()`, 공유 벽돌 FORMED 참 · B에 이어짐.
+
+### 7-8. 2단계 설계 (Opus)
+기준: K1~K5 병합 뒤(`b08c16d`). 코드를 다시 읽고 7-7을 구체화한다. 걸음은 다섯: **보스 ① → 보스 ② → 77 ③ → 멀티블록 ① → 멀티블록 ②(+43)**, 걸음마다 `./gradlew build`, 보스 ② · ③은 `runClientGameTest`도, 걸음마다 따로 커밋. 엔티티 id · NBT 키 · 패킷 · 블록 상태 이름은 하나도 안 바뀐다 → 3단계 불필요.
+
+#### 보스 ① `boss/BossCombat` (final, 정적, 동작 불변)
+| 멤버 | 옮겨 오는 곳 | 비고 |
+|---|---|---|
+| `static final float SHIELD_BREAK_SECONDS = 5.0F` | `RustyGuardian` · `FurnaceWarden`의 같은 이름 공개 상수 | 두 상수는 지운다(본 · 클라이언트 · 시험 어디서도 이름으로 안 씀, 시험은 `getSecondsToDisableBlocking()`만). 두 보스의 `getSecondsToDisableBlocking()` 오버라이드는 각자 남기고 이 상수를 돌려준다(거상은 오버라이드가 없어 0 그대로) |
+| `static void breakShield(ServerLevel, LivingEntity)` | 두 보스의 `private static breakShield` (본문 동일) | |
+| `static double horizontalDistance(Vec3, Vec3)` | 두 보스의 `private static horizontalDistance` | 수호자 1곳 · 파수꾼 2곳 |
+| `static final class PlayerCooldown` (`PlayerCooldown(int ticks)`, `boolean tryUse(UUID, long now)`) + `static void warn(ServerLevel, @Nullable Entity target, PlayerCooldown, String key)` | 수호자 `warnedAt` + `warnRust` · 파수꾼 `warnedAt` + `warnHeat` (200틱) · 거상 `shieldMessageAt` + `hurtServer` 안 문구(60틱) | `tryUse` = 지금 두 보스 식 그대로(`removeIf(now − last ≥ ticks)` → `putIfAbsent`가 비었으면 참). 거상 식(`last == null ‖ now − last ≥ 60`이면 보내고 기록)과 결과가 같다(지난 기록은 지워져 비고, 60틱 안이면 남아 거짓 · 기록 안 고침). 차이는 거상 맵이 이제 비워진다는 것뿐(메모리만). `warn`은 대상이 `ServerPlayer`일 때만 `sendOverlayMessage(translatable(key))` |
+| `static List<Player> targets(ServerLevel, AABB)` · `targets(ServerLevel, AABB, Predicate<Player> extra)` | 수호자 돌진 · 내려찍기, 파수꾼 분출 · 장판 위치 고르기 · 장판 폭발 · 도약 착지(6곳 `getEntitiesOfClass(Player.class, box, NO_CREATIVE_OR_SPECTATOR)` 또는 같은 뜻의 람다), 거상 `targets` | `NO_CREATIVE_OR_SPECTATOR`는 바이트코드로 확인: 플레이어면 `!isSpectator() && !isCreative()` → 파수꾼 장판 위치 람다와 같다. 거상 `targets(level, range)`는 자기 함수로 남기되 몸통을 `BossCombat.targets(level, box, p -> p.isAlive() && p.distanceTo(this) <= range)`로(살아 있음 · 구 거리는 거상만의 조건이라 다른 보스에 퍼뜨리지 않음 = 동작 불변) |
+
+손대지 않는 것: `hitWithRust` · `hitWithHeat`(갑옷 판정 · 효과가 달라 묶으면 함수 인자만 늘어남), `PatternGoal`(② 몫).
+
+#### 보스 ② `boss/PartyBossMonster` — `public abstract class PartyBossMonster extends Monster implements PartyBoss`
+생성자: `protected PartyBossMonster(EntityType<? extends PartyBossMonster> type, Level level, BossEvent.BossBarColor color, int xpReward)` — `super(type, level)` 뒤 `bossEvent = new ServerBossEvent(Mth.createInsecureUUID(random), getDisplayName(), color, NOTCHED_10)`, `this.xpReward = xpReward`, `setPersistenceRequired()`. 세 보스 생성자는 `super(type, level, RED/YELLOW/PURPLE, 50/80/120)` 한 줄.
+- **필드 초기화 순서**: 7-7의 "지연 생성"은 필요 없다. 지금도 `bossEvent`는 필드 초기화식이라 `Monster` 생성자가 끝난 뒤 만들어진다. 부모 생성자 몸통(같은 시점: `Monster` 생성자 뒤, 자식 필드 초기화 앞)으로 옮겨도 시점이 같다. `Mob` 생성자가 부르는 가상 함수는 `registerGoals`뿐이고 거기서 `bossEvent` · 자식 필드를 읽지 않는다(`new PatternGoal()`은 바깥 객체 참조만). `getDisplayName()`은 아무 보스도 오버라이드하지 않는다. `random` 소비 순서도 같다(첫 소비가 이 UUID).
+
+부모가 갖는 것 (세 보스에서 글자 그대로 같거나, 차이가 인자 하나):
+| 부모 멤버 | 지금 | 비고 |
+|---|---|---|
+| `private final ServerBossEvent bossEvent`, `private final BossParty party`, `public final BossParty party()` | 세 보스 필드 | 자식의 `party.` 직접 접근은 `party()`로 |
+| `public Component bossBarName()` | 셋 | 시험이 씀(상속으로 그대로) |
+| `public boolean isEnraged()` | 셋 | 렌더러가 씀 |
+| `setCustomName` → `refreshBossBar`, `refreshBossBar()`, `removeWhenFarAway`, `startSeenByPlayer` · `stopSeenByPlayer` | 셋 | |
+| `customServerAiStep`: `super` → `bossEvent.setProgress` → 처음 화나면 `phaseAnnounced = true; announcePhase(level)` | 셋의 머리 4줄 | `private boolean phaseAnnounced`는 부모로. 자식은 `super.customServerAiStep(level)` 다음에 패턴 진행(지금과 같은 순서) |
+| `protected abstract void announcePhase(ServerLevel)` | `ModSounds.bossPhase(…)` 인자만 다름 | 수호자 CRIT, 파수꾼 FLAME, 거상 `COLOSSUS_RAGE` + REVERSE_PORTAL |
+| `actuallyHurt`(기여 기록), `getDamageAfterMagicAbsorb`(상한 보정) | 셋 | |
+| `dropCustomDeathLoot`: `super` → `party.giveKeyItem(level, this, keyItem())`, `protected abstract Item keyItem()` | 셋 | 거상은 오버라이드해 `super` 뒤 수정 정리(지금 순서 그대로) |
+| `addAdditionalSaveData`: `super` → `party.save` / `readAdditionalSaveData`: `super` → `party.load` → `refreshBossBar()` → `phaseAnnounced = isEnraged()` | 셋 | 거상은 오버라이드해 `super` 뒤 `shield_wave` · `crystals`만. 지금은 거상이 수정 목록을 먼저 읽고 보스 바를 고치지만 서로 무관(보스 바 · 화남은 체력 · 단계만 봄) |
+| `makeStuckInBlock` 빈 몸통 | 셋 | |
+| `canBeAffected`: 구속 면역 | 셋(거상은 + 공중 부양) | 거상 오버라이드: `!effect.is(LEVITATION) && super.canBeAffected(effect)` |
+| `public static final byte EVENT_ATTACK = 4`, `private int attackTick`, `protected void playAttackAnimation(ServerLevel)`(10틱 + 이벤트 방송), `handleEntityEvent`(4 → 10틱, 아니면 `super`), `aiStep`(`super` 뒤 1 감소), `public int getAttackTick()` | 셋(수호자만 이름이 `attackAnimationTick` · `getAttackAnimationTick` · `swingArms`) | 수호자 `swingArms` · 파수꾼 `swingHead` · 거상 `doHurtTarget` 첫 두 줄 → `playAttackAnimation`. 파수꾼은 `handleEntityEvent`에서 `EVENT_ROAR`만 보고 나머지는 `super`, `aiStep`은 `super` 뒤 `roarTick` · 불꽃(지금 순서 그대로). `RustyGuardian.EVENT_ATTACK` · `VoidColossus.EVENT_ATTACK`처럼 자식 이름으로 쓰는 곳(시험 1곳)은 상속된 정적 필드라 그대로 컴파일된다 |
+| `protected final class PatternGoal extends Goal` (`MOVE` · `LOOK`, `canUse() = inPattern()`, 매 틱), `protected abstract boolean inPattern()` | 셋의 `private class PatternGoal`(같은 본문, 각자 `pattern != Pattern.NONE`) | 7-7은 ②에 안 넣었지만 셋이 글자 그대로 같고 상태 접근이 추상 함수 하나라 같이 옮긴다. `registerGoals`는 시선 거리(12 / 16)가 달라 각자 남김 |
+
+각 보스에 남는 것: 상수 · `Pattern` 열거 · `CYCLE` · 패턴 필드와 `startPattern` · `tickPattern` · `endPattern` · 패턴 판정 함수 전부, `hurtServer`(셋이 다름: 수호자 낙하 · 익사 + 강철 검, 파수꾼 + 불 면역 + 내열 검, 거상 + 방어막 선검사), `doHurtTarget`, `hitWithRust` · `hitWithHeat`, `getSecondsToDisableBlocking`(둘), `registerGoals`, `createAttributes`, `getDeathSound`, 파수꾼 `roarTick` · 입 위치 · 착지 예측, 거상 동기화 데이터 · 수정 · 애니메이션 값 · `VoidBullet`.
+
+`PartyBoss` 인터페이스는 남긴다(`BossParty.setTier` · `GuardianAltarBlock` · `MobGrinderBlockEntity` · `SanupcraftFinGameTest`의 `<T extends Monster & PartyBoss>`가 씀). `GuardianAltarBlock.isBoss`는 `monster instanceof PartyBossMonster` 한 줄로(같은 세 클래스).
+
+**저장 키 (바뀌지 않음, 위치만 부모로)**: `BossParty.save/load` — `party_size`(int) · `party_summoned`(long) · `party_tier`(int) · `party_damage`(UUID 문자열 → float 맵). 거상만 — `shield_wave`(int) · `crystals`(UUID 목록). 바닐라 키(`CustomName` · `Health` · `attributes` 등)는 `super`가 그대로. 패턴 · 쿨다운 · 경고 시각은 지금도 저장 안 함.
+
+렌더러 · 시험 영향: `RustyGuardianRenderer`의 `getAttackAnimationTick()` → `getAttackTick()`(③에서 어차피 공통 추출로 바뀜). 시험은 공개 API(`party()` · `bossBarName()` · `startPattern` · `tickPattern` · `hitWith*` · `pattern()` · 상수)가 이름 그대로라 고칠 곳 없음.
+
+#### 77 ③ 클라이언트 공통 (이번에 한다)
+② 뒤에는 세 렌더러의 `extractRenderState` 앞부분(`getAttackTick` → 남은 틱, `isEnraged`)이 글자 그대로 같아지므로 보류할 이유가 없다. 새 클래스 둘, 고치는 클래스 여덟.
+- `client/boss/BossRenderState extends LivingEntityRenderState`: `attackTicksRemaining` · `enraged` + `float attackProgress()`(= 1 − t/10) · `float attackRaise()`(앞 40% 들기 · 다음 30% 내리기 식). 세 `*RenderState`는 이를 상속하고 겹치는 두 필드를 지운다.
+- `client/boss/BossRenderer<T extends PartyBossMonster, S extends BossRenderState, M extends EntityModel<S>> extends MobRenderer<T, S, M>`: 생성자 `(context, model, shadow, scale, name, ToDoubleFunction<S> glow)` → 텍스처 `name` · 빛 `name_glow`, `BossGlowLayer` 추가, `getTextureLocation` · `scale` · `extractRenderState`(공통 두 값). 세 렌더러는 `createRenderState`와 자기 값(파수꾼 포효, 거상 당기기 · 보호막)만. 거상의 `VoidShieldLayer`는 `super` 뒤 추가 → 레이어 순서(빛 → 보호막) 그대로.
+- `BossGlowLayer`: 사망 페이드(`deathTime > 0`이면 1 − deathTime/20)를 레이어가 먼저 본다 → 세 `glow` 함수 첫 세 줄 삭제(사용처는 세 보스뿐).
+- 세 모델 `setupAnim`의 `p` · `raise` 계산 두 줄 → `state.attackProgress()` · `state.attackRaise()`. 각도 상수는 보스마다 달라 그대로.
+- 같은 77의 `Math.max(cost, 1)`: `Jetpack.hasThrustSteam(ItemStack pack)`(= `SteamCharge.get(pack) >= Math.max(설정값, 1)`)을 만들고 `Jetpack.thrust` · `JetpackClient` 두 곳이 부른다.
+
+#### 멀티블록 ① #41 (기계적)
+- `BigBoilerControllerBlockEntity.SHAPE = new MultiblockShape(3, 4, layout, state -> state.getBlock() instanceof BigBoilerCasingBlock, BigBoilerCasingBlock.FORMED)` — `layout`은 `BigBoilerShape.partAt` 본문 그대로(제어기 (0,0,0), 가운데 기둥 깊이 1의 1 · 2층만 빈칸, 나머지 외벽 33칸). 탑의 `SHAPE`와 같은 자리 · 같은 꼴.
+- `BigBoilerShape` 삭제. 호출처: `BigBoilerControllerBlockEntity`(`check` · `positions` · `Problem` 형) · `BigBoilerControllerBlock`(`Problem` · `Part` · `at` · `HEIGHT`) · `BigBoilerCasingBlock`(`HEIGHT`) · 시험 `SanupcraftM8aGameTest`(`BigBoilerShape.Part` → `MultiblockShape.Part`, `BigBoilerShape.casings` → `BigBoilerControllerBlockEntity.SHAPE.casings`). `MultiblockShape` 클래스 문서의 `BigBoilerShape` 언급도 고친다.
+- ①에서는 `MultiblockShape` 생성자에 `BooleanProperty formed` 인자만 먼저 넣는다(②가 씀; 탑 `SHAPE`도 `HeatproofBricksBlock.FORMED` 전달). 동작 불변.
+
+#### 멀티블록 ② #40 · #42 · #43 — `MultiblockShape`에 붙는 API
+```java
+// MultiblockShape 안 (industry 패키지)
+public interface Controller { MultiblockShape shape(); void requestCheck(); }          // 두 제어기 BE가 구현
+public interface LinkedCasing { @Nullable BlockPos linkedController(); void link(@Nullable BlockPos controller); } // 내열 벽돌 BE가 구현
+
+public void setCasingsFormed(ServerLevel level, BlockPos controller, Direction facing, boolean formed);
+public void unform(ServerLevel level, BlockPos controller, Direction facing);   // 43 규칙
+public void notifyControllers(ServerLevel level, BlockPos casing);              // 외벽이 부서질 때
+public Component problemMessage(Level level, Problem problem, String keyPrefix); // 틀린 칸 문구
+```
+- `setCasingsFormed`: 외벽 칸마다 `isCasing`이면 `formed` 속성을 `UPDATE_CLIENTS`로 맞추고(다를 때만), BE가 `LinkedCasing`이면 켤 때 `link(controller)`, 끌 때는 **`controller.equals(linkedController())`일 때만** `link(null)`. 큰 보일러 외벽은 BE가 없어 링크 단계가 저절로 빠진다. 두 BE의 `static setCasingsFormed` 복사본 삭제.
+- `notifyControllers(level, casing)`: 상자 `casing.offset(−r, −(height−1), −r)` ~ `casing.offset(r, 0, r)`, `r = max(1, depth − 1)`(깊이 3이면 지금 값 2 그대로), 안의 BE가 `Controller`이고 `shape() == this`이면 `requestCheck()`. `BigBoilerCasingBlock` · `HeatproofBricksBlock`의 `static notifyControllers` 복사본 삭제 → 두 블록의 `affectNeighborsAfterRemoval`이 `제어기BE.SHAPE.notifyControllers(level, pos)`.
+- `problemMessage`: `translatable(keyPrefix + (expected == CASING ? ".need_casing" : ".need_hollow"), x, y, z, 그 칸 블록 이름)`. 두 제어기 `status`가 `"block.sanupcraft.big_boiler_controller"` · `"block.sanupcraft.furnace_tower_controller"`로 부른다(lang 키 그대로).
+- #40 힌트: `BoilerBlock.hint`를 `protected static`으로 열고 `BoilerBlockEntity.STEAM_CAPACITY` 대신 `boiler.steamCapacity()`(보일러는 같은 값, 큰 보일러는 6배)를 본다 → `BigBoilerControllerBlock.hint` 복사본 삭제(큰 보일러 제어기는 `BoilerBlock` 자식이라 바로 부름). 탑 힌트는 키 · 조건이 달라 그대로.
+- 두 제어기 BE의 `check` 끝: `if (now) SHAPE.setCasingsFormed(…, true); else if (changed) SHAPE.unform(…);` (지금의 `now || changed` 와 같은 조건, 끄는 쪽만 `unform`). 두 제어기 블록의 `affectNeighborsAfterRemoval`도 `SHAPE.unform(level, pos, facing)`.
+- `formed` · `problem` · `checkTimer` 뼈대까지 묶는 것은 하지 않는다(큰 보일러는 `outletStarts`, 탑은 `setChanged`만 — 남는 몫이 4줄이라 이득 작음).
+
+**#43 알고리즘 (외벽 공유 허용)** — `unform(level, controller, facing)`:
+1. `setCasingsFormed(level, controller, facing, false)` — 무늬는 공유 외벽까지 끄되(누가 같이 쓰는지 큰 보일러 외벽은 알 길이 없음), 벽돌 링크는 나를 가리킬 때만 푼다.
+2. 내 외벽 전체를 덮는 상자(외벽 좌표 최소 ~ 최대를 가로 `r`, 아래로 `height−1`만큼 넓힘; 탑 7×7×5, 보일러 7×7×7) 안에서 `shape() == this`인 다른 제어기(`!pos.equals(controller)`)에 `requestCheck()`.
+3. 이웃은 다음 자기 틱(같은 틱 뒤 순서면 그 틱)에 다시 확인 → 아직 맞으면 `setCasingsFormed(true)`로 공유 외벽 무늬를 켜고 벽돌을 자기에게 잇는다. 지금은 이웃의 `CHECK_INTERVAL`(40틱)까지 꺼져 있던 공백이 1~2틱이 된다.
+- 끝남: `unform`은 "맞음 → 안 맞음"으로 바뀐 순간과 제어기 제거 때만 부르고, 맞는 쪽 확인은 알림을 보내지 않는다 → 알림은 한 번씩만 퍼지고 되돌아오지 않는다(공유 벽돌이 부서져 A · B가 같이 풀리면 서로 한 번 더 확인하지만 `changed`가 거짓이라 거기서 멈춤).
+- 남는 깜빡임: 이웃이 먼저 틱을 돌았으면 공유 외벽이 한 틱 꺼졌다 켜진다(클라이언트 무늬만, 동작 영향 없음 — 증기는 `formed`와 벽돌 링크를 보는데, 링크는 1에서 이웃 것을 건드리지 않음).
+- 금지안을 버린 이유는 7-7 그대로(큰 보일러 외벽에 소유 기록이 없어 BE를 새로 달아야 함).
+
+#### 위험
+1. 보스 ②: `Monster` 위 계층 변경이라 바닐라 가상 함수 순서가 미묘하게 바뀔 수 있음 → 위 표대로 모든 오버라이드가 "`super` 먼저 → 같은 줄 순서"를 지킨다. 특히 파수꾼 `handleEntityEvent` · `aiStep`, 거상 `readAdditionalSaveData` · `dropCustomDeathLoot`.
+2. 보스 ②: 자식 필드가 부모 생성자 뒤에 초기화되므로 부모 생성자에서 자식 상태를 읽으면 안 된다 → 부모 생성자는 `getDisplayName` · `random` · `setPersistenceRequired`만.
+3. 77 ③: 렌더 결과는 GameTest가 못 본다 → `runClientGameTest`(M6 · Fin · M11a 보스 장면 스크린숏)로만 확인. 식은 글자 그대로 옮기고 상수는 보스마다 남긴다.
+4. 멀티블록 ②: 공유 외벽이 1틱 깜빡일 수 있음(위). 알림 상자 크기는 확인할 때 한 번(탑 245칸 · 보일러 343칸 BE 조회), 풀릴 때만이라 비용 무시.
+5. `BoilerBlock.hint`가 가상 `steamCapacity()`를 보게 바뀜 → 일반 보일러 값은 같음(`STEAM_CAPACITY` 반환 확인).
+
+#### 시험 계획
+- 계속 통과해야 하는 것: `./gradlew build` 전체(지금 수, K1~K5 추가분 포함). 보스 쪽은 `SanupcraftGameTest` · `FixBoss` · `M2` · `M3` · `M6` · `M10` · `Fin` · `C3` · `Stage2`(12개 파일 중 클라이언트 제외 9개), 클라이언트는 `M6Client` · `FinClient` · `M11aClient`(보스 렌더 · 공격 이벤트 4). 멀티블록은 `M8a`(큰 보일러 3개) · `M8b`(탑).
+- 새 시험 (이미 등록된 파일에 메서드로만):
+  - ① `FixBoss.bossWarningCooldownPerPlayer`: `BossCombat.PlayerCooldown(200)` — 첫 `tryUse` 참, 같은 시각 같은 사람 거짓, 다른 사람 참, 199틱 뒤 거짓, 200틱 뒤 참.
+  - ② `FixBoss.bossSaveKeysStayCompatible`: 세 보스를 인원 2 · 단계 1로 소환해 피해를 조금 준 뒤 `saveWithoutId` → 태그에 `party_size` · `party_summoned` · `party_tier` · `party_damage`(거상은 + `shield_wave` · `crystals`)가 있고, 새 개체에 읽으면 단계 · 인원 · 보스 바 제목(+N)이 같다(파수꾼 왕복은 지금 시험이 없어 이것으로 채움).
+  - 멀티블록 ① `M8a.bigBoilerFormsOnlyWithRightShape`에 `SHAPE.casings(...).size() == 33` · `positions(...).size() == 36` 한 줄씩(탑 시험의 23과 같은 꼴).
+  - 멀티블록 ② `M8b.sharedWallTowerSurvivesNeighbourBreak`: 동쪽 벽(x 3)을 같이 쓰는 탑 A(제어기 (2,1,1)) · B(제어기 (4,1,1)), 둘 다 북향. 둘 다 `check` 뒤 A만의 벽돌(서쪽 벽 (1,2,2))을 부숨 → 3틱 뒤 A 풀림, A만의 다른 벽돌 무늬 꺼짐, B `isFormed()`, 공유 벽돌 (3,2,2) 무늬 켜짐 · `linkedController()`가 B. 부순 칸은 B 제어기에서 가로 3칸이라 B는 벽돌 알림을 못 받음 → 지금 코드면 B 확인이 37틱 뒤라 실패해야 한다(고치기 전 실패 확인).
+  - 멀티블록 ② `M8b.sharedWallTowerSurvivesNeighbourControllerRemoval`: 같은 배치에서 A 제어기를 부숨 → 3틱 뒤 B 그대로 서 있고 공유 벽돌 무늬 · 링크가 B.
+  - 시험에서 링크를 보려고 `HeatproofBricksBlockEntity.linkedController()`를 공개한다(`LinkedCasing` 구현을 겸함).
+- 걸음마다 새 시험이 고치기 전에 실패하는지(① 쿨다운 · ② 저장 키는 동작 불변이라 해당 없음, 43 둘은 확인) 되돌려 본다.
