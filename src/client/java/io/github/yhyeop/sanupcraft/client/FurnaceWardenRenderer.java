@@ -2,53 +2,65 @@ package io.github.yhyeop.sanupcraft.client;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 
-import net.minecraft.client.model.geom.ModelLayers;
-import net.minecraft.client.model.monster.ravager.RavagerModel;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
-import net.minecraft.client.renderer.entity.state.RavagerRenderState;
 import net.minecraft.resources.Identifier;
+import net.minecraft.util.Mth;
 
 import io.github.yhyeop.sanupcraft.boss.FurnaceWarden;
+import io.github.yhyeop.sanupcraft.client.boss.BossGlowLayer;
+import io.github.yhyeop.sanupcraft.client.boss.BossModelLayers;
+import io.github.yhyeop.sanupcraft.client.boss.FurnaceWardenModel;
+import io.github.yhyeop.sanupcraft.client.boss.FurnaceWardenRenderState;
 
 /**
- * 용광로 파수꾼: 파괴수 모델을 1.2배로 키우고 달군 쇠 색으로 물들인다. 증기 분출 전에는 포효 동작.
- * 텍스처는 게임에 들어 있는 파괴수 것을 쓴다 (레포에 복사하지 않음). 전용 도트는 나중에.
+ * 용광로 파수꾼: 전용 모델(client/boss/FurnaceWardenModel)을 1.2배로 키운다.
+ * 화구 창살 · 눈 틈 · 굴뚝 속 불씨는 빛나는 레이어로 일렁이고, 증기 분출 예고 중에는 활활 타오른다.
  */
-public class FurnaceWardenRenderer extends MobRenderer<FurnaceWarden, RavagerRenderState, RavagerModel> {
-	private static final Identifier TEXTURE = Identifier.withDefaultNamespace("textures/entity/illager/ravager.png");
-	private static final int HEAT_TINT = 0xFFFF5A28;
+public class FurnaceWardenRenderer extends MobRenderer<FurnaceWarden, FurnaceWardenRenderState, FurnaceWardenModel> {
+	private static final Identifier TEXTURE = BossModelLayers.texture("furnace_warden");
+	private static final Identifier GLOW = BossModelLayers.texture("furnace_warden_glow");
 	private static final float SCALE = 1.2F;
+	/** FurnaceWarden.BLAST_WINDUP 과 같은 값 (예고 동작 길이). */
+	private static final float ROAR_TICKS = 20.0F;
 
 	public FurnaceWardenRenderer(EntityRendererProvider.Context context) {
-		super(context, new RavagerModel(context.bakeLayer(ModelLayers.RAVAGER)), 1.1F * SCALE);
+		super(context, new FurnaceWardenModel(context.bakeLayer(BossModelLayers.FURNACE_WARDEN)), 1.1F * SCALE);
+		addLayer(new BossGlowLayer<>(this, GLOW, FurnaceWardenRenderer::glow));
+	}
+
+	private static double glow(FurnaceWardenRenderState state) {
+		if (state.deathTime > 0) {
+			return 1.0 - state.deathTime / 20.0;
+		}
+		if (state.roarAnimation > 0.0F) {
+			return 0.85 + 0.15 * Mth.sin(state.ageInTicks * 1.3F);
+		}
+		float age = state.ageInTicks;
+		double flicker = 0.08 * Mth.sin(age * 0.15F) + 0.05 * Mth.sin(age * 0.53F + 1.0F);
+		return (state.enraged ? 0.85 : 0.72) + flicker * (state.enraged ? 1.8 : 1.0);
 	}
 
 	@Override
-	public Identifier getTextureLocation(RavagerRenderState state) {
+	public Identifier getTextureLocation(FurnaceWardenRenderState state) {
 		return TEXTURE;
 	}
 
 	@Override
-	public RavagerRenderState createRenderState() {
-		return new RavagerRenderState();
+	public FurnaceWardenRenderState createRenderState() {
+		return new FurnaceWardenRenderState();
 	}
 
 	@Override
-	public void extractRenderState(FurnaceWarden entity, RavagerRenderState state, float partialTicks) {
+	public void extractRenderState(FurnaceWarden entity, FurnaceWardenRenderState state, float partialTicks) {
 		super.extractRenderState(entity, state, partialTicks);
-		state.stunnedTicksRemaining = 0.0F;
 		state.attackTicksRemaining = entity.getAttackTick() > 0 ? entity.getAttackTick() - partialTicks : 0.0F;
-		state.roarAnimation = entity.getRoarTick() > 0 ? (20 - entity.getRoarTick() + partialTicks) / 20.0F : 0.0F;
+		state.roarAnimation = entity.getRoarTick() > 0 ? (ROAR_TICKS - entity.getRoarTick() + partialTicks) / ROAR_TICKS : 0.0F;
+		state.enraged = entity.isEnraged();
 	}
 
 	@Override
-	protected int getModelTint(RavagerRenderState state) {
-		return HEAT_TINT;
-	}
-
-	@Override
-	protected void scale(RavagerRenderState state, PoseStack poseStack) {
+	protected void scale(FurnaceWardenRenderState state, PoseStack poseStack) {
 		poseStack.scale(SCALE, SCALE, SCALE);
 	}
 }

@@ -35,6 +35,7 @@ public class SanupcraftClient implements ClientModInitializer {
 		EntityRendererRegistry.register(ModTransport.CARGO_WAGON, context -> new MinecartRenderer(context, ModelLayers.CHEST_MINECART));
 		ItemTooltipCallback.EVENT.register((stack, context, flag, lines) -> addGuideTooltip(stack, lines));
 		JetpackClient.init(); // 확장 M9a
+		io.github.yhyeop.sanupcraft.client.boss.BossModelLayers.init(); // 확장 M11a: 보스 전용 모델
 	}
 
 	/**
