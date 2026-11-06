@@ -1,12 +1,17 @@
 package io.github.yhyeop.sanupcraft.test;
 
+import java.util.List;
 import java.util.UUID;
 
 import net.fabricmc.fabric.api.gametest.v1.GameTest;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.contents.TranslatableContents;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -14,18 +19,25 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityTypes;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.animal.golem.IronGolem;
+import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.storage.TagValueInput;
+import net.minecraft.world.level.storage.TagValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 import io.github.yhyeop.sanupcraft.boss.BossCombat;
+import io.github.yhyeop.sanupcraft.boss.BossParty;
 import io.github.yhyeop.sanupcraft.boss.FurnaceWarden;
 import io.github.yhyeop.sanupcraft.boss.GuardianAltarBlock;
 import io.github.yhyeop.sanupcraft.boss.ModBoss;
+import io.github.yhyeop.sanupcraft.boss.PartyBoss;
 import io.github.yhyeop.sanupcraft.boss.RustyGuardian;
+import io.github.yhyeop.sanupcraft.boss.VoidColossus;
+import io.github.yhyeop.sanupcraft.end.ModEnd;
 import io.github.yhyeop.sanupcraft.gear.HeatproofGear;
 
 /**
@@ -304,6 +316,54 @@ public class SanupcraftFixBossGameTest {
 		helper.assertTrue(cooldown.tryUse(b, 1000L), "다른 사람이 막힘");
 		helper.assertFalse(cooldown.tryUse(a, 1199L), "199틱 뒤에 통과");
 		helper.assertTrue(cooldown.tryUse(a, 1200L), "200틱 뒤에 막힘");
+		helper.succeed();
+	}
+
+	/** 저장 키 이름이 그대로다 (세 보스 · 거상 전용 둘). 파수꾼은 손으로 쓴 옛 형식 태그를 읽어 단계 · 인원 · 기여 · 보스 바 +N이 맞다. */
+	@GameTest
+	public void bossSaveKeysStayCompatible(GameTestHelper helper) {
+		ServerLevel level = helper.getLevel();
+		List<Monster> bosses = List.of(helper.spawn(ModBoss.RUSTY_GUARDIAN, new BlockPos(2, 1, 2)),
+				helper.spawn(ModBoss.FURNACE_WARDEN, new BlockPos(6, 1, 2)), helper.spawn(ModEnd.VOID_COLOSSUS, new BlockPos(2, 1, 6)));
+		for (Monster boss : bosses) {
+			boss.setNoAi(true);
+			BossParty party = ((PartyBoss) boss).party();
+			party.scale(boss, 2);
+			party.setTier(boss, 1);
+			TagValueOutput output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, level.registryAccess());
+			boss.saveWithoutId(output);
+			CompoundTag tag = output.buildResult();
+			List<String> keys = boss instanceof VoidColossus
+					? List.of("party_size", "party_summoned", "party_tier", "party_damage", "shield_wave", "crystals")
+					: List.of("party_size", "party_summoned", "party_tier", "party_damage");
+			for (String key : keys) {
+				helper.assertTrue(tag.contains(key), boss.getType() + " 저장 태그에 " + key + " 없음: " + tag.keySet());
+			}
+		}
+
+		FurnaceWarden fresh = helper.spawn(ModBoss.FURNACE_WARDEN, new BlockPos(6, 1, 6));
+		fresh.setNoAi(true);
+		TagValueOutput output = TagValueOutput.createWithContext(ProblemReporter.DISCARDING, level.registryAccess());
+		fresh.saveWithoutId(output);
+		CompoundTag tag = output.buildResult();
+		UUID hitter = UUID.randomUUID();
+		CompoundTag damage = new CompoundTag();
+		damage.putFloat(hitter.toString(), 50.0F);
+		tag.putInt("party_size", 2);
+		tag.putLong("party_summoned", 1234L);
+		tag.putInt("party_tier", 1);
+		tag.put("party_damage", damage);
+		FurnaceWarden loaded = helper.spawn(ModBoss.FURNACE_WARDEN, new BlockPos(4, 1, 4));
+		loaded.setNoAi(true);
+		loaded.load(TagValueInput.create(ProblemReporter.DISCARDING, level.registryAccess(), tag));
+		helper.assertValueEqual(loaded.party().size(), 2, "옛 형식에서 읽은 인원");
+		helper.assertValueEqual(loaded.party().tier(), 1, "옛 형식에서 읽은 단계");
+		helper.assertValueEqual(loaded.party().damageBy(hitter), 50.0F, "옛 형식에서 읽은 기여");
+		helper.assertTrue(loaded.bossBarName().getContents() instanceof TranslatableContents contents
+				&& contents.getKey().equals("item.sanupcraft.boss_tier.name"), "읽은 보스 바 제목에 +N이 없음: " + loaded.bossBarName());
+		bosses.forEach(Entity::discard);
+		fresh.discard();
+		loaded.discard();
 		helper.succeed();
 	}
 }

@@ -4,13 +4,8 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
-import org.jspecify.annotations.Nullable;
-
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
@@ -33,10 +28,9 @@ import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
@@ -56,7 +50,7 @@ import io.github.yhyeop.sanupcraft.sound.ModSounds;
  * 불 · 낙하 피해를 받지 않는다. 체력이 절반 아래면 패턴 간격이 짧아진다.
  * 여러 명이면 체력이 늘고, 기여자 각자 심장을 받는다 ({@link BossParty}).
  */
-public class FurnaceWarden extends Monster implements PartyBoss {
+public class FurnaceWarden extends PartyBossMonster {
 	public static final double MAX_HEALTH = 450.0;
 	public static final float HEAT_MULTIPLIER = 1.5F;
 	public static final float HEATPROOF_SWORD_MULTIPLIER = 1.5F;
@@ -91,13 +85,9 @@ public class FurnaceWarden extends Monster implements PartyBoss {
 
 	private static final Pattern[] CYCLE = {Pattern.STEAM_BLAST, Pattern.LEAP, Pattern.FIRE_RINGS, Pattern.STEAM_BLAST, Pattern.FIRE_RINGS, Pattern.LEAP};
 
-	private final ServerBossEvent bossEvent = new ServerBossEvent(
-			Mth.createInsecureUUID(this.random), this.getDisplayName(), BossEvent.BossBarColor.YELLOW, BossEvent.BossBarOverlay.NOTCHED_10);
 	private Pattern pattern = Pattern.NONE;
 	private int patternTick;
 	private int cooldown = 60;
-	/** 화남(체력 절반 아래)을 알렸는가 (M11 X2). 불러올 때 체력으로 다시 정한다. */
-	private boolean phaseAnnounced;
 	private int cycleIndex;
 	private final List<Vec3> rings = new ArrayList<>();
 	private boolean airborne;
@@ -108,12 +98,9 @@ public class FurnaceWarden extends Monster implements PartyBoss {
 	private Vec3 leapLanding = Vec3.ZERO;
 	/** 플레이어별 과열 경고 (200틱에 한 번). */
 	private final BossCombat.PlayerCooldown heatWarning = new BossCombat.PlayerCooldown(WARNING_COOLDOWN);
-	private final BossParty party = new BossParty();
 
 	public FurnaceWarden(EntityType<? extends FurnaceWarden> type, Level level) {
-		super(type, level);
-		this.xpReward = 80;
-		this.setPersistenceRequired();
+		super(type, level, BossEvent.BossBarColor.YELLOW, 80);
 	}
 
 	public static AttributeSupplier.Builder createAttributes() {
@@ -140,26 +127,22 @@ public class FurnaceWarden extends Monster implements PartyBoss {
 	}
 
 	@Override
-	public BossParty party() {
-		return party;
+	protected Item keyItem() {
+		return ModItems.WARDEN_HEART;
+	}
+
+	@Override
+	protected void announcePhase(ServerLevel level) {
+		ModSounds.bossPhase(level, this, ParticleTypes.FLAME); // M11 X2
 	}
 
 	/** 화염 장판 상한 (인원수, 3 ~ 6). 장판은 가로 · 세로 ±20칸 상자 안 플레이어 발밑마다 하나. */
 	public int maxRings() {
-		return Mth.clamp(party.size(), MIN_RINGS, MAX_RINGS);
-	}
-
-	/** 보스 바에 보이는 제목 (시험용). */
-	public Component bossBarName() {
-		return bossEvent.getName();
+		return Mth.clamp(party().size(), MIN_RINGS, MAX_RINGS);
 	}
 
 	public Pattern pattern() {
 		return pattern;
-	}
-
-	public boolean isEnraged() {
-		return getHealth() < getMaxHealth() / 2.0F;
 	}
 
 	/** 다음 패턴을 바로 시작한다 (테스트 · 디버그용). */
@@ -197,12 +180,6 @@ public class FurnaceWarden extends Monster implements PartyBoss {
 	@Override
 	protected void customServerAiStep(ServerLevel level) {
 		super.customServerAiStep(level);
-		bossEvent.setProgress(getHealth() / getMaxHealth());
-		if (!phaseAnnounced && isEnraged()) {
-			phaseAnnounced = true;
-			ModSounds.bossPhase(level, this, ParticleTypes.FLAME); // M11 X2
-		}
-
 		if (pattern == Pattern.NONE) {
 			LivingEntity target = getTarget();
 			if (cooldown > 0) {
@@ -446,7 +423,7 @@ public class FurnaceWarden extends Monster implements PartyBoss {
 	public boolean hitWithHeat(ServerLevel level, LivingEntity target, float damage, boolean pattern) {
 		if (pattern) {
 			BossCombat.breakShield(level, target);
-			damage *= (float) party.outgoingDamageScale(); // 강화 단계 (근접은 공격력 속성에 이미 들어 있다)
+			damage *= (float) party().outgoingDamageScale(); // 강화 단계 (근접은 공격력 속성에 이미 들어 있다)
 		}
 		boolean heatproof = HeatproofGear.wearsFullSet(target);
 		boolean hurt = target.hurtServer(level, damageSources().mobAttack(this), heatproof ? damage : damage * HEAT_MULTIPLIER);
@@ -510,41 +487,6 @@ public class FurnaceWarden extends Monster implements PartyBoss {
 		return hurt;
 	}
 
-	/** 실제로 깎인 체력을 공격한 플레이어에게 센다 (죽기 전에 불리므로 마지막 일격도 들어간다). */
-	@Override
-	protected void actuallyHurt(ServerLevel level, DamageSource source, float damage) {
-		float before = getHealth();
-		super.actuallyHurt(level, source, damage);
-		party.record(source.getEntity(), before - getHealth());
-	}
-
-	/** 최대 체력이 속성 상한(1024)에 잘렸으면 받는 피해를 그만큼 줄인다 (갑옷 · 마법 계산 뒤, {@link BossParty#incomingDamageScale}). */
-	@Override
-	protected float getDamageAfterMagicAbsorb(DamageSource source, float damage) {
-		return super.getDamageAfterMagicAbsorb(source, damage) * party.incomingDamageScale(this);
-	}
-
-	/** 심장은 전리품 표가 아니라 기여자 각자에게 준다. */
-	@Override
-	protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
-		super.dropCustomDeathLoot(level, source, killedByPlayer);
-		party.giveKeyItem(level, this, ModItems.WARDEN_HEART);
-	}
-
-	@Override
-	protected void addAdditionalSaveData(ValueOutput output) {
-		super.addAdditionalSaveData(output);
-		party.save(output);
-	}
-
-	@Override
-	protected void readAdditionalSaveData(ValueInput input) {
-		super.readAdditionalSaveData(input);
-		party.load(input);
-		refreshBossBar();
-		phaseAnnounced = isEnraged();
-	}
-
 	@Override
 	protected SoundEvent getDeathSound() {
 		return ModSounds.WARDEN_DEATH; // M11 X2
@@ -582,35 +524,6 @@ public class FurnaceWarden extends Monster implements PartyBoss {
 
 	public int getRoarTick() {
 		return roarTick;
-	}
-
-	/** 이름표로 이름을 바꾸면 보스 바 제목도 바꾼다 (저장된 이름을 불러올 때도 이 경로를 지난다). */
-	@Override
-	public void setCustomName(@Nullable Component name) {
-		super.setCustomName(name);
-		refreshBossBar();
-	}
-
-	@Override
-	public void refreshBossBar() {
-		bossEvent.setName(BossTier.barName(getDisplayName(), party.tier()));
-	}
-
-	@Override
-	public boolean removeWhenFarAway(double distSqr) {
-		return false;
-	}
-
-	@Override
-	public void startSeenByPlayer(ServerPlayer player) {
-		super.startSeenByPlayer(player);
-		bossEvent.addPlayer(player);
-	}
-
-	@Override
-	public void stopSeenByPlayer(ServerPlayer player) {
-		super.stopSeenByPlayer(player);
-		bossEvent.removePlayer(player);
 	}
 
 	/** 패턴 중에는 걷기 · 근접 공격을 멈춘다. */

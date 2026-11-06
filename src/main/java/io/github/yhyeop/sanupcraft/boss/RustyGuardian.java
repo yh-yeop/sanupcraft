@@ -6,13 +6,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import org.jspecify.annotations.Nullable;
-
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
@@ -38,10 +33,9 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.Silverfish;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 import io.github.yhyeop.sanupcraft.core.ModItems;
@@ -60,7 +54,7 @@ import io.github.yhyeop.sanupcraft.sound.ModSounds;
  * 강철 검 · 내열 검으로 때리면 피해 1.5배. 거미줄에 걸리지 않고 구속이 안 걸린다.
  * 체력이 절반 아래면 패턴 간격이 짧아진다. 여러 명이면 체력 · 졸개 수가 늘고, 기여자 각자 핵을 받는다 ({@link BossParty}).
  */
-public class RustyGuardian extends Monster implements PartyBoss {
+public class RustyGuardian extends PartyBossMonster {
 	public static final double MAX_HEALTH = 300.0;
 	public static final float RUST_MULTIPLIER = 1.5F;
 	public static final float STEEL_SWORD_MULTIPLIER = 1.5F;
@@ -89,25 +83,18 @@ public class RustyGuardian extends Monster implements PartyBoss {
 
 	private static final Pattern[] CYCLE = {Pattern.CHARGE, Pattern.SLAM, Pattern.SUMMON, Pattern.SLAM};
 
-	private final ServerBossEvent bossEvent = new ServerBossEvent(
-			Mth.createInsecureUUID(this.random), this.getDisplayName(), BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.NOTCHED_10);
 	private Pattern pattern = Pattern.NONE;
 	private int patternTick;
 	private int cooldown = 60;
-	/** 화남(체력 절반 아래)을 알렸는가 (M11 X2). 불러올 때 체력으로 다시 정한다. */
-	private boolean phaseAnnounced;
 	private int cycleIndex;
 	private Vec3 chargeDirection = Vec3.ZERO;
 	private final Set<UUID> hitThisCharge = new HashSet<>();
 	private int attackAnimationTick;
 	/** 플레이어별 녹 경고 (200틱에 한 번). */
 	private final BossCombat.PlayerCooldown rustWarning = new BossCombat.PlayerCooldown(WARNING_COOLDOWN);
-	private final BossParty party = new BossParty();
 
 	public RustyGuardian(EntityType<? extends RustyGuardian> type, Level level) {
-		super(type, level);
-		this.xpReward = 50;
-		this.setPersistenceRequired();
+		super(type, level, BossEvent.BossBarColor.RED, 50);
 	}
 
 	public static AttributeSupplier.Builder createAttributes() {
@@ -133,26 +120,22 @@ public class RustyGuardian extends Monster implements PartyBoss {
 	}
 
 	@Override
-	public BossParty party() {
-		return party;
+	protected Item keyItem() {
+		return ModItems.GUARDIAN_CORE;
+	}
+
+	@Override
+	protected void announcePhase(ServerLevel level) {
+		ModSounds.bossPhase(level, this, ParticleTypes.CRIT); // M11 X2
 	}
 
 	/** 한 번에 부르는 졸개 수. 3명마다 하나씩 는다 (혼자 3, 10명 6). */
 	public int minionsPerSummon() {
-		return MINIONS_PER_SUMMON + (party.size() - 1) / 3;
-	}
-
-	/** 보스 바에 보이는 제목 (시험용). */
-	public Component bossBarName() {
-		return bossEvent.getName();
+		return MINIONS_PER_SUMMON + (party().size() - 1) / 3;
 	}
 
 	public Pattern pattern() {
 		return pattern;
-	}
-
-	public boolean isEnraged() {
-		return getHealth() < getMaxHealth() / 2.0F;
 	}
 
 	/** 다음 패턴을 바로 시작한다 (테스트 · 디버그용). */
@@ -172,12 +155,6 @@ public class RustyGuardian extends Monster implements PartyBoss {
 	@Override
 	protected void customServerAiStep(ServerLevel level) {
 		super.customServerAiStep(level);
-		bossEvent.setProgress(getHealth() / getMaxHealth());
-		if (!phaseAnnounced && isEnraged()) {
-			phaseAnnounced = true;
-			ModSounds.bossPhase(level, this, ParticleTypes.CRIT); // M11 X2
-		}
-
 		if (pattern == Pattern.NONE) {
 			LivingEntity target = getTarget();
 			if (cooldown > 0) {
@@ -359,7 +336,7 @@ public class RustyGuardian extends Monster implements PartyBoss {
 	public boolean hitWithRust(ServerLevel level, LivingEntity target, float damage, boolean pattern) {
 		if (pattern) {
 			BossCombat.breakShield(level, target);
-			damage *= (float) party.outgoingDamageScale(); // 강화 단계 (근접은 공격력 속성에 이미 들어 있다)
+			damage *= (float) party().outgoingDamageScale(); // 강화 단계 (근접은 공격력 속성에 이미 들어 있다)
 		}
 		boolean rustproof = SteelGear.wearsFullSet(target);
 		boolean hurt = target.hurtServer(level, damageSources().mobAttack(this), rustproof ? damage : damage * RUST_MULTIPLIER);
@@ -421,41 +398,6 @@ public class RustyGuardian extends Monster implements PartyBoss {
 		return hurt;
 	}
 
-	/** 실제로 깎인 체력을 공격한 플레이어에게 센다 (죽기 전에 불리므로 마지막 일격도 들어간다). */
-	@Override
-	protected void actuallyHurt(ServerLevel level, DamageSource source, float damage) {
-		float before = getHealth();
-		super.actuallyHurt(level, source, damage);
-		party.record(source.getEntity(), before - getHealth());
-	}
-
-	/** 최대 체력이 속성 상한(1024)에 잘렸으면 받는 피해를 그만큼 줄인다 (갑옷 · 마법 계산 뒤, {@link BossParty#incomingDamageScale}). */
-	@Override
-	protected float getDamageAfterMagicAbsorb(DamageSource source, float damage) {
-		return super.getDamageAfterMagicAbsorb(source, damage) * party.incomingDamageScale(this);
-	}
-
-	/** 핵은 전리품 표가 아니라 기여자 각자에게 준다. */
-	@Override
-	protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
-		super.dropCustomDeathLoot(level, source, killedByPlayer);
-		party.giveKeyItem(level, this, ModItems.GUARDIAN_CORE);
-	}
-
-	@Override
-	protected void addAdditionalSaveData(ValueOutput output) {
-		super.addAdditionalSaveData(output);
-		party.save(output);
-	}
-
-	@Override
-	protected void readAdditionalSaveData(ValueInput input) {
-		super.readAdditionalSaveData(input);
-		party.load(input);
-		refreshBossBar();
-		phaseAnnounced = isEnraged();
-	}
-
 	@Override
 	protected SoundEvent getDeathSound() {
 		return ModSounds.GUARDIAN_DEATH; // M11 X2
@@ -480,35 +422,6 @@ public class RustyGuardian extends Monster implements PartyBoss {
 
 	public int getAttackAnimationTick() {
 		return attackAnimationTick;
-	}
-
-	/** 이름표로 이름을 바꾸면 보스 바 제목도 바꾼다 (저장된 이름을 불러올 때도 이 경로를 지난다). */
-	@Override
-	public void setCustomName(@Nullable Component name) {
-		super.setCustomName(name);
-		refreshBossBar();
-	}
-
-	@Override
-	public void refreshBossBar() {
-		bossEvent.setName(BossTier.barName(getDisplayName(), party.tier()));
-	}
-
-	@Override
-	public boolean removeWhenFarAway(double distSqr) {
-		return false;
-	}
-
-	@Override
-	public void startSeenByPlayer(ServerPlayer player) {
-		super.startSeenByPlayer(player);
-		bossEvent.addPlayer(player);
-	}
-
-	@Override
-	public void stopSeenByPlayer(ServerPlayer player) {
-		super.stopSeenByPlayer(player);
-		bossEvent.removePlayer(player);
 	}
 
 	/** 패턴 중에는 걷기 · 근접 공격을 멈춘다. */

@@ -162,6 +162,6 @@ public class GuardianAltarBlock extends Block {
 	}
 
 	private static boolean isBoss(Monster monster) {
-		return monster instanceof RustyGuardian || monster instanceof FurnaceWarden || monster instanceof VoidColossus; // M6
+		return monster instanceof PartyBossMonster; // 수호자 · 파수꾼 · 거상 (M6)
 	}
 }
