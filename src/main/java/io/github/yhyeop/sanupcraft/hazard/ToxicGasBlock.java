@@ -87,6 +87,9 @@ public class ToxicGasBlock extends Block {
 
 	/** 독 I + 구역질을 5초 건다 (남은 시간이 넉넉하면 다시 걸지 않는다). */
 	public static void poison(LivingEntity living) {
+		if (io.github.yhyeop.sanupcraft.effect.Resistances.toxicGasImmune(living)) {
+			return; // 확장 3 G3 가스 필터 모듈
+		}
 		refresh(living, new MobEffectInstance(MobEffects.POISON, EFFECT_TICKS, 0));
 		refresh(living, new MobEffectInstance(MobEffects.NAUSEA, EFFECT_TICKS, 0));
 	}

@@ -1,0 +1,10 @@
+{
+  "type": "sanupcraft:precision",
+  "ingredient": "sanupcraft:module_frame",
+  "ingredient2": "minecraft:popped_chorus_fruit",
+  "count2": 4,
+  "result": {
+    "id": "sanupcraft:module_void_proof"
+  },
+  "time": 400
+}

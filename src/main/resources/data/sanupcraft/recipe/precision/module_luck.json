@@ -1,0 +1,10 @@
+{
+  "type": "sanupcraft:precision",
+  "ingredient": "sanupcraft:module_frame",
+  "ingredient2": "minecraft:diamond",
+  "count2": 2,
+  "result": {
+    "id": "sanupcraft:module_luck"
+  },
+  "time": 400
+}

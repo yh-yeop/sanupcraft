@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "sanupcraft:module_frame",
+    "sanupcraft:steel_ingot",
+    "sanupcraft:steel_ingot",
+    "sanupcraft:steel_ingot",
+    "sanupcraft:gear_part"
+  ],
+  "result": {
+    "id": "sanupcraft:module_area"
+  }
+}

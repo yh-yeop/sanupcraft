@@ -194,7 +194,8 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 		ItemStack fuel = machine.items.get(SLOT_FUEL);
 		MachineInput input = machine.input();
 		RecipeHolder<MachineRecipe> recipe = input.isEmpty() ? null : machine.quickCheck.getRecipeFor(input, level).orElse(null);
-		ItemStack output = recipe == null ? ItemStack.EMPTY : recipe.value().output().create();
+		ItemStack output = recipe == null ? ItemStack.EMPTY
+				: io.github.yhyeop.sanupcraft.module.GearInheritance.fromInputs(recipe.value().output().create(), input.first(), input.second()); // 확장 3 G4 계승
 		boolean canWork = recipe != null && machine.canOutput(output) && machine.hasWaterForOne();
 		MachineUpgrade.Effects effects = machine.upgradeEffects();
 

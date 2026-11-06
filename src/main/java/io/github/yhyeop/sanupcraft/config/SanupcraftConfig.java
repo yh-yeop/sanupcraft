@@ -249,6 +249,27 @@ public final class SanupcraftConfig {
 	public int downedReviveHealth = io.github.yhyeop.sanupcraft.combat.SteamSyringeItem.REVIVE_HEALTH;
 	/** 응급 증기 주사기: 한 번에 드는 증기. */
 	public int syringeSteam = io.github.yhyeop.sanupcraft.combat.SteamSyringeItem.STEAM_PER_USE;
+	// ---- 확장 3 G3 장비 모듈 · G4 증기 수리대 ----
+	/** 자석 모듈: 끌어당기는 거리(칸). */
+	public int moduleMagnetRange = io.github.yhyeop.sanupcraft.module.ModuleEffects.MAGNET_RANGE;
+	/** 효율 모듈: 캐는 속도 증가(%). */
+	public int moduleEfficiencyPercent = io.github.yhyeop.sanupcraft.module.ModuleEffects.EFFICIENCY_PERCENT;
+	/** 범위 모듈: 3x3으로 캘 때 캐는 속도(%, 100 = 그대로). */
+	public int moduleAreaSpeedPercent = io.github.yhyeop.sanupcraft.module.ModuleEffects.AREA_SPEED_PERCENT;
+	/** 넉백 모듈: 밀치기 증가. */
+	public double moduleKnockback = io.github.yhyeop.sanupcraft.module.ModuleEffects.KNOCKBACK;
+	/** 연발 모듈: 리벳총 쿨다운(%, 50 = 반). */
+	public int moduleRapidCooldownPercent = 50;
+	/** 산탄 모듈: 리벳 1개로 나가는 발 수. */
+	public int moduleScatterPellets = 3;
+	/** 산탄 모듈: 한 발 피해(%, 리벳총 피해 기준). */
+	public int moduleScatterDamagePercent = 50;
+	/** 증기 수리대: 고치는 틱마다 드는 증기. */
+	public int repairSteamPerTick = io.github.yhyeop.sanupcraft.module.RepairStationBlockEntity.STEAM_PER_TICK;
+	/** 증기 수리대: 다 닳은 장비를 다 고치는 데 걸리는 틱 (재료가 넉넉할 때). */
+	public int repairTicksForFull = io.github.yhyeop.sanupcraft.module.RepairStationBlockEntity.TICKS_FOR_FULL;
+	/** 증기 수리대: 재료 하나가 채우는 내구도(최대 내구도의 %). */
+	public int repairMaterialPercent = io.github.yhyeop.sanupcraft.module.RepairStationBlockEntity.MATERIAL_PERCENT;
 
 	/** float 상수를 0.05F -> 0.05처럼 보이는 그대로의 double로 (파일에 0.0500000007...이 안 찍히게). */
 	private static double asDouble(float value) {
@@ -447,7 +468,29 @@ public final class SanupcraftConfig {
 			new Option("downed", "reviveHealth", io.github.yhyeop.sanupcraft.combat.SteamSyringeItem.REVIVE_HEALTH, 1, 1024, true,
 					c -> c.downedReviveHealth, (c, v) -> c.downedReviveHealth = (int) v),
 			new Option("steamSyringe", "steamCost", io.github.yhyeop.sanupcraft.combat.SteamSyringeItem.STEAM_PER_USE, 0, io.github.yhyeop.sanupcraft.combat.SteamSyringeItem.CAPACITY, true,
-					c -> c.syringeSteam, (c, v) -> c.syringeSteam = (int) v));
+					c -> c.syringeSteam, (c, v) -> c.syringeSteam = (int) v),
+			// 확장 3 G3 장비 모듈 · G4 증기 수리대
+			new Option("modules", "magnetRange", io.github.yhyeop.sanupcraft.module.ModuleEffects.MAGNET_RANGE, 1, 32, true,
+					c -> c.moduleMagnetRange, (c, v) -> c.moduleMagnetRange = (int) v),
+			new Option("modules", "efficiencyPercent", io.github.yhyeop.sanupcraft.module.ModuleEffects.EFFICIENCY_PERCENT, 0, 1000, true,
+					c -> c.moduleEfficiencyPercent, (c, v) -> c.moduleEfficiencyPercent = (int) v),
+			new Option("modules", "areaSpeedPercent", io.github.yhyeop.sanupcraft.module.ModuleEffects.AREA_SPEED_PERCENT, 1, 100, true,
+					c -> c.moduleAreaSpeedPercent, (c, v) -> c.moduleAreaSpeedPercent = (int) v),
+			new Option("modules", "knockback", io.github.yhyeop.sanupcraft.module.ModuleEffects.KNOCKBACK, 0.0, 5.0, false,
+					c -> c.moduleKnockback, (c, v) -> c.moduleKnockback = v),
+			new Option("modules", "rapidCooldownPercent", 50, 1, 100, true,
+					c -> c.moduleRapidCooldownPercent, (c, v) -> c.moduleRapidCooldownPercent = (int) v),
+			new Option("modules", "scatterPellets", 3, 1, 9, true,
+					c -> c.moduleScatterPellets, (c, v) -> c.moduleScatterPellets = (int) v),
+			new Option("modules", "scatterDamagePercent", 50, 1, 100, true,
+					c -> c.moduleScatterDamagePercent, (c, v) -> c.moduleScatterDamagePercent = (int) v),
+			new Option("repairStation", "steamPerTick", io.github.yhyeop.sanupcraft.module.RepairStationBlockEntity.STEAM_PER_TICK, 0,
+					io.github.yhyeop.sanupcraft.module.RepairStationBlockEntity.STEAM_CAPACITY, true,
+					c -> c.repairSteamPerTick, (c, v) -> c.repairSteamPerTick = (int) v),
+			new Option("repairStation", "ticksForFull", io.github.yhyeop.sanupcraft.module.RepairStationBlockEntity.TICKS_FOR_FULL, 1, 72_000, true,
+					c -> c.repairTicksForFull, (c, v) -> c.repairTicksForFull = (int) v),
+			new Option("repairStation", "materialPercent", io.github.yhyeop.sanupcraft.module.RepairStationBlockEntity.MATERIAL_PERCENT, 1, 100, true,
+					c -> c.repairMaterialPercent, (c, v) -> c.repairMaterialPercent = (int) v));
 
 	/** 읽은 결과: 설정, 경고 문구, 파일에 빠진 키가 있었는지, 파일을 새로 썼는지. */
 	public record Loaded(SanupcraftConfig config, List<String> warnings, boolean missingKeys, boolean wroteFile) {

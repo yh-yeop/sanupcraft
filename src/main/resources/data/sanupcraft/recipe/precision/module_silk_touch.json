@@ -1,0 +1,9 @@
+{
+  "type": "sanupcraft:precision",
+  "ingredient": "sanupcraft:module_frame",
+  "ingredient2": "sanupcraft:precision_part",
+  "result": {
+    "id": "sanupcraft:module_silk_touch"
+  },
+  "time": 400
+}

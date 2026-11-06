@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "sanupcraft:module_frame",
+    "minecraft:piston",
+    "minecraft:slime_ball"
+  ],
+  "result": {
+    "id": "sanupcraft:module_knockback"
+  }
+}

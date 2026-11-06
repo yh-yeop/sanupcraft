@@ -53,6 +53,7 @@ public class Sanupcraft implements ModInitializer {
 		SteamGear.init();
 		ModBoss.init();
 		ModWorld.init();
+		io.github.yhyeop.sanupcraft.module.ModModules.init(); // 확장 3 G3 장비 모듈 · G4 수리 · 계승
 		io.github.yhyeop.sanupcraft.gear.BronzeGear.init(); // 확장 3 G1 청동 장비
 		io.github.yhyeop.sanupcraft.gear.ChromeSteelGear.init(); // 확장 3 G2 크롬강 장비
 		io.github.yhyeop.sanupcraft.effect.ModEffects.init(); // 확장 3 C3 상태 이상

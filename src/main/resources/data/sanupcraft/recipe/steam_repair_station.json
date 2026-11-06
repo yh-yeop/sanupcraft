@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "P": "sanupcraft:steel_plate",
+    "A": "minecraft:anvil",
+    "G": "sanupcraft:gear_part",
+    "S": "sanupcraft:steam_pipe"
+  },
+  "pattern": [
+    "PAP",
+    "GSG",
+    "PPP"
+  ],
+  "result": {
+    "id": "sanupcraft:steam_repair_station"
+  }
+}

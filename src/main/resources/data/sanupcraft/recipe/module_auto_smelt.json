@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "sanupcraft:module_frame",
+    "minecraft:furnace",
+    "minecraft:coal_block"
+  ],
+  "result": {
+    "id": "sanupcraft:module_auto_smelt"
+  }
+}

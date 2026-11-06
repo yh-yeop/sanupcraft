@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "sanupcraft:module_frame",
+    "sanupcraft:chromium_ingot",
+    "sanupcraft:chromium_ingot"
+  ],
+  "result": {
+    "id": "sanupcraft:module_rust_proof"
+  }
+}
