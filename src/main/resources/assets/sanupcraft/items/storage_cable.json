@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "sanupcraft:block/storage_cable_inventory"
+  }
+}

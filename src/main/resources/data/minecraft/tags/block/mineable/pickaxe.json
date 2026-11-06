@@ -19,6 +19,9 @@
     "sanupcraft:filter_hopper",
     "sanupcraft:steam_charger",
     "sanupcraft:iron_drawer",
-    "sanupcraft:steel_drawer"
+    "sanupcraft:steel_drawer",
+    "sanupcraft:storage_cable",
+    "sanupcraft:storage_terminal",
+    "sanupcraft:crafting_terminal"
   ]
 }

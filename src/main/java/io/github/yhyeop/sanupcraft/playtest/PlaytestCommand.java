@@ -325,6 +325,14 @@ public final class PlaytestCommand {
 		give(p, ModStorage.STEEL_DRAWER.asItem(), 2);
 		give(p, ModStorage.DRAWER_UPGRADE, 4);
 		give(p, ModStorage.DRAWER_VOID_UPGRADE, 1);
+		give(p, ModStorage.STORAGE_CABLE.asItem(), 32);
+		give(p, ModStorage.STORAGE_TERMINAL.asItem(), 1);
+		give(p, ModStorage.CRAFTING_TERMINAL.asItem(), 1);
+		give(p, ModPower.BOILER.asItem(), 1);
+		give(p, ModPower.STEAM_PIPE.asItem(), 16);
+		give(p, Items.WATER_BUCKET, 1);
+		give(p, Items.COAL, 32);
+		give(p, Items.OAK_LOG, 64);
 		give(p, Items.COBBLESTONE, 256);
 		give(p, Items.CHEST, 4);
 		give(p, Items.HOPPER, 4);

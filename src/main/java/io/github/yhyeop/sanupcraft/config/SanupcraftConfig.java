@@ -31,6 +31,9 @@ import io.github.yhyeop.sanupcraft.mining.QuarryBlockEntity;
 import io.github.yhyeop.sanupcraft.power.GeothermalVentBlockEntity;
 import io.github.yhyeop.sanupcraft.power.SteamChargerBlockEntity;
 import io.github.yhyeop.sanupcraft.storage.DrawerBlockEntity;
+import io.github.yhyeop.sanupcraft.storage.PortableTerminalItem;
+import io.github.yhyeop.sanupcraft.storage.StorageNetwork;
+import io.github.yhyeop.sanupcraft.storage.TerminalBlockEntity;
 
 /**
  * 서버 설정 파일 {@code config/sanupcraft.json}. 서버(싱글은 내장 서버)가 시작될 때 읽고, 파일이 없으면 기본값으로 만든다.
@@ -81,6 +84,12 @@ public final class SanupcraftConfig {
 	public int ironDrawerStacks = DrawerBlockEntity.IRON_STACKS;
 	/** 강철 서랍: 업그레이드 전 더미 수. */
 	public int steelDrawerStacks = DrawerBlockEntity.STEEL_STACKS;
+	/** 창고 네트워크: 따라가는 관 · 네트워크 블록 수 한도. */
+	public int storageMaxNodes = StorageNetwork.MAX_NODES;
+	/** 창고 단말: 화면이 열려 있는 동안 틱당 쓰는 증기. */
+	public int terminalSteamPerTick = TerminalBlockEntity.STEAM_PER_TICK;
+	/** 휴대 단말 (기본판): 같은 차원에서 열 수 있는 거리. */
+	public int portableTerminalRange = PortableTerminalItem.RANGE;
 
 	/** float 상수를 0.05F -> 0.05처럼 보이는 그대로의 double로 (파일에 0.0500000007...이 안 찍히게). */
 	private static double asDouble(float value) {
@@ -127,7 +136,13 @@ public final class SanupcraftConfig {
 			new Option("drawer", "ironStacks", DrawerBlockEntity.IRON_STACKS, 1, 4096, true,
 					c -> c.ironDrawerStacks, (c, v) -> c.ironDrawerStacks = (int) v),
 			new Option("drawer", "steelStacks", DrawerBlockEntity.STEEL_STACKS, 1, 4096, true,
-					c -> c.steelDrawerStacks, (c, v) -> c.steelDrawerStacks = (int) v));
+					c -> c.steelDrawerStacks, (c, v) -> c.steelDrawerStacks = (int) v),
+			new Option("storage", "maxNodes", StorageNetwork.MAX_NODES, 1, 8192, true,
+					c -> c.storageMaxNodes, (c, v) -> c.storageMaxNodes = (int) v),
+			new Option("storage", "terminalSteamPerTick", TerminalBlockEntity.STEAM_PER_TICK, 0, 100, true,
+					c -> c.terminalSteamPerTick, (c, v) -> c.terminalSteamPerTick = (int) v),
+			new Option("storage", "portableTerminalRange", PortableTerminalItem.RANGE, 1, 4096, true,
+					c -> c.portableTerminalRange, (c, v) -> c.portableTerminalRange = (int) v));
 
 	/** 읽은 결과: 설정, 경고 문구, 파일에 빠진 키가 있었는지, 파일을 새로 썼는지. */
 	public record Loaded(SanupcraftConfig config, List<String> warnings, boolean missingKeys, boolean wroteFile) {

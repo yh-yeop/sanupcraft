@@ -7,22 +7,31 @@ import net.fabricmc.fabric.api.gametest.v1.GameTest;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.ChestBlock;
 import net.minecraft.world.level.block.HopperBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.ChestBlockEntity;
 import net.minecraft.world.level.block.entity.HopperBlockEntity;
+import net.minecraft.world.level.block.state.properties.ChestType;
 
+import io.github.yhyeop.sanupcraft.config.SanupcraftConfig;
 import io.github.yhyeop.sanupcraft.storage.DrawerBlock;
 import io.github.yhyeop.sanupcraft.storage.DrawerBlockEntity;
 import io.github.yhyeop.sanupcraft.storage.DrawerContents;
 import io.github.yhyeop.sanupcraft.storage.ModStorage;
+import io.github.yhyeop.sanupcraft.storage.StorageNetwork;
+import io.github.yhyeop.sanupcraft.storage.TerminalBlockEntity;
+import io.github.yhyeop.sanupcraft.storage.TerminalMenu;
 
-/** M7 보관 · 제작 검사: 저장 서랍 (S1). */
+/** M7 보관 · 제작 검사: 저장 서랍 (S1), 창고 네트워크 · 단말 · 제작 단말 (S2 · S3). */
 public class SanupcraftStorageGameTest {
 	// ---- S1 서랍 ----
 
@@ -129,6 +138,139 @@ public class SanupcraftStorageGameTest {
 		placed.applyComponentsFromItemStack(drops.get(0));
 		helper.assertValueEqual(placed.count(), 5000, "다시 놓은 서랍 개수");
 		helper.assertValueEqual(placed.upgrades(), 1, "다시 놓은 서랍 업그레이드");
+		helper.succeed();
+	}
+
+	// ---- S2 · S3 창고 네트워크 · 단말 ----
+
+	private static final BlockPos TERMINAL = new BlockPos(1, 1, 1);
+
+	/** 단말 (1,1,1) + 관 (2~4,1,1). 관 남쪽(z=2)에 큰 상자(2~3) · 서랍(4), 북쪽(z=0)에 빈 상자(3). */
+	private static TerminalBlockEntity network(GameTestHelper helper, Block terminalBlock) {
+		helper.setBlock(TERMINAL, terminalBlock);
+		for (int x = 2; x <= 4; x++) {
+			helper.setBlock(new BlockPos(x, 1, 1), ModStorage.STORAGE_CABLE);
+		}
+		helper.setBlock(new BlockPos(2, 1, 2), Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, Direction.NORTH).setValue(ChestBlock.TYPE, ChestType.LEFT));
+		helper.setBlock(new BlockPos(3, 1, 2), Blocks.CHEST.defaultBlockState().setValue(ChestBlock.FACING, Direction.NORTH).setValue(ChestBlock.TYPE, ChestType.RIGHT));
+		helper.setBlock(new BlockPos(3, 1, 0), Blocks.CHEST);
+		helper.getBlockEntity(new BlockPos(3, 1, 2), ChestBlockEntity.class).setItem(4, new ItemStack(Items.DIRT, 10));
+		drawer(helper, new BlockPos(4, 1, 2), ModStorage.IRON_DRAWER).insert(new ItemStack(Items.COBBLESTONE), 100, false);
+		return helper.getBlockEntity(TERMINAL, TerminalBlockEntity.class);
+	}
+
+	/** 네트워크는 큰 상자(한 번만) · 서랍 · 빈 상자를 본다. 넣기는 같은 아이템이 든 곳부터, 꺼내기는 있는 만큼. */
+	@GameTest
+	public void networkSeesChestsAndDrawers(GameTestHelper helper) {
+		TerminalBlockEntity terminal = network(helper, ModStorage.STORAGE_TERMINAL);
+		StorageNetwork net = StorageNetwork.discover(helper.getLevel(), terminal.getBlockPos());
+		helper.assertValueEqual(net.storeCount(), 3, "보관함 수 (큰 상자는 하나)");
+		helper.assertValueEqual(net.count(new ItemStack(Items.DIRT)), 10L, "흙 (큰 상자를 두 번 셈?)");
+		helper.assertValueEqual(net.count(new ItemStack(Items.COBBLESTONE)), 100L, "서랍의 조약돌");
+
+		helper.assertTrue(net.insert(new ItemStack(Items.COBBLESTONE, 50)).isEmpty(), "조약돌이 다 안 들어감");
+		DrawerBlockEntity drawer = helper.getBlockEntity(new BlockPos(4, 1, 2), DrawerBlockEntity.class);
+		helper.assertValueEqual(drawer.count(), 150, "조약돌이 서랍으로 가지 않음");
+		net.insert(new ItemStack(Items.DIRT, 5));
+		ChestBlockEntity right = helper.getBlockEntity(new BlockPos(3, 1, 2), ChestBlockEntity.class);
+		ChestBlockEntity lone = helper.getBlockEntity(new BlockPos(3, 1, 0), ChestBlockEntity.class);
+		helper.assertValueEqual(right.getItem(4).getCount(), 15, "흙이 흙 칸에 합쳐지지 않음");
+		helper.assertTrue(lone.isEmpty(), "빈 상자에 먼저 들어감");
+
+		ItemStack got = net.extract(new ItemStack(Items.COBBLESTONE), 120);
+		helper.assertValueEqual(got.getCount(), 120, "꺼낸 조약돌");
+		helper.assertValueEqual(drawer.count(), 30, "서랍에 남은 조약돌");
+		helper.assertTrue(net.extract(new ItemStack(Items.DIAMOND), 5).isEmpty(), "없는 것을 꺼냄");
+		helper.succeed();
+	}
+
+	/** 관 수 한도 (설정): 한도 밖의 상자는 안 보인다. 캐시는 관이 바뀌면 다시 찾는다. */
+	@GameTest
+	public void networkNodeLimitAndCache(GameTestHelper helper) {
+		TerminalBlockEntity terminal = network(helper, ModStorage.STORAGE_TERMINAL);
+		SanupcraftConfig config = SanupcraftConfig.defaults();
+		config.storageMaxNodes = 2;
+		SanupcraftConfig.use(config);
+		try {
+			StorageNetwork small = StorageNetwork.discover(helper.getLevel(), terminal.getBlockPos());
+			helper.assertValueEqual(small.count(new ItemStack(Items.COBBLESTONE)), 0L, "한도 밖 서랍이 보임");
+		} finally {
+			SanupcraftConfig.resetToDefaults();
+		}
+		helper.assertValueEqual(terminal.network().count(new ItemStack(Items.COBBLESTONE)), 100L, "캐시된 네트워크");
+		helper.setBlock(new BlockPos(4, 1, 1), Blocks.AIR);
+		helper.assertValueEqual(terminal.network().count(new ItemStack(Items.COBBLESTONE)), 0L, "관을 부숴도 캐시가 그대로");
+		helper.succeed();
+	}
+
+	/** 단말 화면 (서버): 목록에서 한 더미 꺼내 들기 · 든 것 넣기 · 인벤토리 Shift 클릭으로 넣기 · 인벤토리로 꺼내기. */
+	@GameTest
+	public void terminalMenuMovesItems(GameTestHelper helper) {
+		TerminalBlockEntity terminal = network(helper, ModStorage.STORAGE_TERMINAL);
+		ServerPlayer player = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
+		TerminalMenu menu = new TerminalMenu(1, player.getInventory(), terminal, p -> true);
+		helper.assertValueEqual(terminal.users(), 1, "사용자 수");
+		menu.handleAction(player, TerminalMenu.ACTION_TAKE_STACK, new ItemStack(Items.COBBLESTONE));
+		helper.assertValueEqual(menu.getCarried().getCount(), 64, "든 조약돌");
+		menu.handleAction(player, TerminalMenu.ACTION_INSERT_ONE, ItemStack.EMPTY);
+		helper.assertValueEqual(menu.getCarried().getCount(), 63, "하나 넣은 뒤 든 것");
+		menu.handleAction(player, TerminalMenu.ACTION_INSERT_CARRIED, ItemStack.EMPTY);
+		helper.assertTrue(menu.getCarried().isEmpty(), "다 넣었는데 남음");
+		helper.assertValueEqual(terminal.network().count(new ItemStack(Items.COBBLESTONE)), 100L, "조약돌 합계");
+
+		player.getInventory().setItem(9, new ItemStack(Items.IRON_INGOT, 20));
+		int slot = menu.inventoryStart();
+		menu.quickMoveStack(player, slot);
+		helper.assertTrue(player.getInventory().getItem(9).isEmpty(), "Shift 클릭이 넣지 않음");
+		helper.assertValueEqual(terminal.network().count(new ItemStack(Items.IRON_INGOT)), 20L, "넣은 철");
+		menu.handleAction(player, TerminalMenu.ACTION_TAKE_TO_INVENTORY, new ItemStack(Items.IRON_INGOT, 1));
+		helper.assertValueEqual(player.getInventory().countItem(Items.IRON_INGOT), 20, "인벤토리로 꺼낸 철");
+		helper.assertValueEqual(terminal.network().count(new ItemStack(Items.IRON_INGOT)), 0L, "네트워크에 남은 철");
+		menu.removed(player);
+		helper.assertValueEqual(terminal.users(), 0, "닫은 뒤 사용자 수");
+		helper.succeed();
+	}
+
+	/** 제작 단말: JEI 옮기기(서버 쪽)로 판자 4개를 놓고, Shift 클릭으로 재료가 떨어질 때까지 작업대를 만든다 (빈 칸은 네트워크에서 다시 채움). */
+	@GameTest
+	public void craftingTerminalCraftsFromNetwork(GameTestHelper helper) {
+		TerminalBlockEntity terminal = network(helper, ModStorage.CRAFTING_TERMINAL);
+		terminal.network().insert(new ItemStack(Items.OAK_PLANKS, 9));
+		ServerPlayer player = helper.makeMockServerPlayerInLevel();
+		TerminalMenu menu = new TerminalMenu(1, player.getInventory(), terminal, p -> true);
+		List<ItemStack> planks = List.of(new ItemStack(Items.OAK_PLANKS));
+		menu.fillGrid(player, List.of(planks, planks, List.of(), planks, planks, List.of(), List.of(), List.of(), List.of()));
+		helper.assertTrue(menu.craftingView().result().getItem(0).is(Items.CRAFTING_TABLE), "결과가 작업대가 아님: " + menu.craftingView().result().getItem(0));
+		helper.assertValueEqual(terminal.network().count(new ItemStack(Items.OAK_PLANKS)), 5L, "칸에 놓고 남은 판자");
+		menu.clicked(0, 0, ContainerInput.QUICK_MOVE, player);
+		helper.assertValueEqual(player.getInventory().countItem(Items.CRAFTING_TABLE), 2, "만든 작업대");
+		helper.assertValueEqual(terminal.network().count(new ItemStack(Items.OAK_PLANKS)), 0L, "네트워크 판자");
+		// 남은 판자 1개는 칸에 있고, 닫으면 네트워크로 돌아간다
+		menu.removed(player);
+		helper.assertValueEqual(terminal.network().count(new ItemStack(Items.OAK_PLANKS)), 1L, "닫은 뒤 돌아온 판자");
+		helper.assertTrue(menu.craftingView().grid().isEmpty(), "닫은 뒤 칸이 안 비었음");
+		helper.succeed();
+	}
+
+	/** 단말은 증기가 없으면 안 열리고, 잠그면 주인만 쓴다. 증기 · 잠금은 저장된다. */
+	@GameTest
+	public void terminalNeedsSteamAndLock(GameTestHelper helper) {
+		helper.setBlock(TERMINAL, ModStorage.STORAGE_TERMINAL);
+		TerminalBlockEntity terminal = helper.getBlockEntity(TERMINAL, TerminalBlockEntity.class);
+		Player owner = helper.makeMockPlayer(GameType.SURVIVAL);
+		helper.assertFalse(terminal.hasPower(), "증기 없이 켜짐");
+		helper.assertFalse(terminal.tryOpen(owner, terminal), "증기 없이 열림");
+		helper.assertValueEqual(terminal.acceptSteam(5000), TerminalBlockEntity.STEAM_CAPACITY, "받은 증기");
+		helper.assertTrue(terminal.hasPower(), "증기가 있는데 꺼짐");
+		terminal.lock().setOwner(owner);
+		helper.assertTrue(terminal.lock().toggle(owner), "주인이 못 잠금");
+		Player other = helper.makeMockPlayer(GameType.SURVIVAL);
+		helper.assertFalse(terminal.lock().canUse(other), "남이 잠긴 단말을 씀");
+		helper.assertFalse(terminal.lock().toggle(other), "남이 잠금을 풂");
+		var registries = helper.getLevel().registryAccess();
+		BlockEntity copy = BlockEntity.loadStatic(terminal.getBlockPos(), terminal.getBlockState(), terminal.saveWithFullMetadata(registries), registries);
+		helper.assertTrue(copy instanceof TerminalBlockEntity t && t.steamStored() == TerminalBlockEntity.STEAM_CAPACITY && t.lock().isLocked()
+				&& t.lock().isOwner(owner), "증기 · 잠금이 저장되지 않음");
 		helper.succeed();
 	}
 }

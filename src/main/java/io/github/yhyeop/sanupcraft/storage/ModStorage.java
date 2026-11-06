@@ -3,7 +3,9 @@ package io.github.yhyeop.sanupcraft.storage;
 import java.util.Set;
 
 import net.fabricmc.fabric.api.event.player.AttackBlockCallback;
+import net.fabricmc.fabric.api.menu.v1.ExtendedMenuType;
 
+import net.minecraft.core.GlobalPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -19,7 +21,7 @@ import net.minecraft.world.level.material.MapColor;
 import io.github.yhyeop.sanupcraft.Sanupcraft;
 import io.github.yhyeop.sanupcraft.core.ModRegistry;
 
-/** M7 보관 · 제작 편의: 저장 서랍 (S1). */
+/** M7 보관 · 제작 편의: 저장 서랍 (S1), 창고 관 · 창고 단말 · 제작 단말 (S2 · S3). */
 public final class ModStorage {
 	/** 부순 서랍에 남는 내용물. */
 	public static final DataComponentType<DrawerContents> DRAWER_CONTENTS = Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE,
@@ -36,10 +38,32 @@ public final class ModStorage {
 	public static final BlockEntityType<DrawerBlockEntity> DRAWER_BLOCK_ENTITY = Registry.register(
 			BuiltInRegistries.BLOCK_ENTITY_TYPE, Sanupcraft.id("drawer"), new BlockEntityType<>(DrawerBlockEntity::new, Set.of(IRON_DRAWER, STEEL_DRAWER)));
 
+	// ---- S2 · S3 창고 네트워크 ----
+	/** 휴대 단말이 연결된 단말 자리. */
+	public static final DataComponentType<GlobalPos> TERMINAL_LINK = Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE,
+			Sanupcraft.id("terminal_link"),
+			DataComponentType.<GlobalPos>builder().persistent(GlobalPos.CODEC).networkSynchronized(GlobalPos.STREAM_CODEC).build());
+
+	public static final StorageCableBlock STORAGE_CABLE = ModRegistry.block("storage_cable", StorageCableBlock::new, BlockBehaviour.Properties.of()
+			.mapColor(MapColor.COLOR_GREEN)
+			.strength(1.5F)
+			.sound(SoundType.METAL)
+			.noOcclusion());
+	public static final TerminalBlock STORAGE_TERMINAL = ModRegistry.block("storage_terminal", p -> new TerminalBlock(false, p), machineProperties());
+	public static final TerminalBlock CRAFTING_TERMINAL = ModRegistry.block("crafting_terminal", p -> new TerminalBlock(true, p), machineProperties());
+
+	public static final BlockEntityType<TerminalBlockEntity> TERMINAL_BLOCK_ENTITY = Registry.register(
+			BuiltInRegistries.BLOCK_ENTITY_TYPE, Sanupcraft.id("storage_terminal"),
+			new BlockEntityType<>(TerminalBlockEntity::new, Set.of(STORAGE_TERMINAL, CRAFTING_TERMINAL)));
+
+	public static final ExtendedMenuType<TerminalMenu, TerminalMenu.OpenData> TERMINAL_MENU = Registry.register(
+			BuiltInRegistries.MENU, Sanupcraft.id("storage_terminal"), new ExtendedMenuType<>(TerminalMenu::new, TerminalMenu.OpenData.STREAM_CODEC));
+
 	private ModStorage() {
 	}
 
 	public static void init() {
+		StoragePayloads.init();
 		// 서랍 앞면 좌클릭: 부수지 않고 꺼낸다 (클라이언트도 SUCCESS를 돌려 캐기를 시작하지 않게 한다)
 		AttackBlockCallback.EVENT.register((player, level, hand, pos, direction) -> {
 			BlockState state = level.getBlockState(pos);
@@ -51,6 +75,14 @@ public final class ModStorage {
 			}
 			return InteractionResult.SUCCESS;
 		});
+	}
+
+	private static BlockBehaviour.Properties machineProperties() {
+		return BlockBehaviour.Properties.of()
+				.mapColor(MapColor.METAL)
+				.strength(3.5F, 6.0F)
+				.requiresCorrectToolForDrops()
+				.sound(SoundType.METAL);
 	}
 
 	private static BlockBehaviour.Properties drawerProperties(MapColor color) {
