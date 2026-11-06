@@ -1,21 +1,12 @@
 package io.github.yhyeop.sanupcraft.boss;
 
-import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import org.jspecify.annotations.Nullable;
-
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.chat.Component;
-import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
@@ -25,7 +16,6 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
@@ -33,7 +23,6 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FloatGoal;
-import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
 import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
 import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
@@ -42,12 +31,9 @@ import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
 import net.minecraft.world.entity.monster.Silverfish;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.BlocksAttacks;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
 
 import io.github.yhyeop.sanupcraft.core.ModItems;
@@ -66,7 +52,7 @@ import io.github.yhyeop.sanupcraft.sound.ModSounds;
  * 강철 검 · 내열 검으로 때리면 피해 1.5배. 거미줄에 걸리지 않고 구속이 안 걸린다.
  * 체력이 절반 아래면 패턴 간격이 짧아진다. 여러 명이면 체력 · 졸개 수가 늘고, 기여자 각자 핵을 받는다 ({@link BossParty}).
  */
-public class RustyGuardian extends Monster implements PartyBoss {
+public class RustyGuardian extends PartyBossMonster {
 	public static final double MAX_HEALTH = 300.0;
 	public static final float RUST_MULTIPLIER = 1.5F;
 	public static final float STEEL_SWORD_MULTIPLIER = 1.5F;
@@ -74,11 +60,7 @@ public class RustyGuardian extends Monster implements PartyBoss {
 	public static final float SLAM_DAMAGE = 10.0F;
 	public static final double SLAM_RADIUS = 5.0;
 	public static final int MINIONS_PER_SUMMON = 3;
-	/** 패턴 타격이 방패를 깨는 시간 (초). 바닐라 워든과 같다. */
-	public static final float SHIELD_BREAK_SECONDS = 5.0F;
 	private static final int MAX_MINIONS_NEARBY = 8;
-	/** 공격 동작 이벤트 id (클라이언트 휘두르기 애니메이션). 파수꾼과 같은 이름. */
-	public static final byte EVENT_ATTACK = 4;
 
 	private static final int CHARGE_LOCK = 12;
 	private static final int CHARGE_WINDUP = 20;
@@ -97,25 +79,17 @@ public class RustyGuardian extends Monster implements PartyBoss {
 
 	private static final Pattern[] CYCLE = {Pattern.CHARGE, Pattern.SLAM, Pattern.SUMMON, Pattern.SLAM};
 
-	private final ServerBossEvent bossEvent = new ServerBossEvent(
-			Mth.createInsecureUUID(this.random), this.getDisplayName(), BossEvent.BossBarColor.RED, BossEvent.BossBarOverlay.NOTCHED_10);
 	private Pattern pattern = Pattern.NONE;
 	private int patternTick;
 	private int cooldown = 60;
-	/** 화남(체력 절반 아래)을 알렸는가 (M11 X2). 불러올 때 체력으로 다시 정한다. */
-	private boolean phaseAnnounced;
 	private int cycleIndex;
 	private Vec3 chargeDirection = Vec3.ZERO;
 	private final Set<UUID> hitThisCharge = new HashSet<>();
-	private int attackAnimationTick;
-	/** 플레이어별 녹 경고를 마지막으로 보낸 게임 시간. */
-	private final Map<UUID, Long> warnedAt = new HashMap<>();
-	private final BossParty party = new BossParty();
+	/** 플레이어별 녹 경고 (200틱에 한 번). */
+	private final BossCombat.PlayerCooldown rustWarning = new BossCombat.PlayerCooldown(WARNING_COOLDOWN);
 
 	public RustyGuardian(EntityType<? extends RustyGuardian> type, Level level) {
-		super(type, level);
-		this.xpReward = 50;
-		this.setPersistenceRequired();
+		super(type, level, BossEvent.BossBarColor.RED, 50);
 	}
 
 	public static AttributeSupplier.Builder createAttributes() {
@@ -141,26 +115,27 @@ public class RustyGuardian extends Monster implements PartyBoss {
 	}
 
 	@Override
-	public BossParty party() {
-		return party;
+	protected Item keyItem() {
+		return ModItems.GUARDIAN_CORE;
+	}
+
+	@Override
+	protected void announcePhase(ServerLevel level) {
+		ModSounds.bossPhase(level, this, ParticleTypes.CRIT); // M11 X2
 	}
 
 	/** 한 번에 부르는 졸개 수. 3명마다 하나씩 는다 (혼자 3, 10명 6). */
 	public int minionsPerSummon() {
-		return MINIONS_PER_SUMMON + (party.size() - 1) / 3;
+		return MINIONS_PER_SUMMON + (party().size() - 1) / 3;
 	}
 
-	/** 보스 바에 보이는 제목 (시험용). */
-	public Component bossBarName() {
-		return bossEvent.getName();
+	@Override
+	protected boolean inPattern() {
+		return pattern != Pattern.NONE;
 	}
 
 	public Pattern pattern() {
 		return pattern;
-	}
-
-	public boolean isEnraged() {
-		return getHealth() < getMaxHealth() / 2.0F;
 	}
 
 	/** 다음 패턴을 바로 시작한다 (테스트 · 디버그용). */
@@ -180,12 +155,6 @@ public class RustyGuardian extends Monster implements PartyBoss {
 	@Override
 	protected void customServerAiStep(ServerLevel level) {
 		super.customServerAiStep(level);
-		bossEvent.setProgress(getHealth() / getMaxHealth());
-		if (!phaseAnnounced && isEnraged()) {
-			phaseAnnounced = true;
-			ModSounds.bossPhase(level, this, ParticleTypes.CRIT); // M11 X2
-		}
-
 		if (pattern == Pattern.NONE) {
 			LivingEntity target = getTarget();
 			if (cooldown > 0) {
@@ -249,7 +218,7 @@ public class RustyGuardian extends Monster implements PartyBoss {
 		if (patternTick < CHARGE_END) {
 			setDeltaMovement(chargeDirection.x * 0.9, getDeltaMovement().y, chargeDirection.z * 0.9);
 			faceChargeDirection();
-			for (Player player : level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(0.6), EntitySelector.NO_CREATIVE_OR_SPECTATOR)) {
+			for (Player player : BossCombat.targets(level, getBoundingBox().inflate(0.6))) {
 				if (hitThisCharge.add(player.getUUID())) {
 					hitWithRust(level, player, CHARGE_DAMAGE, true);
 					player.push(chargeDirection.x * 1.2, 0.4, chargeDirection.z * 1.2);
@@ -279,7 +248,7 @@ public class RustyGuardian extends Monster implements PartyBoss {
 				}
 			}
 			if (patternTick == SLAM_WINDUP - 10) {
-				swingArms(level);
+				playAttackAnimation(level);
 			}
 			return;
 		}
@@ -303,9 +272,9 @@ public class RustyGuardian extends Monster implements PartyBoss {
 		level.sendParticles(ParticleTypes.EXPLOSION, getX(), getY() + 0.2, getZ(), 6, SLAM_RADIUS / 2, 0.1, SLAM_RADIUS / 2, 0.0);
 		int hits = 0;
 		double reach = slamReach();
-		List<Player> players = level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(reach, 2.0, reach), EntitySelector.NO_CREATIVE_OR_SPECTATOR);
+		List<Player> players = BossCombat.targets(level, getBoundingBox().inflate(reach, 2.0, reach));
 		for (Player player : players) {
-			if (horizontalDistance(player.position(), position()) > reach) {
+			if (BossCombat.horizontalDistance(player.position(), position()) > reach) {
 				continue;
 			}
 			hitWithRust(level, player, SLAM_DAMAGE, true);
@@ -366,52 +335,22 @@ public class RustyGuardian extends Monster implements PartyBoss {
 	 */
 	public boolean hitWithRust(ServerLevel level, LivingEntity target, float damage, boolean pattern) {
 		if (pattern) {
-			breakShield(level, target);
-			damage *= (float) party.outgoingDamageScale(); // 강화 단계 (근접은 공격력 속성에 이미 들어 있다)
+			BossCombat.breakShield(level, target);
+			damage *= (float) party().outgoingDamageScale(); // 강화 단계 (근접은 공격력 속성에 이미 들어 있다)
 		}
 		boolean rustproof = SteelGear.wearsFullSet(target);
 		boolean hurt = target.hurtServer(level, damageSources().mobAttack(this), rustproof ? damage : damage * RUST_MULTIPLIER);
 		if (hurt && !rustproof) {
 			target.addEffect(new MobEffectInstance(MobEffects.SLOWNESS, 60, 1), this);
-			warnRust(level, target);
+			BossCombat.warn(level, target, rustWarning, "entity.sanupcraft.rusty_guardian.rust_warning"); // 세트 없이 맞은 플레이어에게 안내
 		}
 		return hurt;
-	}
-
-	/** 막는 중인 방패를 깨고 쿨다운을 건다. */
-	private static void breakShield(ServerLevel level, LivingEntity target) {
-		ItemStack shield = target.getItemBlockingWith();
-		if (shield == null) {
-			return;
-		}
-		BlocksAttacks blocksAttacks = shield.get(DataComponents.BLOCKS_ATTACKS);
-		if (blocksAttacks != null) {
-			blocksAttacks.disable(level, target, SHIELD_BREAK_SECONDS, shield);
-		}
-	}
-
-	/** 세트 없이 녹 공격을 맞은 플레이어에게 안내한다 (플레이어마다 200틱에 한 번). */
-	private void warnRust(ServerLevel level, LivingEntity target) {
-		if (!(target instanceof ServerPlayer player)) {
-			return;
-		}
-		long now = level.getGameTime();
-		warnedAt.values().removeIf(last -> now - last >= WARNING_COOLDOWN);
-		if (warnedAt.putIfAbsent(player.getUUID(), now) == null) {
-			player.sendOverlayMessage(Component.translatable("entity.sanupcraft.rusty_guardian.rust_warning"));
-		}
-	}
-
-	private static double horizontalDistance(Vec3 a, Vec3 b) {
-		double dx = a.x - b.x;
-		double dz = a.z - b.z;
-		return Math.sqrt(dx * dx + dz * dz);
 	}
 
 	/** 근접으로 한 번 막히면 방패가 5초 꺼진다 (바닐라 워든과 같다). */
 	@Override
 	public float getSecondsToDisableBlocking() {
-		return SHIELD_BREAK_SECONDS;
+		return BossCombat.SHIELD_BREAK_SECONDS;
 	}
 
 	/** 거미줄 같은 블록에 느려지지 않는다 (돌진이 막히지 않게). */
@@ -426,7 +365,7 @@ public class RustyGuardian extends Monster implements PartyBoss {
 
 	@Override
 	public boolean doHurtTarget(ServerLevel level, Entity target) {
-		swingArms(level);
+		playAttackAnimation(level);
 		float damage = (float) getAttributeValue(Attributes.ATTACK_DAMAGE);
 		boolean hurt = target instanceof LivingEntity living
 				? hitWithRust(level, living, damage)
@@ -436,11 +375,6 @@ public class RustyGuardian extends Monster implements PartyBoss {
 		}
 		playSound(SoundEvents.IRON_GOLEM_ATTACK, 1.0F, 0.7F);
 		return hurt;
-	}
-
-	private void swingArms(ServerLevel level) {
-		attackAnimationTick = 10;
-		level.broadcastEntityEvent(this, EVENT_ATTACK);
 	}
 
 	@Override
@@ -459,110 +393,9 @@ public class RustyGuardian extends Monster implements PartyBoss {
 		return hurt;
 	}
 
-	/** 실제로 깎인 체력을 공격한 플레이어에게 센다 (죽기 전에 불리므로 마지막 일격도 들어간다). */
-	@Override
-	protected void actuallyHurt(ServerLevel level, DamageSource source, float damage) {
-		float before = getHealth();
-		super.actuallyHurt(level, source, damage);
-		party.record(source.getEntity(), before - getHealth());
-	}
-
-	/** 최대 체력이 속성 상한(1024)에 잘렸으면 받는 피해를 그만큼 줄인다 (갑옷 · 마법 계산 뒤, {@link BossParty#incomingDamageScale}). */
-	@Override
-	protected float getDamageAfterMagicAbsorb(DamageSource source, float damage) {
-		return super.getDamageAfterMagicAbsorb(source, damage) * party.incomingDamageScale(this);
-	}
-
-	/** 핵은 전리품 표가 아니라 기여자 각자에게 준다. */
-	@Override
-	protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
-		super.dropCustomDeathLoot(level, source, killedByPlayer);
-		party.giveKeyItem(level, this, ModItems.GUARDIAN_CORE);
-	}
-
-	@Override
-	protected void addAdditionalSaveData(ValueOutput output) {
-		super.addAdditionalSaveData(output);
-		party.save(output);
-	}
-
-	@Override
-	protected void readAdditionalSaveData(ValueInput input) {
-		super.readAdditionalSaveData(input);
-		party.load(input);
-		refreshBossBar();
-		phaseAnnounced = isEnraged();
-	}
-
 	@Override
 	protected SoundEvent getDeathSound() {
 		return ModSounds.GUARDIAN_DEATH; // M11 X2
 	}
 
-	@Override
-	public void handleEntityEvent(byte id) {
-		if (id == EVENT_ATTACK) {
-			attackAnimationTick = 10;
-		} else {
-			super.handleEntityEvent(id);
-		}
-	}
-
-	@Override
-	public void aiStep() {
-		super.aiStep();
-		if (attackAnimationTick > 0) {
-			attackAnimationTick--;
-		}
-	}
-
-	public int getAttackAnimationTick() {
-		return attackAnimationTick;
-	}
-
-	/** 이름표로 이름을 바꾸면 보스 바 제목도 바꾼다 (저장된 이름을 불러올 때도 이 경로를 지난다). */
-	@Override
-	public void setCustomName(@Nullable Component name) {
-		super.setCustomName(name);
-		refreshBossBar();
-	}
-
-	@Override
-	public void refreshBossBar() {
-		bossEvent.setName(BossTier.barName(getDisplayName(), party.tier()));
-	}
-
-	@Override
-	public boolean removeWhenFarAway(double distSqr) {
-		return false;
-	}
-
-	@Override
-	public void startSeenByPlayer(ServerPlayer player) {
-		super.startSeenByPlayer(player);
-		bossEvent.addPlayer(player);
-	}
-
-	@Override
-	public void stopSeenByPlayer(ServerPlayer player) {
-		super.stopSeenByPlayer(player);
-		bossEvent.removePlayer(player);
-	}
-
-	/** 패턴 중에는 걷기 · 근접 공격을 멈춘다. */
-	private class PatternGoal extends Goal {
-		PatternGoal() {
-			setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.LOOK));
-		}
-
-		@Override
-		public boolean canUse() {
-			return pattern != Pattern.NONE;
-		}
-
-		@Override
-		public boolean requiresUpdateEveryTick() {
-			return true;
-		}
-	}
 }

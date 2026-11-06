@@ -101,11 +101,10 @@ public class RustyGuardianModel extends EntityModel<RustyGuardianRenderState> {
 		rightArm.zRot = 0.1F + breathe;
 		leftArm.zRot = -0.1F - breathe;
 
-		float t = state.attackTicksRemaining;
-		if (t > 0.0F) {
+		if (state.attackTicksRemaining > 0.0F) {
 			// 두 팔을 머리 위로 들었다가 (앞 40%) 내리찍는다 (다음 30%)
-			float p = 1.0F - t / 10.0F;
-			float raise = p < 0.4F ? p / 0.4F : Math.max(0.0F, 1.0F - (p - 0.4F) / 0.3F);
+			float p = state.attackProgress();
+			float raise = state.attackRaise();
 			float arm = -0.3F - 2.4F * raise;
 			rightArm.xRot = arm;
 			leftArm.xRot = arm;

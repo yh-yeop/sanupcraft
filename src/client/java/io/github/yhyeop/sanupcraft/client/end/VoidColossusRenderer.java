@@ -10,6 +10,7 @@ import net.minecraft.util.Mth;
 import io.github.yhyeop.sanupcraft.boss.VoidColossus;
 import io.github.yhyeop.sanupcraft.client.boss.BossGlowLayer;
 import io.github.yhyeop.sanupcraft.client.boss.BossModelLayers;
+import io.github.yhyeop.sanupcraft.client.boss.BossRenderState;
 import io.github.yhyeop.sanupcraft.client.boss.VoidColossusModel;
 import io.github.yhyeop.sanupcraft.client.boss.VoidColossusRenderState;
 import io.github.yhyeop.sanupcraft.client.boss.VoidShieldLayer;
@@ -31,9 +32,6 @@ public class VoidColossusRenderer extends MobRenderer<VoidColossus, VoidColossus
 
 	/** 천천히 맥박친다. 끌어당길 때는 활활, 보호막 중에는 빠르게 일렁이고, 화나면 맥박이 빨라진다. */
 	private static double glow(VoidColossusRenderState state) {
-		if (state.deathTime > 0) {
-			return 1.0 - state.deathTime / 20.0;
-		}
 		float age = state.ageInTicks;
 		double base = 0.72 + 0.18 * Mth.sin(age * (state.enraged ? 0.35F : 0.12F));
 		double pull = state.pullAnimation * (0.95 + 0.05 * Mth.sin(age * 1.1F));
@@ -54,11 +52,10 @@ public class VoidColossusRenderer extends MobRenderer<VoidColossus, VoidColossus
 	@Override
 	public void extractRenderState(VoidColossus entity, VoidColossusRenderState state, float partialTicks) {
 		super.extractRenderState(entity, state, partialTicks);
-		state.attackTicksRemaining = entity.getAttackTick() > 0 ? entity.getAttackTick() - partialTicks : 0.0F;
+		BossRenderState.extractCommon(entity, state, partialTicks);
 		state.pullAnimation = entity.pullAnimation(partialTicks);
 		state.pulling = (entity.flags() & VoidColossus.FLAG_PULLING) != 0;
 		state.shieldAnimation = entity.shieldAnimation(partialTicks);
-		state.enraged = entity.isEnraged();
 	}
 
 	@Override

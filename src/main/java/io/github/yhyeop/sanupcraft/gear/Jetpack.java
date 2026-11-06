@@ -62,6 +62,11 @@ public final class Jetpack {
 		return chest.is(ProductionGear.STEAM_JETPACK) ? chest : ItemStack.EMPTY;
 	}
 
+	/** 한 틱 뜰 증기가 들어 있나 (설정값, 0이어도 1 이상은 있어야 뜬다). 서버 · 클라이언트가 같은 판정을 쓴다. */
+	public static boolean hasThrustSteam(ItemStack pack) {
+		return SteamCharge.get(pack) >= Math.max(SanupcraftConfig.current().jetpackSteamPerTick, 1);
+	}
+
 	/** 위로 뜰 수 있는 상태인가 (날기 · 겉날개 · 탈것 · 관전이면 안 된다). */
 	public static boolean canThrust(Player player) {
 		return !player.isSpectator() && !player.getAbilities().flying && !player.isFallFlying() && !player.isPassenger();
@@ -82,10 +87,10 @@ public final class Jetpack {
 		if (pack.isEmpty() || !canThrust(player)) {
 			return false;
 		}
-		int cost = SanupcraftConfig.current().jetpackSteamPerTick;
-		if (SteamCharge.get(pack) < Math.max(cost, 1)) {
+		if (!hasThrustSteam(pack)) {
 			return false;
 		}
+		int cost = SanupcraftConfig.current().jetpackSteamPerTick;
 		if (!player.hasInfiniteMaterials()) {
 			SteamCharge.take(pack, cost);
 		}

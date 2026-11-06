@@ -10,6 +10,7 @@ import net.minecraft.util.Mth;
 import io.github.yhyeop.sanupcraft.boss.RustyGuardian;
 import io.github.yhyeop.sanupcraft.client.boss.BossGlowLayer;
 import io.github.yhyeop.sanupcraft.client.boss.BossModelLayers;
+import io.github.yhyeop.sanupcraft.client.boss.BossRenderState;
 import io.github.yhyeop.sanupcraft.client.boss.RustyGuardianModel;
 import io.github.yhyeop.sanupcraft.client.boss.RustyGuardianRenderState;
 
@@ -29,9 +30,6 @@ public class RustyGuardianRenderer extends MobRenderer<RustyGuardian, RustyGuard
 
 	/** 천천히 숨 쉬듯 밝아졌다 어두워지고, 화나면 빠르게 깜박인다. */
 	private static double glow(RustyGuardianRenderState state) {
-		if (state.deathTime > 0) {
-			return 1.0 - state.deathTime / 20.0;
-		}
 		float speed = state.enraged ? 0.45F : 0.1F;
 		return 0.8 + 0.2 * Mth.sin(state.ageInTicks * speed);
 	}
@@ -49,8 +47,7 @@ public class RustyGuardianRenderer extends MobRenderer<RustyGuardian, RustyGuard
 	@Override
 	public void extractRenderState(RustyGuardian entity, RustyGuardianRenderState state, float partialTicks) {
 		super.extractRenderState(entity, state, partialTicks);
-		state.attackTicksRemaining = entity.getAttackAnimationTick() > 0 ? entity.getAttackAnimationTick() - partialTicks : 0.0F;
-		state.enraged = entity.isEnraged();
+		BossRenderState.extractCommon(entity, state, partialTicks);
 	}
 
 	@Override

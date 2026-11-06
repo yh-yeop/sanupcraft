@@ -55,33 +55,14 @@ public class BigBoilerControllerBlock extends BoilerBlock {
 		return InteractionResult.SUCCESS;
 	}
 
-	/** 상태 한 줄: 모양이 맞으면 물 · 증기 · 연료 + 힌트, 틀리면 첫 틀린 칸. */
+	/** 상태 한 줄: 모양이 맞으면 물 · 증기 · 연료 + 힌트(보일러와 같은 규칙, {@link BoilerBlock#hint}), 틀리면 첫 틀린 칸. */
 	static Component status(ServerLevel level, BlockPos pos, BlockState state, BigBoilerControllerBlockEntity controller) {
 		if (!controller.check(level, pos, state)) {
-			BigBoilerShape.Problem problem = controller.problem();
-			BlockPos at = problem.pos();
-			String key = problem.expected() == BigBoilerShape.Part.CASING
-					? "block.sanupcraft.big_boiler_controller.need_casing"
-					: "block.sanupcraft.big_boiler_controller.need_hollow";
-			return Component.translatable(key, at.getX(), at.getY(), at.getZ(), level.getBlockState(at).getBlock().getName());
+			return MultiblockShape.problemMessage(level, controller.problem(), "block.sanupcraft.big_boiler_controller");
 		}
 		return Component.translatable("block.sanupcraft.big_boiler_controller.status",
 				controller.water(), controller.waterCapacity(), controller.steam(), controller.steamCapacity(), controller.fuelCount())
 				.append(" · ").append(Component.translatable(hint(controller)));
-	}
-
-	/** 보일러와 같은 힌트 키: 가장 먼저 해결할 것 하나만. */
-	private static String hint(BigBoilerControllerBlockEntity controller) {
-		if (controller.water() <= 0) {
-			return "block.sanupcraft.boiler.hint.no_water";
-		}
-		if (controller.steam() >= controller.steamCapacity()) {
-			return "block.sanupcraft.boiler.hint.steam_full";
-		}
-		if (!controller.isLit() && controller.fuelCount() <= 0) {
-			return "block.sanupcraft.boiler.hint.no_fuel";
-		}
-		return "block.sanupcraft.boiler.hint.ok";
 	}
 
 	@Override
@@ -94,7 +75,7 @@ public class BigBoilerControllerBlock extends BoilerBlock {
 	@Override
 	protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
 		super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
-		BigBoilerControllerBlockEntity.setCasingsFormed(level, pos, state.getValue(FACING), false);
+		BigBoilerControllerBlockEntity.SHAPE.unform(level, pos, state.getValue(FACING));
 	}
 
 	@Override
@@ -116,7 +97,7 @@ public class BigBoilerControllerBlock extends BoilerBlock {
 		if (!state.getValue(LIT)) {
 			return;
 		}
-		BlockPos top = BigBoilerShape.at(pos, state.getValue(FACING), 0, 1, BigBoilerShape.HEIGHT - 1);
+		BlockPos top = MultiblockShape.at(pos, state.getValue(FACING), 0, 1, BigBoilerControllerBlockEntity.SHAPE.height() - 1);
 		double x = top.getX() + 0.5;
 		double z = top.getZ() + 0.5;
 		for (int i = 0; i < 2; i++) {
