@@ -23,6 +23,8 @@
     "sanupcraft:boss_record_board",
     "sanupcraft:goal_board",
     "sanupcraft:crop_harvester",
-    "sanupcraft:tree_feller"
+    "sanupcraft:tree_feller",
+    "sanupcraft:mob_grinder",
+    "sanupcraft:experience_tank"
   ]
 }

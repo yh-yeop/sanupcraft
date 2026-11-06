@@ -88,6 +88,8 @@
 | `world` | 월드 구조물(녹슨 사당) · 바닐라 상자 전리품 더하기 (요새 · 보루) |
 | `playtest` | `/sanupcraft playtest <단계>` 실테스트 꾸러미 |
 | `server` | 10명 서버 운영: 팀(`/sanupcraft team`) · 보스 기록판 · 공용 목표판 · 설명서 (M10) |
+| `production/grinder` | 몹 분쇄기(증기, 가짜 플레이어가 베어 전리품 · 경험치) · 경험치 탱크 (M9b) |
+| `gear/backpack` | 배낭 27칸 · 강철 배낭 54칸, 내용은 아이템 컴포넌트 (M9b) |
 
 `src/main` 공통 · 서버, `src/client` 클라이언트 전용(렌더링), `src/gametest` 자동 검사.
 

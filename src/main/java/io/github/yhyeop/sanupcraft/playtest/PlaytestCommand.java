@@ -37,9 +37,11 @@ import io.github.yhyeop.sanupcraft.gear.ProductionGear;
 import io.github.yhyeop.sanupcraft.gear.SteamCharge;
 import io.github.yhyeop.sanupcraft.gear.SteamGear;
 import io.github.yhyeop.sanupcraft.gear.SteelGear;
+import io.github.yhyeop.sanupcraft.gear.backpack.ModBackpack;
 import io.github.yhyeop.sanupcraft.logistics.ModLogistics;
 import io.github.yhyeop.sanupcraft.mining.ModMining;
 import io.github.yhyeop.sanupcraft.power.ModPower;
+import io.github.yhyeop.sanupcraft.production.grinder.ModGrinder;
 import io.github.yhyeop.sanupcraft.server.GuideBook;
 import io.github.yhyeop.sanupcraft.server.ModServer;
 import io.github.yhyeop.sanupcraft.production.ModProduction;
@@ -63,7 +65,9 @@ public final class PlaytestCommand {
 		END("엔드 · 엔더 운반기", Level.END, PlaytestCommand::kitEnd),
 		SERVER("서버 기능: 팀 · 보스 기록판 · 공용 목표판 · 설명서", null, PlaytestCommand::kitServer),
 		// 확장 M9a
-		PRODUCTION("생산 · 장비: 작물 수확기 · 벌목기 · 증기 드릴 · 전기톱 · 제트팩", null, PlaytestCommand::kitProduction);
+		PRODUCTION("생산 · 장비: 작물 수확기 · 벌목기 · 증기 드릴 · 전기톱 · 제트팩", null, PlaytestCommand::kitProduction),
+		// M9b 몹 분쇄기 · 경험치 탱크 · 배낭
+		PRODUCTION2("생산 2: 몹 분쇄기 · 경험치 탱크 · 배낭", null, PlaytestCommand::kitProduction2);
 
 		final String description;
 		final ResourceKey<Level> dimension;
@@ -376,6 +380,27 @@ public final class PlaytestCommand {
 		give(p, charged(ProductionGear.CHAINSAW));
 		give(p, charged(ProductionGear.STEAM_JETPACK));
 		give(p, SteamGear.STEAM_CANISTER, 2);
+		food(p);
+	}
+
+	/** M9b 몹 분쇄기 · 경험치 탱크 · 배낭: 증기 설비, 몹 (소환 알), 받을 깔때기 · 상자, 병, 배낭 재료. */
+	private static void kitProduction2(ServerPlayer p) {
+		give(p, ModPower.BOILER.asItem(), 1);
+		give(p, ModPower.STEAM_PIPE.asItem(), 16);
+		give(p, Items.COAL, 32);
+		give(p, Items.WATER_BUCKET, 1);
+		give(p, ModGrinder.MOB_GRINDER.asItem(), 2);
+		give(p, ModGrinder.EXPERIENCE_TANK.asItem(), 2);
+		give(p, Items.ZOMBIE_SPAWN_EGG, 8);
+		give(p, Items.COW_SPAWN_EGG, 4);
+		give(p, Items.HOPPER, 4);
+		give(p, Items.CHEST, 4);
+		give(p, Items.GLASS_BOTTLE, 16);
+		give(p, ModBackpack.BACKPACK, 1);
+		give(p, Items.LEATHER, 12);
+		give(p, ModItems.IRON_PLATE, 8);
+		give(p, ModItems.STEEL_PLATE, 8);
+		give(p, Items.IRON_SWORD, 1);
 		food(p);
 	}
 }

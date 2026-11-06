@@ -19,9 +19,11 @@ import io.github.yhyeop.sanupcraft.gear.HeatproofGear;
 import io.github.yhyeop.sanupcraft.gear.ProductionGear;
 import io.github.yhyeop.sanupcraft.gear.SteamGear;
 import io.github.yhyeop.sanupcraft.gear.SteelGear;
+import io.github.yhyeop.sanupcraft.gear.backpack.ModBackpack;
 import io.github.yhyeop.sanupcraft.logistics.ModLogistics;
 import io.github.yhyeop.sanupcraft.mining.ModMining;
 import io.github.yhyeop.sanupcraft.playtest.PlaytestCommand;
+import io.github.yhyeop.sanupcraft.production.grinder.ModGrinder;
 import io.github.yhyeop.sanupcraft.power.ModPower;
 import io.github.yhyeop.sanupcraft.server.ModServer;
 import io.github.yhyeop.sanupcraft.production.ModProduction;
@@ -47,6 +49,8 @@ public class Sanupcraft implements ModInitializer {
 		SteamGear.init();
 		ModBoss.init();
 		ModWorld.init();
+		ModGrinder.init(); // M9b 몹 분쇄기 · 경험치 탱크
+		ModBackpack.init(); // M9b 배낭
 		ModServer.init(); // M10 서버 운영 (팀 · 기록판 · 목표판 · 설명서)
 		ModProduction.init(); // 확장 M9a
 		ProductionGear.init(); // 확장 M9a

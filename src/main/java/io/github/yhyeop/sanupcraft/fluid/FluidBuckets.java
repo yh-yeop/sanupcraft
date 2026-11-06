@@ -42,7 +42,7 @@ public final class FluidBuckets {
 				return InteractionResult.SUCCESS;
 			}
 			FluidKind inside = holder.fluid();
-			if (inside == null || holder.drain(inside, FluidKind.BUCKET, true) < FluidKind.BUCKET) {
+			if (inside == null || inside.bucket() == null || holder.drain(inside, FluidKind.BUCKET, true) < FluidKind.BUCKET) {
 				player.sendOverlayMessage(Component.translatable("block.sanupcraft.tank.not_enough"));
 				return InteractionResult.FAIL;
 			}

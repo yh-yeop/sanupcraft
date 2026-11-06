@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "S": "sanupcraft:steel_plate",
+    "I": "minecraft:iron_sword",
+    "G": "sanupcraft:gear_part",
+    "P": "sanupcraft:steam_pipe"
+  },
+  "pattern": [
+    "SIS",
+    "GPG",
+    "SSS"
+  ],
+  "result": {
+    "id": "sanupcraft:mob_grinder"
+  }
+}
