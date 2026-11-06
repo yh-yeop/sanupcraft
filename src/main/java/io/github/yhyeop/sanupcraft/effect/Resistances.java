@@ -11,13 +11,13 @@ import io.github.yhyeop.sanupcraft.gear.SteelGear;
 /**
  * 상태 이상(C3)을 막는 장비 판정. 판정은 여기 한 곳에서만 한다:
  * 효과가 걸릴 때({@link ModEffects#inflict}), 걸린 동안 매 틱({@link SanupcraftEffect}), 보스 패턴의 피해 배율이 모두 이 함수를 본다.
- * 나중에 크롬강 한 벌(G2) · 방지 모듈(G3)도 여기에 더한다.
+ * 크롬강 한 벌(G2)은 강철 한 벌 판정에 들어 있다. 나중에 방지 모듈(G3)도 여기에 더한다.
  */
 public final class Resistances {
 	private Resistances() {
 	}
 
-	/** 녹 면역: 강철 한 벌 (내열로 올려 입어도, 신발 자리 증기 부츠도 인정, {@link SteelGear#wearsFullSet}). */
+	/** 녹 면역: 강철 한 벌 (크롬강 · 내열로 올려 입어도, 신발 자리 증기 부츠도 인정, {@link SteelGear#wearsFullSet}). 크롬강 한 벌(G2)도 여기로 들어온다. */
 	public static boolean rustImmune(LivingEntity entity) {
 		return SteelGear.wearsFullSet(entity);
 	}

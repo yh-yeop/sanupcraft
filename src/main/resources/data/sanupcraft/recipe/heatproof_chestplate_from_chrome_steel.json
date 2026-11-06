@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "G": "sanupcraft:gear_part",
+    "S": "sanupcraft:core_shard",
+    "H": "sanupcraft:chrome_steel_chestplate"
+  },
+  "pattern": [
+    "GHG",
+    "GSG",
+    "GGG"
+  ],
+  "result": {
+    "id": "sanupcraft:heatproof_chestplate"
+  }
+}

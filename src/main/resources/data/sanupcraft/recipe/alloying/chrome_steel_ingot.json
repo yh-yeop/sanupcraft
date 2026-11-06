@@ -1,0 +1,9 @@
+{
+  "type": "sanupcraft:alloying",
+  "ingredient": "sanupcraft:steel_ingot",
+  "ingredient2": "sanupcraft:chromium_ingot",
+  "result": {
+    "id": "sanupcraft:chrome_steel_ingot"
+  },
+  "time": 300
+}

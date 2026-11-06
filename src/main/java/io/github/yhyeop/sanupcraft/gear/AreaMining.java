@@ -19,7 +19,7 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 
 /**
- * 강철 해머 · 굴삭 삽: 캔 블록을 가운데로, 바라본 면에 평평한 3x3을 함께 캔다.
+ * 강철 · 크롬강 해머 · 굴삭 삽: 캔 블록을 가운데로, 바라본 면에 평평한 3x3을 함께 캔다.
  * 웅크리면 한 칸만. 도구가 맞지 않거나 가운데보다 훨씬 단단한 블록(흑요석 등)은 남긴다. 블록마다 내구도를 쓴다.
  */
 public final class AreaMining {
@@ -49,7 +49,8 @@ public final class AreaMining {
 	}
 
 	public static boolean isAreaTool(ItemStack stack) {
-		return stack.is(SteelGear.STEEL_HAMMER) || stack.is(SteelGear.STEEL_EXCAVATOR);
+		return stack.is(SteelGear.STEEL_HAMMER) || stack.is(SteelGear.STEEL_EXCAVATOR)
+				|| stack.is(ChromeSteelGear.CHROME_STEEL_HAMMER) || stack.is(ChromeSteelGear.CHROME_STEEL_EXCAVATOR); // 확장 3 G2
 	}
 
 	private static Direction hitFace(Player player, BlockPos pos) {

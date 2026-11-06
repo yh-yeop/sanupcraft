@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "S": "sanupcraft:bronze_ingot"
+  },
+  "pattern": [
+    "SSS",
+    "S S"
+  ],
+  "result": {
+    "id": "sanupcraft:bronze_helmet"
+  }
+}

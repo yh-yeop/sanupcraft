@@ -4084,6 +4084,593 @@ def main_m13(made):
     made.append(save(effect_downed_icon(), "mob_effect/downed.png"))
 
 
+# ---------- 확장 3 G1 · G2 · R1: 합금 장비 아이콘, 갑옷 착용 모습 (청동 · 강철 · 크롬강 · 내열 · 공허) ----------
+# 갑옷 층(64x32, 옛 스킨 배치)의 면 자리: 상자 (u, v, 너비, 높이, 깊이)
+B1_HEAD = (0, 0, 8, 8, 8)
+B1_BODY = (16, 16, 8, 12, 4)
+B1_ARM = (40, 16, 4, 12, 4)
+B1_LEG = (0, 16, 4, 12, 4)
+
+# 세트 팔레트: o 윤곽 · s 그늘 · b 바탕 · l 밝음 · h 반짝임 · t 장식(띠 · 가죽) · T 장식 밝음 · g 빛(줄) · G 빛 밝음 · r 리벳
+B1_SETS = {
+    "bronze": {"o": "#341a0b", "s": "#6a3a1a", "b": "#a0622c", "l": "#cf8a45", "h": "#f6c27a",
+               "t": "#5a2a18", "T": "#8a3b22", "g": "#d9a24f", "G": "#ffd88a", "r": "#ffe0a0"},
+    "steel": {"o": "#20252c", "s": "#48515b", "b": "#717c88", "l": "#9aa5b1", "h": "#c9d2db",
+              "t": "#3e3227", "T": "#6b5640", "g": "#5b6672", "G": "#b8c2cc", "r": "#e4ebf1"},
+    "chrome_steel": {"o": "#243041", "s": "#566b84", "b": "#8aa1ba", "l": "#bcd0e3", "h": "#f4faff",
+                     "t": "#2f5f9a", "T": "#5d9be0", "g": "#8fc8ff", "G": "#ffffff", "r": "#ffffff"},
+    "heatproof": {"o": "#110b09", "s": "#221916", "b": "#352b27", "l": "#4c403a", "h": "#6a5a50",
+                  "t": "#2a1d18", "T": "#5a3a24", "g": "#f07a1e", "G": "#ffd27a", "r": "#8a7a6e"},
+    "void": {"o": "#09050f", "s": "#170e24", "b": "#251838", "l": "#382652", "h": "#55407a",
+             "t": "#140b20", "T": "#3a1f55", "g": "#d23cf0", "G": "#ff9cff", "r": "#8f6fc0"},
+}
+
+
+class B1Armor:
+    """갑옷 층 하나를 그리는 붓. 좌표는 면 안 좌표 (i = 가로, j = 세로)."""
+
+    def __init__(self, name, seed):
+        self.name = name
+        self.pal = B1_SETS[name]
+        self.rnd = random.Random(seed)
+        self.im = Image.new("RGBA", (64, 32))
+
+    @staticmethod
+    def rect(box, face):
+        u, v, w, h, d = box
+        return {
+            "top": (u + d, v, w, d), "bottom": (u + d + w, v, w, d),
+            "right": (u, v + d, d, h), "front": (u + d, v + d, w, h),
+            "left": (u + d + w, v + d, d, h), "back": (u + d + w + d, v + d, w, h),
+        }[face]
+
+    def put(self, r, i, j, key):
+        x0, y0, w, h = r
+        if 0 <= i < w and 0 <= j < h:
+            self.im.putpixel((x0 + i, y0 + j), (0, 0, 0, 0) if key is None else hex_px(self.pal.get(key, key)))
+
+    def get(self, r, i, j):
+        x0, y0, w, h = r
+        if 0 <= i < w and 0 <= j < h:
+            return self.im.getpixel((x0 + i, y0 + j))[3] > 0
+        return False
+
+    def metal(self, r, rows=None, light_top=True):
+        """바탕 금속: 잔 얼룩 + 위는 밝게 · 아래는 어둡게."""
+        x0, y0, w, h = r
+        rows = range(h) if rows is None else rows
+        for j in rows:
+            t = j / max(1, h - 1) if light_top else 0.5
+            for i in range(w):
+                roll = self.rnd.random()
+                if roll < 0.12 - 0.08 * t:
+                    key = "l"
+                elif roll > 0.92 - 0.14 * t:
+                    key = "s"
+                else:
+                    key = "b"
+                self.put(r, i, j, key)
+
+    def bevel(self, r, j0, j1, i0=0, i1=None, light="l", dark="s"):
+        """판 하나 (j0..j1 행, i0..i1 열): 위 · 왼쪽 밝게, 아래 · 오른쪽 어둡게."""
+        i1 = r[2] - 1 if i1 is None else i1
+        for i in range(i0, i1 + 1):
+            self.put(r, i, j0, light)
+            self.put(r, i, j1, dark)
+        for j in range(j0 + 1, j1):
+            self.put(r, i0, j, light)
+            self.put(r, i1, j, dark)
+
+    def hline(self, r, j, key, i0=0, i1=None):
+        i1 = r[2] - 1 if i1 is None else i1
+        for i in range(i0, i1 + 1):
+            self.put(r, i, j, key)
+
+    def vline(self, r, i, key, j0=0, j1=None):
+        j1 = r[3] - 1 if j1 is None else j1
+        for j in range(j0, j1 + 1):
+            self.put(r, i, j, key)
+
+    def clear(self, r, i0, j0, i1, j1):
+        for j in range(j0, j1 + 1):
+            for i in range(i0, i1 + 1):
+                self.put(r, i, j, None)
+
+    def rivet(self, r, i, j):
+        self.put(r, i, j, "r")
+        if self.get(r, i + 1, j + 1):
+            self.put(r, i + 1, j + 1, "o")
+
+    def streak(self, r, start, rows=None):
+        """크롬 반짝임: 오른쪽 위로 비스듬한 흰 줄 (밝음 · 반짝임 두 겹)."""
+        x0, y0, w, h = r
+        for j in range(h) if rows is None else rows:
+            for i in range(w):
+                if not self.get(r, i, j):
+                    continue
+                k = i + j - start
+                if k == 0:
+                    self.put(r, i, j, "h")
+                elif k == 1:
+                    self.put(r, i, j, "l")
+
+
+# ---- 부위별 ----
+def b1_helmet(a):
+    n = a.name
+    for f in ("top", "right", "front", "left", "back"):
+        r = a.rect(B1_HEAD, f)
+        a.metal(r)
+    top = a.rect(B1_HEAD, "top")
+    a.bevel(top, 0, 7)
+    # 투구 정수리
+    if n == "bronze":       # 붉은 깃 장식 줄
+        for j in range(8):
+            a.put(top, 3, j, "T")
+            a.put(top, 4, j, "t")
+        a.put(top, 3, 0, "G")
+    elif n == "steel":      # 가운데 등줄 + 리벳
+        a.vline(top, 3, "h", 1, 6)
+        a.vline(top, 4, "s", 1, 6)
+        for i, j in ((1, 1), (6, 1), (1, 6), (6, 6)):
+            a.rivet(top, i, j)
+    elif n == "chrome_steel":
+        a.vline(top, 3, "h", 0, 7)
+        a.vline(top, 4, "t", 0, 7)
+        a.streak(top, 4)
+    elif n == "heatproof":  # 판 이음매가 달아오름
+        a.vline(top, 3, "g", 1, 6)
+        a.hline(top, 4, "g", 1, 6)
+        a.put(top, 3, 4, "G")
+    elif n == "void":       # 마름모 무늬
+        for k in range(4):
+            a.put(top, 3 - k + 0, 1 + k, "g")
+            a.put(top, 4 + k, 1 + k, "g")
+            a.put(top, 3 - k + 0, 6 - k, "g") if k < 3 else None
+            a.put(top, 4 + k, 6 - k, "g") if k < 3 else None
+        a.put(top, 3, 3, "G")
+        a.put(top, 4, 4, "G")
+
+    for f in ("right", "left", "back"):
+        r = a.rect(B1_HEAD, f)
+        a.bevel(r, 0, 7)
+        a.hline(r, 6, "s", 1, 6)    # 목 가리개 이음매
+        if n == "steel":
+            a.hline(r, 1, "h", 1, 6)
+            for i in (1, 6):
+                a.rivet(r, i, 3)
+            if f != "back":
+                for i in (3, 5):       # 숨구멍
+                    a.put(r, i, 4, "o")
+        elif n == "bronze":
+            a.hline(r, 1, "t", 1, 6)  # 이마 띠
+            a.hline(r, 2, "g", 1, 6)
+            if f != "back":
+                a.put(r, 5, 4, "o")    # 귀 구멍
+                a.put(r, 5, 5, "s")
+        elif n == "chrome_steel":
+            a.hline(r, 2, "t", 1, 6)
+            a.hline(r, 3, "T", 1, 6)
+            a.put(r, 2, 1, "h") if f != "back" else None
+        elif n == "heatproof":
+            a.hline(r, 3, "g", 1, 6)
+            a.put(r, 1, 3, "G") if f != "back" else None
+            a.vline(r, 4, "g", 4, 6) if f == "back" else None
+        elif n == "void":
+            a.hline(r, 3, "g", 1, 6)
+            a.put(r, 2, 3, "G") if f != "back" else a.vline(r, 3, "g", 4, 6)
+
+    fr = a.rect(B1_HEAD, "front")
+    a.bevel(fr, 0, 7)
+    if n == "bronze":
+        # 코리트식: T자로 트인 얼굴, 코 가리개 · 볼 가리개
+        a.hline(fr, 1, "t", 1, 6)
+        a.hline(fr, 2, "g", 1, 6)
+        a.clear(fr, 1, 3, 2, 6)
+        a.clear(fr, 5, 3, 6, 6)
+        a.clear(fr, 3, 5, 4, 7)
+        a.put(fr, 3, 3, "l")
+        a.put(fr, 4, 3, "s")
+        a.put(fr, 3, 4, "h")
+        a.put(fr, 4, 4, "s")
+        a.vline(fr, 0, "l", 3, 7)
+        a.vline(fr, 7, "s", 3, 7)
+    elif n == "steel":
+        # 닫힌 투구: 눈 틈 + 숨구멍
+        a.hline(fr, 1, "h", 1, 6)
+        a.hline(fr, 3, "o", 1, 6)
+        a.hline(fr, 4, "l", 1, 6)
+        for i in (2, 5):
+            a.put(fr, i, 5, "o")
+            a.put(fr, i, 6, "o")
+        a.vline(fr, 3, "h", 5, 6)
+        a.vline(fr, 4, "s", 5, 6)
+        a.rivet(fr, 1, 1)
+        a.rivet(fr, 6, 1)
+    elif n == "chrome_steel":
+        # 올린 얼굴 가리개: 이마 판 + 볼 가리개, 얼굴은 트임
+        a.hline(fr, 1, "h", 1, 6)
+        a.hline(fr, 2, "t", 0, 7)
+        a.hline(fr, 3, "T", 0, 7)
+        a.clear(fr, 2, 4, 5, 7)
+        a.vline(fr, 1, "l", 4, 6)
+        a.vline(fr, 6, "s", 4, 6)
+        a.put(fr, 1, 1, "G")
+        a.streak(fr, 3, rows=range(0, 2))
+    elif n == "heatproof":
+        # 쇠 가면: 달아오른 눈 틈, 입 쪽 환기구
+        a.hline(fr, 3, "g", 1, 6)
+        a.put(fr, 2, 3, "G")
+        a.put(fr, 5, 3, "G")
+        a.hline(fr, 2, "o", 1, 6)
+        for i in (2, 3, 4, 5):
+            a.put(fr, i, 5 + (i % 2), "o")
+        a.put(fr, 3, 6, "g")
+        a.put(fr, 4, 5, "g")
+    elif n == "void":
+        # 흑요석 투구: 자홍 눈빛 + 이마에서 내려오는 줄
+        a.hline(fr, 3, "o", 1, 6)
+        a.put(fr, 2, 3, "G")
+        a.put(fr, 5, 3, "G")
+        a.put(fr, 1, 3, "g")
+        a.put(fr, 6, 3, "g")
+        a.vline(fr, 3, "g", 0, 2)
+        a.vline(fr, 4, "g", 4, 6)
+        a.put(fr, 3, 1, "G")
+
+
+def b1_chest(a):
+    n = a.name
+    for f in ("top", "bottom", "right", "front", "left", "back"):
+        a.metal(a.rect(B1_BODY, f))
+    top = a.rect(B1_BODY, "top")
+    a.bevel(top, 0, 3)
+    fr = a.rect(B1_BODY, "front")
+    bk = a.rect(B1_BODY, "back")
+    for r in (fr, bk):
+        a.bevel(r, 0, 11)
+        # 목둘레 (앞은 파임)
+        a.hline(r, 0, "o", 2, 5)
+    a.put(fr, 3, 1, "o")
+    a.put(fr, 4, 1, "o")
+    # 가슴판 · 배 띠 · 허리띠
+    for r in (fr, bk):
+        a.bevel(r, 1, 6, 1, 6)
+        a.hline(r, 7, "l", 1, 6)
+        a.hline(r, 8, "s", 1, 6)
+        a.hline(r, 9, "l", 1, 6)
+        a.hline(r, 10, "t", 0, 7)
+        a.hline(r, 11, "o", 0, 7)
+    if n == "bronze":
+        # 근육 갑옷: 가슴 곡선 · 배 근육 칸, 가죽 술
+        for i, j in ((1, 4), (2, 5), (3, 5), (4, 5), (5, 5), (6, 4)):
+            a.put(fr, i, j, "s")
+        for i, j in ((1, 2), (2, 2), (5, 2), (6, 2)):
+            a.put(fr, i, j, "h")
+        a.vline(fr, 3, "l", 2, 9)
+        a.vline(fr, 4, "s", 2, 9)
+        a.hline(fr, 6, "o", 1, 6)
+        a.put(fr, 2, 8, "o")
+        a.put(fr, 5, 8, "o")
+        for r in (fr, bk):
+            for i in range(0, 8, 2):
+                a.put(r, i, 11, "T")
+            a.put(r, 3, 10, "g")
+            a.put(r, 4, 10, "G")
+        a.vline(bk, 3, "h", 1, 9)
+        a.vline(bk, 4, "s", 1, 9)
+    elif n == "steel":
+        a.vline(fr, 3, "h", 2, 6)
+        a.vline(fr, 4, "s", 2, 6)
+        for r in (fr, bk):
+            for i, j in ((1, 1), (6, 1), (1, 6), (6, 6)):
+                a.rivet(r, i, j)
+            a.put(r, 3, 10, "r")      # 버클
+            a.put(r, 4, 10, "T")
+        for i in (2, 5):
+            a.put(fr, i, 8, "r")
+        a.vline(bk, 3, "s", 2, 6)
+    elif n == "chrome_steel":
+        a.vline(fr, 3, "t", 1, 9)
+        a.vline(fr, 4, "T", 1, 9)
+        a.streak(fr, 4, rows=range(1, 7))
+        a.streak(bk, 8, rows=range(1, 7))
+        for r in (fr, bk):
+            a.hline(r, 10, "t", 0, 7)
+            a.put(r, 3, 10, "G")
+            a.put(r, 4, 10, "T")
+        a.put(fr, 2, 2, "G")
+        a.vline(bk, 3, "T", 1, 9)
+    elif n == "heatproof":
+        # 판 사이 이음매가 달아오르고 가슴 가운데에 화구
+        for r in (fr, bk):
+            a.vline(r, 3, "o", 1, 9)
+            a.vline(r, 4, "g", 1, 9)
+            a.hline(r, 7, "g", 1, 6)
+            a.hline(r, 10, "t", 0, 7)
+            a.put(r, 0, 10, "g")
+            a.put(r, 7, 10, "g")
+        a.put(fr, 3, 3, "g")
+        a.put(fr, 4, 3, "G")
+        a.put(fr, 3, 4, "G")
+        a.put(fr, 4, 4, "G")
+        a.put(fr, 2, 4, "g")
+        a.put(fr, 5, 3, "g")
+        for i, j in ((1, 1), (6, 1)):
+            a.put(fr, i, j, "r")
+    elif n == "void":
+        # 자홍 핏줄: 가운데 눈에서 갈라진다
+        for r in (fr, bk):
+            a.vline(r, 3, "g", 1, 9)
+            a.vline(r, 4, "o", 1, 9)
+        for i, j in ((2, 2), (1, 1), (5, 2), (6, 1), (2, 8), (1, 9), (5, 8), (6, 9)):
+            a.put(fr, i, j, "g")
+        for i, j in ((3, 4), (4, 4), (3, 5), (4, 5)):
+            a.put(fr, i, j, "G")
+        a.put(fr, 2, 4, "g")
+        a.put(fr, 5, 5, "g")
+        a.put(bk, 3, 5, "G")
+        for r in (fr, bk):
+            a.hline(r, 10, "t", 0, 7)
+            a.put(r, 3, 10, "g")
+            a.put(r, 4, 10, "g")
+
+    for f in ("right", "left"):
+        r = a.rect(B1_BODY, f)
+        a.bevel(r, 0, 11)
+        a.hline(r, 10, "t", 0, 3)
+        a.hline(r, 11, "o", 0, 3)
+        a.hline(r, 4, "t", 0, 3)    # 옆 끈
+        a.put(r, 1, 4, "r" if n in ("steel", "chrome_steel") else "g")
+        if n == "heatproof":
+            a.vline(r, 2, "g", 5, 9)
+        elif n == "void":
+            a.vline(r, 2, "g", 5, 9)
+
+    # 팔: 어깨받이 (0~4행) · 팔뚝 덮개 (7~10행)
+    for f in ("top", "right", "front", "left", "back", "bottom"):
+        r = a.rect(B1_ARM, f)
+        a.metal(r)
+    a.bevel(a.rect(B1_ARM, "top"), 0, 3)
+    for f in ("right", "front", "left", "back"):
+        r = a.rect(B1_ARM, f)
+        a.clear(r, 0, 5, 3, 6)
+        a.clear(r, 0, 11, 3, 11)
+        a.hline(r, 0, "l", 0, 3)
+        a.hline(r, 2, "h", 0, 3)
+        a.hline(r, 3, "s", 0, 3)
+        a.hline(r, 4, "o", 0, 3)
+        a.hline(r, 7, "l", 0, 3)
+        a.hline(r, 10, "o", 0, 3)
+        outer = f == "right"
+        if n == "bronze":
+            a.hline(r, 4, "t", 0, 3)
+            a.hline(r, 8, "g", 0, 3)
+            a.put(r, 1, 8, "G")
+        elif n == "steel":
+            if outer:
+                a.rivet(r, 1, 1)
+                a.rivet(r, 2, 8)
+            a.hline(r, 9, "s", 0, 3)
+        elif n == "chrome_steel":
+            a.hline(r, 3, "t", 0, 3)
+            a.hline(r, 9, "T", 0, 3)
+            a.put(r, 1, 1, "G") if outer else None
+        elif n == "heatproof":
+            a.hline(r, 3, "g", 0, 3)
+            a.hline(r, 9, "g", 0, 3)
+            a.put(r, 1, 3, "G") if outer else None
+        elif n == "void":
+            a.hline(r, 3, "g", 0, 3)
+            if outer:
+                a.put(r, 1, 3, "G")
+                a.put(r, 1, 8, "g")
+                a.put(r, 2, 8, "g")
+
+    # 부츠 (다리 7~11행)
+    for f in ("right", "front", "left", "back"):
+        r = a.rect(B1_LEG, f)
+        a.metal(r, rows=range(7, 12))
+        a.hline(r, 7, "t", 0, 3)
+        a.hline(r, 8, "l", 0, 3)
+        a.hline(r, 11, "o", 0, 3)
+        a.hline(r, 10, "s", 0, 3)
+        if f == "front":     # 발등 덮개
+            a.put(r, 1, 9, "h")
+            a.put(r, 2, 9, "l")
+            a.put(r, 1, 10, "l")
+            a.put(r, 2, 10, "l")
+        if n == "bronze":
+            a.put(r, 1, 7, "g")
+        elif n == "steel":
+            a.put(r, 1, 7, "r")
+            if f == "right":
+                a.rivet(r, 2, 9)
+        elif n == "chrome_steel":
+            a.hline(r, 7, "T", 0, 3)
+            a.put(r, 0, 9, "h")
+            a.put(r, 1, 8, "h")
+        elif n == "heatproof":
+            a.hline(r, 10, "g", 0, 3)
+            a.put(r, 1, 10, "G")
+        elif n == "void":
+            a.hline(r, 7, "g", 0, 3)
+            if f == "front":
+                a.put(r, 1, 9, "G")
+    bottom = a.rect(B1_LEG, "bottom")
+    a.hline(bottom, 0, "o")
+    for j in range(4):
+        a.hline(bottom, j, "o")
+
+
+def b1_leggings(a):
+    n = a.name
+    # 허리 (몸통 0~4행): 허리띠 + 허리 덮개
+    for f in ("right", "front", "left", "back"):
+        r = a.rect(B1_BODY, f)
+        a.metal(r, rows=range(0, 5))
+        a.hline(r, 0, "o")
+        a.hline(r, 1, "t")
+        a.hline(r, 2, "l")
+        a.hline(r, 4, "s")
+        if f in ("front", "back"):
+            a.vline(r, 3, "s", 2, 4)   # 허리 덮개 두 장
+            a.vline(r, 4, "l", 2, 4)
+        if f == "front":
+            a.put(r, 3, 1, "r" if n in ("steel", "chrome_steel") else "G")
+            a.put(r, 4, 1, "T" if n != "void" else "g")
+        if n == "heatproof":
+            a.hline(r, 3, "g", 0, r[2] - 1)
+        elif n == "void":
+            a.hline(r, 3, "g", 0, r[2] - 1)
+        elif n == "chrome_steel":
+            a.hline(r, 1, "T")
+        elif n == "bronze":
+            for i in range(0, r[2], 2):
+                a.put(r, i, 4, "T")
+    for f in ("top", "bottom"):
+        a.metal(a.rect(B1_BODY, f))
+
+    # 다리 (0~8행): 넓적다리 판 · 무릎 · 정강이 윗부분
+    for f in ("right", "front", "left", "back"):
+        r = a.rect(B1_LEG, f)
+        a.metal(r, rows=range(0, 9))
+        a.hline(r, 0, "l")
+        a.hline(r, 3, "s")
+        a.hline(r, 4, "o")
+        a.hline(r, 8, "o")
+        if f == "front":   # 무릎 덮개
+            a.put(r, 1, 5, "h")
+            a.put(r, 2, 5, "l")
+            a.put(r, 1, 6, "l")
+            a.put(r, 2, 6, "s")
+            a.hline(r, 7, "s")
+        if n == "bronze":
+            a.hline(r, 1, "t")
+            a.put(r, 1, 1, "g")
+        elif n == "steel":
+            if f == "front":
+                a.put(r, 1, 5, "r")
+            if f == "right":
+                a.rivet(r, 1, 1)
+        elif n == "chrome_steel":
+            a.hline(r, 4, "t")
+            a.put(r, 0, 2, "h")
+            a.put(r, 1, 1, "h")
+            if f == "front":
+                a.put(r, 1, 5, "G")
+        elif n == "heatproof":
+            a.hline(r, 4, "g")
+            if f == "front":
+                a.put(r, 1, 6, "g")
+                a.put(r, 2, 6, "G")
+        elif n == "void":
+            if f in ("front", "back"):
+                a.vline(r, 1, "g", 1, 3)
+            if f == "front":
+                a.put(r, 1, 6, "g")
+                a.put(r, 2, 5, "g")
+                a.put(r, 2, 6, "G")
+    a.metal(a.rect(B1_LEG, "top"))
+
+
+def b1_armor_layers(name, seed):
+    worn = B1Armor(name, seed)
+    b1_helmet(worn)
+    b1_chest(worn)
+    legs = B1Armor(name, seed + 1)
+    b1_leggings(legs)
+    return worn.im, legs.im
+
+
+# ---- 아이콘 ----
+B1_PICKAXE = [
+    "................",
+    "....aaaaaa......",
+    "...adeeeedaa....",
+    "....aaaaddeda...",
+    "........awcdea..",
+    ".......awx.adda.",
+    "......awx...aca.",
+    ".....awx....aca.",
+    "....awx......aa.",
+    "...awx..........",
+    "..awx...........",
+    ".awx............",
+    ".aa.............",
+    "................",
+    "................",
+    "................",
+]
+B1_AXE = [
+    "................",
+    "......aaa.......",
+    ".....adeea.aa...",
+    "....addeeaawxa..",
+    "....adddeawxa...",
+    "....acdddwxa....",
+    "....abcdwxca....",
+    ".....abwxbba....",
+    "......wxaaa.....",
+    ".....wx.........",
+    "....wx..........",
+    "...wx...........",
+    "..wx............",
+    ".wx.............",
+    "................",
+    "................",
+]
+B1_SHOVEL = [
+    "................",
+    "...........aaa..",
+    "..........adeea.",
+    ".........adeedda",
+    "........adeddcba",
+    "........addddba.",
+    ".........acdba..",
+    "........wxaaa...",
+    ".......wx.......",
+    "......wx........",
+    ".....wx.........",
+    "....wx..........",
+    "...wx...........",
+    "..wx............",
+    ".wx.............",
+    "................",
+]
+# 아이콘 팔레트 (a~e 어두움 → 밝음)
+B1_BRONZE = {"a": "#3b1f0d", "b": "#7a4520", "c": "#b06b30", "d": "#d9924a", "e": "#f8c983"}
+B1_CHROME = {"a": "#1f2b3a", "b": "#4a6585", "c": "#86a3c2", "d": "#c2d6ea", "e": "#ffffff"}
+
+
+def b1_chrome_shine(im):
+    """크롬강 아이콘: 가장 밝은 칸 둘레에 파란 반사 점 몇 개."""
+    out = im.copy()
+    blue = hex_px("#7fc4ff")
+    for y in range(16):
+        for x in range(16):
+            if im.getpixel((x, y))[:3] == hex_px(B1_CHROME["c"])[:3] and (x * 3 + y * 5) % 11 == 0:
+                out.putpixel((x, y), blue)
+    return out
+
+
+def main_b1(made):
+    for name, pal in (("bronze", B1_BRONZE), ("chrome_steel", B1_CHROME)):
+        tweak = b1_chrome_shine if name == "chrome_steel" else (lambda im: im)
+        made.append(save(tweak(recolor(from_art(INGOT), pal)), f"item/{name}_ingot.png"))
+        for part in ("helmet", "chestplate", "leggings", "boots", "sword"):
+            made.append(save(tweak(recolor(from_art(ITEMS[f"steel_{part}"]), pal)), f"item/{name}_{part}.png"))
+    for part, art in (("pickaxe", B1_PICKAXE), ("axe", B1_AXE), ("shovel", B1_SHOVEL)):
+        made.append(save(recolor(from_art(art), B1_BRONZE), f"item/bronze_{part}.png"))
+    made.append(save(b1_chrome_shine(recolor(from_art(HAMMER), B1_CHROME)), "item/chrome_steel_hammer.png"))
+    made.append(save(b1_chrome_shine(recolor(from_art(EXCAVATOR), B1_CHROME)), "item/chrome_steel_excavator.png"))
+    # 갑옷 착용 모습: 새로 그린 다섯 세트 (강철 · 내열 · 공허는 같은 파일 이름 · 크기로 덮어쓴다)
+    for k, name in enumerate(("bronze", "steel", "chrome_steel", "heatproof", "void")):
+        worn, legs = b1_armor_layers(name, 8100 + k * 10)
+        made.append(save(worn, f"entity/equipment/humanoid/{name}.png"))
+        made.append(save(legs, f"entity/equipment/humanoid_leggings/{name}.png"))
+
+
 def save(im, rel, scale=1):
     path = os.path.join(OUT, *rel.split("/"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -4135,6 +4722,7 @@ def main():
     main_a5(made)
     main_d2(made)  # 확장 3 D2 광맥 탐사기
     main_m13(made)
+    main_b1(made)  # 확장 3 G1 · G2 · R1 합금 장비 · 갑옷 착용 모습
 
     if "--sheet" in sys.argv:
         tiles = [Image.open(p) for p in made]

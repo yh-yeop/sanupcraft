@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "S": "sanupcraft:chrome_steel_ingot",
+    "T": "minecraft:stick"
+  },
+  "pattern": [
+    " S ",
+    "SSS",
+    " T "
+  ],
+  "result": {
+    "id": "sanupcraft:chrome_steel_excavator"
+  }
+}

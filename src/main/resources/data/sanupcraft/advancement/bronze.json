@@ -1,0 +1,32 @@
+{
+  "parent": "sanupcraft:new_metal",
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:bronze_ingot"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:bronze_chestplate"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.bronze.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.bronze.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ]
+}
