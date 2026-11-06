@@ -1,6 +1,70 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "sanupcraft:item/steam_drill"
+    "type": "minecraft:select",
+    "property": "minecraft:display_context",
+    "cases": [
+      {
+        "when": [
+          "gui",
+          "ground",
+          "fixed",
+          "on_shelf"
+        ],
+        "model": {
+          "type": "minecraft:model",
+          "model": "sanupcraft:item/steam_drill"
+        }
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:condition",
+      "property": "minecraft:selected",
+      "on_true": {
+        "type": "minecraft:condition",
+        "property": "minecraft:keybind_down",
+        "keybind": "key.attack",
+        "on_true": {
+          "type": "minecraft:range_dispatch",
+          "property": "minecraft:time",
+          "source": "random",
+          "wobble": false,
+          "entries": [
+            {
+              "threshold": 0.25,
+              "model": {
+                "type": "minecraft:model",
+                "model": "sanupcraft:item/steam_drill_held_spin1"
+              }
+            },
+            {
+              "threshold": 0.5,
+              "model": {
+                "type": "minecraft:model",
+                "model": "sanupcraft:item/steam_drill_held_spin2"
+              }
+            },
+            {
+              "threshold": 0.75,
+              "model": {
+                "type": "minecraft:model",
+                "model": "sanupcraft:item/steam_drill_held_spin3"
+              }
+            }
+          ],
+          "fallback": {
+            "type": "minecraft:model",
+            "model": "sanupcraft:item/steam_drill_held"
+          }
+        },
+        "on_false": {
+          "type": "minecraft:model",
+          "model": "sanupcraft:item/steam_drill_held"
+        }
+      },
+      "on_false": {
+        "type": "minecraft:model",
+        "model": "sanupcraft:item/steam_drill_held"
+      }
+    }
   }
 }
