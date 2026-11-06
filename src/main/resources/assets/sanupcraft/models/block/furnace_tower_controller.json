@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "sanupcraft:block/furnace_tower_controller_front",
+    "side": "sanupcraft:block/heatproof_bricks",
+    "top": "sanupcraft:block/heatproof_bricks"
+  }
+}

@@ -74,7 +74,9 @@ public final class PlaytestCommand {
 		INDUSTRY("산업 규모: 대형 보일러 · 증기 기관차 · 화물 열차", null, PlaytestCommand::kitIndustry),
 		STORAGE("보관 · 제작: 서랍 · 창고 네트워크 · 자동 제작", null, PlaytestCommand::kitStorage),
 		// M5 네더 심화 2
-		NETHER2("네더 심화: 영혼 화로 · 고압 증기 · 정밀 조립기 · 터빈 · 피글린 교역 · 잔해 탐지기 · 용암 증기선", Level.NETHER, PlaytestCommand::kitNether2);
+		NETHER2("네더 심화: 영혼 화로 · 고압 증기 · 정밀 조립기 · 터빈 · 피글린 교역 · 잔해 탐지기 · 용암 증기선", Level.NETHER, PlaytestCommand::kitNether2),
+		// M8 묶음 B
+		INDUSTRY2("산업 규모 2: 용광로 탑 · 세척기 · 고압 정련기 · 정제 가루", null, PlaytestCommand::kitIndustry2);
 
 		final String description;
 		final ResourceKey<Level> dimension;
@@ -489,5 +491,34 @@ public final class PlaytestCommand {
 		give(p, charged(io.github.yhyeop.sanupcraft.nether.ModNether.DEBRIS_SONAR));
 		give(p, io.github.yhyeop.sanupcraft.nether.ModNether.LAVA_STEAMBOAT, 1);
 		give(p, ModPower.STEAM_GAUGE.asItem(), 1);
+	}
+
+	/** M8 묶음 B: 용광로 탑 한 벌 + 영혼 화로 · 고압 파이프, 세척기 + 펌프 · 탱크 · 물, 고압 정련기, 원석. */
+	private static void kitIndustry2(ServerPlayer p) {
+		give(p, io.github.yhyeop.sanupcraft.industry.ModFoundry.FURNACE_TOWER_CONTROLLER.asItem(), 1);
+		give(p, io.github.yhyeop.sanupcraft.industry.ModFoundry.HEATPROOF_BRICKS.asItem(), 23);
+		give(p, io.github.yhyeop.sanupcraft.nether.ModNether.SOUL_FURNACE.asItem(), 2);
+		give(p, Items.SOUL_SOIL, 4);
+		give(p, Items.BLAZE_POWDER, 64);
+		give(p, io.github.yhyeop.sanupcraft.nether.ModNether.HIGH_PRESSURE_PIPE.asItem(), 16);
+		give(p, ModMachines.WASHER.asItem(), 1);
+		give(p, ModMachines.HP_REFINER.asItem(), 1);
+		give(p, ModFluid.PUMP.asItem(), 1);
+		give(p, ModFluid.TANK.asItem(), 1);
+		give(p, Items.WATER_BUCKET, 2);
+		give(p, ModPower.BOILER.asItem(), 1);
+		give(p, ModPower.STEAM_PIPE.asItem(), 8);
+		give(p, Items.COAL, 32);
+		give(p, Items.RAW_IRON, 64);
+		give(p, Items.RAW_COPPER, 32);
+		give(p, Items.RAW_GOLD, 32);
+		give(p, ModItems.IRON_DUST, 16);
+		give(p, ModItems.COAL_DUST, 16);
+		give(p, io.github.yhyeop.sanupcraft.nether.ModNether.PRECISION_PART, 2);
+		give(p, Items.HOPPER, 4);
+		give(p, Items.CHEST, 2);
+		give(p, Items.COMPARATOR, 1);
+		give(p, ModPower.STEAM_GAUGE.asItem(), 1);
+		food(p);
 	}
 }

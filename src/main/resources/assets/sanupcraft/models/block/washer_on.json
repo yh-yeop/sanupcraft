@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "sanupcraft:block/washer_front_on",
+    "side": "sanupcraft:block/machine_side",
+    "top": "sanupcraft:block/washer_top"
+  }
+}

@@ -26,6 +26,9 @@ public final class ModMachines {
 	public static final MachineBlock HEART_FORGE = machine("heart_forge", MachineKind.FORGE);
 	/** 정밀 조립기 (M5): 고압 증기 전용. */
 	public static final MachineBlock PRECISION_ASSEMBLER = machine("precision_assembler", MachineKind.PRECISION);
+	/** M8 묶음 B: 세척기 (물 + 증기 · 연료) · 고압 정련기 (고압 증기 전용). */
+	public static final MachineBlock WASHER = machine("washer", MachineKind.WASHER);
+	public static final MachineBlock HP_REFINER = machine("hp_refiner", MachineKind.REFINER);
 
 	/** 기계 업그레이드 (B1): 기계 화면 왼쪽 업그레이드 칸 2개에 끼운다. */
 	public static final MachineUpgradeItem SPEED_UPGRADE = upgrade("speed_upgrade", MachineUpgrade.SPEED, Rarity.UNCOMMON);
@@ -34,7 +37,7 @@ public final class ModMachines {
 
 	public static final BlockEntityType<MachineBlockEntity> MACHINE_BLOCK_ENTITY = Registry.register(
 			BuiltInRegistries.BLOCK_ENTITY_TYPE, Sanupcraft.id("machine"),
-			new BlockEntityType<>(MachineBlockEntity::new, Set.of(CRUSHER, PRESS, ASSEMBLER, ALLOY_SMELTER, HEART_FORGE, PRECISION_ASSEMBLER)));
+			new BlockEntityType<>(MachineBlockEntity::new, Set.of(CRUSHER, PRESS, ASSEMBLER, ALLOY_SMELTER, HEART_FORGE, PRECISION_ASSEMBLER, WASHER, HP_REFINER)));
 
 	public static final MenuType<MachineMenu> MACHINE_MENU = Registry.register(
 			BuiltInRegistries.MENU, Sanupcraft.id("machine"), new MenuType<>(MachineMenu::new, FeatureFlags.VANILLA_SET));

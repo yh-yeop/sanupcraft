@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "sanupcraft:block/heatproof_bricks"
+    },
+    "formed=true": {
+      "model": "sanupcraft:block/heatproof_bricks_formed"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "parent": "sanupcraft:big_boiler",
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:furnace_tower_controller"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:furnace_tower_controller"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.furnace_tower.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.furnace_tower.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ]
+}

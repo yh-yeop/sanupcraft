@@ -1,0 +1,10 @@
+{
+  "type": "sanupcraft:precision",
+  "ingredient": "sanupcraft:rare_dust",
+  "count": 4,
+  "ingredient2": "sanupcraft:precision_part",
+  "result": {
+    "id": "sanupcraft:double_upgrade"
+  },
+  "time": 400
+}

@@ -41,6 +41,10 @@
     "sanupcraft:steam_turbine",
     "sanupcraft:precision_assembler",
     "sanupcraft:gold_dispenser",
-    "sanupcraft:barter_collector"
+    "sanupcraft:barter_collector",
+    "sanupcraft:washer",
+    "sanupcraft:hp_refiner",
+    "sanupcraft:heatproof_bricks",
+    "sanupcraft:furnace_tower_controller"
   ]
 }

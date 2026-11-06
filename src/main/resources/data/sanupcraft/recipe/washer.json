@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "sanupcraft:steel_plate",
+    "B": "minecraft:bucket",
+    "G": "sanupcraft:gear_part",
+    "C": "sanupcraft:crusher"
+  },
+  "pattern": [
+    "PBP",
+    "GCG",
+    "PBP"
+  ],
+  "result": {
+    "id": "sanupcraft:washer"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "N": "minecraft:nether_bricks",
+    "S": "sanupcraft:core_shard",
+    "I": "sanupcraft:steel_ingot"
+  },
+  "pattern": [
+    "NIN",
+    "ISI",
+    "NIN"
+  ],
+  "result": {
+    "id": "sanupcraft:heatproof_bricks",
+    "count": 8
+  }
+}

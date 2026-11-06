@@ -52,6 +52,7 @@ public class Sanupcraft implements ModInitializer {
 		SteamGear.init();
 		ModBoss.init();
 		ModWorld.init();
+		io.github.yhyeop.sanupcraft.industry.ModFoundry.init(); // M8 묶음 B 용광로 탑 · 정제 가루
 		ModGrinder.init(); // M9b 몹 분쇄기 · 경험치 탱크
 		ModBackpack.init(); // M9b 배낭
 		ModServer.init(); // M10 서버 운영 (팀 · 기록판 · 목표판 · 설명서)

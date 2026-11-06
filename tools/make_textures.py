@@ -2279,6 +2279,149 @@ def main_m5(made):
     made.append(save(boat_texture(), "entity/lava_steamboat.png"))
 
 
+# ---------- M8 묶음 B: 세척기 · 고압 정련기 · 정제 가루 · 용광로 탑 ----------
+WASHER_STEEL = {"a": "#1c2a33", "b": "#355063", "c": "#4d6d82", "d": "#6f91a6", "e": "#a9c7d8"}
+HEATPROOF_BRICK = {"a": "#1e0d0e", "b": "#3b1a1c", "c": "#55262a", "d": "#6f3236", "e": "#8c4448"}
+
+
+def washer_front(lit):
+    """세척기 앞면: 둥근 유리창 너머 물. 돌 때는 물살이 밝다."""
+    im = recolor(panel(seed=531), WASHER_STEEL)
+    water = ("#7fb4ff", "#3f76e4", "#2a4fa8") if lit else ("#3f76e4", "#2a4fa8", "#1d3570")
+    rnd = random.Random(532)
+    for y in range(2, 14):
+        for x in range(2, 14):
+            d = math.hypot(x - 7.5, y - 7.5)
+            if d < 5.6:
+                if d > 4.6:
+                    im.putpixel((x, y), px("e"))
+                else:
+                    k = rnd.random() + (y - 4) * 0.08
+                    im.putpixel((x, y), hex_px(water[0] if k < 0.35 else water[1] if k < 1.0 else water[2]))
+    for x in range(4, 12):
+        im.putpixel((x, 14), px("a"))
+    return im
+
+
+def washer_top():
+    """세척기 윗면: 물 넣는 구멍."""
+    im = recolor(panel(seed=533), WASHER_STEEL)
+    for y in range(5, 11):
+        for x in range(5, 11):
+            edge = x in (5, 10) or y in (5, 10)
+            im.putpixel((x, y), px("a") if edge else hex_px("#3f76e4"))
+    return im
+
+
+def refiner_front(lit):
+    """고압 정련기 앞면: 눌러 짜는 두 판과 붉은 고압 띠."""
+    im = recolor(panel(seed=541), HP_STEEL)
+    for y in range(3, 13):
+        for x in range(3, 13):
+            im.putpixel((x, y), px("a"))
+    glow = hex_px("#ffb347" if lit else "#4a2a12")
+    for x in range(4, 12):
+        im.putpixel((x, 5), px("d"))
+        im.putpixel((x, 10), px("d"))
+    for x in range(5, 11):
+        for y in range(7, 9):
+            im.putpixel((x, y), glow)
+    for y in range(3, 13):
+        im.putpixel((2, y), hex_px("#b3262a"))
+        im.putpixel((13, y), hex_px("#b3262a"))
+    return im
+
+
+def refiner_top():
+    im = recolor(panel(seed=542), HP_STEEL)
+    for y in range(4, 12):
+        for x in range(4, 12):
+            d = math.hypot(x - 7.5, y - 7.5)
+            if d < 3.8:
+                im.putpixel((x, y), px("a") if d > 2.8 else hex_px("#b3262a"))
+    return im
+
+
+def heatproof_bricks(formed):
+    """내열 벽돌: 짙은 네더 벽돌 줄눈. 모양이 서면 줄눈이 달아오른 주황."""
+    im = Image.new("RGBA", (16, 16))
+    noise_fill(im, "ccd", 551)
+    im = recolor(im, HEATPROOF_BRICK)
+    mortar = ("#c2551c", "#ff9a3c") if formed else (HEATPROOF_BRICK["a"], HEATPROOF_BRICK["b"])
+    for y in (3, 7, 11, 15):
+        for x in range(16):
+            im.putpixel((x, y), hex_px(mortar[(x + y) % 3 == 0]))
+    for row in range(4):
+        y0 = row * 4
+        offset = 0 if row % 2 == 0 else 4
+        for x in (offset, offset + 8):
+            for y in range(y0, y0 + 3):
+                im.putpixel((x % 16, y), hex_px(mortar[0]))
+    for x, y in ((2, 1), (10, 5), (5, 9), (13, 13)):
+        im.putpixel((x, y), hex_px(HEATPROOF_BRICK["e"]))
+    return im
+
+
+def tower_controller_front(lit):
+    """용광로 탑 제어기 앞면: 내열 벽돌에 쇠 문, 돌 때는 불빛."""
+    im = heatproof_bricks(False)
+    for y in range(3, 15):
+        for x in range(3, 13):
+            edge = x in (3, 12) or y in (3, 14)
+            if edge:
+                im.putpixel((x, y), hex_px(HP_STEEL["d"]))
+            elif y < 7:
+                im.putpixel((x, y), hex_px(HP_STEEL["b"] if (x + y) % 2 else HP_STEEL["c"]))
+            elif lit:
+                im.putpixel((x, y), px("u" if (x * 3 + y) % 4 == 0 else "t" if (x + y) % 2 else "s"))
+            else:
+                im.putpixel((x, y), px("m" if (x + y) % 2 else "a"))
+    for x in range(4, 12, 2):
+        im.putpixel((x, 5), hex_px("#b3262a"))
+    return im
+
+
+def gui_washer():
+    """세척기 화면: 기본 기계 화면 + 왼쪽(재료 칸 옆) 물 눈금 틀."""
+    from PIL import ImageDraw
+    im = gui_machine(False)
+    d = ImageDraw.Draw(im)
+    x0, y0, x1, y1 = 34, 16, 45, 69
+    d.rectangle([x0, y0, x1, y1], fill="#2a2a2a")
+    d.line([(x0, y0), (x1 - 1, y0)], fill=GUI_EDGE)
+    d.line([(x0, y0), (x0, y1 - 1)], fill=GUI_EDGE)
+    d.line([(x0 + 1, y1), (x1, y1)], fill=GUI_LIGHT)
+    d.line([(x1, y0 + 1), (x1, y1)], fill=GUI_LIGHT)
+    for y in range(y0 + 6, y1, 13):
+        d.line([(x1 - 3, y), (x1 - 1, y)], fill="#6b6b6b")
+    return im
+
+
+def main_m8b(made):
+    made.append(save(washer_front(False), "block/washer_front.png"))
+    made.append(save(washer_front(True), "block/washer_front_on.png"))
+    made.append(save(washer_top(), "block/washer_top.png"))
+    made.append(save(refiner_front(False), "block/hp_refiner_front.png"))
+    made.append(save(refiner_front(True), "block/hp_refiner_front_on.png"))
+    made.append(save(refiner_top(), "block/hp_refiner_top.png"))
+    made.append(save(heatproof_bricks(False), "block/heatproof_bricks.png"))
+    made.append(save(heatproof_bricks(True), "block/heatproof_bricks_formed.png"))
+    made.append(save(tower_controller_front(False), "block/furnace_tower_controller_front.png"))
+    made.append(save(tower_controller_front(True), "block/furnace_tower_controller_front_on.png"))
+    made.append(save(gui_washer(), "gui/washer.png"))
+    dust = from_art(ITEMS["iron_dust"])
+    # 정제 가루: 가루 위에 반짝이는 점 몇 개
+    def refined(mapping):
+        im = recolor(dust, mapping)
+        for x, y in ((6, 8), (9, 9), (7, 11), (11, 11)):
+            im.putpixel((x, y), hex_px("#ffffff"))
+        return im
+    made.append(save(refined({"a": "#3a4048", "b": "#9aa3ad", "c": "#c9d1da", "d": "#e4eaf0", "e": "#ffffff"}), "item/refined_iron_dust.png"))
+    made.append(save(refined(COPPER_DUST), "item/refined_copper_dust.png"))
+    made.append(save(refined(GOLD_DUST), "item/refined_gold_dust.png"))
+    made.append(save(recolor(dust, {"a": "#2b1347", "b": "#5b2a8c", "c": "#8a4fd0", "d": "#b98cf0", "e": "#ecdcff"}), "item/rare_dust.png"))
+
+
 def save(im, rel, scale=1):
     path = os.path.join(OUT, *rel.split("/"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -2319,6 +2462,7 @@ def main():
     main_m8a(made)
     main_m7(made)
     main_m5(made)
+    main_m8b(made)
 
     if "--sheet" in sys.argv:
         tiles = [Image.open(p) for p in made]

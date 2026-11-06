@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "sanupcraft:steel_plate",
+    "H": "sanupcraft:high_pressure_pipe",
+    "X": "sanupcraft:precision_part",
+    "W": "sanupcraft:washer",
+    "R": "sanupcraft:reinforced_machine_frame"
+  },
+  "pattern": [
+    "PXP",
+    "HWH",
+    "PRP"
+  ],
+  "result": {
+    "id": "sanupcraft:hp_refiner"
+  }
+}

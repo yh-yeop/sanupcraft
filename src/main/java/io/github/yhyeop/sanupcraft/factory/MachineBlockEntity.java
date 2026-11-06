@@ -35,6 +35,9 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.providers.number.ints.ResolvableInt;
 
 import io.github.yhyeop.sanupcraft.config.SanupcraftConfig;
+import io.github.yhyeop.sanupcraft.fluid.FluidHolder;
+import io.github.yhyeop.sanupcraft.fluid.FluidKind;
+import io.github.yhyeop.sanupcraft.fluid.TankBlockEntity;
 import io.github.yhyeop.sanupcraft.power.HPSteamConsumer;
 import io.github.yhyeop.sanupcraft.power.SteamConsumer;
 import io.github.yhyeop.sanupcraft.power.SteamFlowMeter;
@@ -46,8 +49,10 @@ import io.github.yhyeop.sanupcraft.power.SteamStorage;
  * 깔때기: 위 → 재료(합금로는 두 칸, 이 기계 레시피의 재료만), 옆 → 연료, 아래 ← 결과 · 부산물 · 쓰고 남은 빈 양동이.
  * 업그레이드 칸 2개(속도 · 효율 · 두 배, {@link MachineUpgrade})는 손으로만 넣고 뺀다. 칸 번호는 옛 저장과 맞도록 뒤에 붙였다.
  * 고압 기계(정밀 조립기, {@link MachineKind#highPressure()})는 고압 파이프의 고압 증기로만 돌고, 보통 증기 · 연료는 받지 않는다.
+ * 물을 쓰는 기계(세척기, {@link MachineKind#usesWater()})는 물 탱크가 있어 한 번 만들 때마다 물을 쓴다 (M8 묶음 B).
+ * 물은 펌프가 밀어 넣거나({@link FluidHolder}) 옆 물 탱크에서 끌어오거나 물 양동이 우클릭으로 채운다. 다른 기계는 물을 받지 않는다.
  */
-public class MachineBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, SteamConsumer, HPSteamConsumer, SteamStorage {
+public class MachineBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, SteamConsumer, HPSteamConsumer, SteamStorage, FluidHolder {
 	public static final int SLOT_INPUT = 0;
 	public static final int SLOT_FUEL = 1;
 	public static final int SLOT_RESULT = 2;
@@ -67,12 +72,20 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 	public static final int DATA_KIND = 4;
 	/** 지금 모아 둔 증기 (화면의 불꽃 칸 툴팁). */
 	public static final int DATA_STEAM = 5;
-	public static final int DATA_COUNT = 6;
+	/** 물을 쓰는 기계의 물 (mB, 화면의 물 눈금). */
+	public static final int DATA_WATER = 6;
+	public static final int DATA_COUNT = 7;
 	public static final int STEAM_CAPACITY = 200;
 	/** 증기로 돌 때 틱마다 쓰는 증기. */
 	public static final int STEAM_PER_TICK = 1;
 	/** 일이 멈춘 뒤에도 이 틱 동안은 켜진 모습을 유지한다 (증기가 띄엄띄엄 와도 불빛이 깜빡이지 않게). */
 	public static final int LIT_HOLD_TICKS = 10;
+	/** 물을 쓰는 기계(세척기)의 물 탱크 (mB). */
+	public static final int WATER_CAPACITY = 4000;
+	/** 세척기가 한 번 만들 때 쓰는 물 (mB). 실제 값은 설정 {@code washer.waterPerItem}. */
+	public static final int WATER_PER_ITEM = 100;
+	/** 옆 물 탱크에서 틱마다 끌어오는 물 (mB). */
+	public static final int WATER_DRAW_PER_TICK = 100;
 
 	private static final int[] SLOTS_FOR_UP = {SLOT_INPUT, SLOT_INPUT2};
 	private static final int[] SLOTS_FOR_DOWN = {SLOT_RESULT, SLOT_BYPRODUCT, SLOT_FUEL};
@@ -86,6 +99,8 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 	private int progress;
 	private int totalTime;
 	private int steam;
+	/** 물을 쓰는 기계만 쓴다 (mB). */
+	private int water;
 	private final SteamFlowMeter flow = new SteamFlowMeter();
 	private boolean steamWorking;
 	/** 일하지 않은 연속 틱 수 (저장하지 않음). 처음에는 쉬는 상태. */
@@ -111,6 +126,7 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 				case DATA_TOTAL_TIME -> totalTime;
 				case DATA_KIND -> kind.ordinal();
 				case DATA_STEAM -> steam;
+				case DATA_WATER -> water;
 				default -> 0;
 			};
 		}
@@ -154,11 +170,15 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 			machine.litTime--;
 		}
 
+		if (machine.kind.usesWater() && machine.drawWater(level, pos) > 0) {
+			changed = true;
+		}
+
 		ItemStack fuel = machine.items.get(SLOT_FUEL);
 		MachineInput input = machine.input();
 		RecipeHolder<MachineRecipe> recipe = input.isEmpty() ? null : machine.quickCheck.getRecipeFor(input, level).orElse(null);
 		ItemStack output = recipe == null ? ItemStack.EMPTY : recipe.value().output().create();
-		boolean canWork = recipe != null && machine.canOutput(output);
+		boolean canWork = recipe != null && machine.canOutput(output) && machine.hasWaterForOne();
 		MachineUpgrade.Effects effects = machine.upgradeEffects();
 
 		if (canWork) {
@@ -314,6 +334,73 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 			}
 		});
 		recipe.consume(input);
+		if (kind.usesWater()) {
+			water -= waterPerItem();
+		}
+	}
+
+	// ---- 물 (세척기만. 펌프가 밀어 넣고, 옆 물 탱크에서 끌어오고, 물 양동이를 붓는다. 빼 가지는 못한다) ----
+
+	private static int waterPerItem() {
+		return SanupcraftConfig.current().washerWaterPerItem;
+	}
+
+	/** 물을 쓰지 않는 기계이거나, 한 번 만들 물이 있으면 true. */
+	private boolean hasWaterForOne() {
+		return !kind.usesWater() || water >= waterPerItem();
+	}
+
+	/** 옆 물 탱크에서 틱당 {@link #WATER_DRAW_PER_TICK}까지 끌어온다. 끌어온 양을 돌려준다. */
+	private int drawWater(ServerLevel level, BlockPos pos) {
+		int want = Math.min(WATER_DRAW_PER_TICK, WATER_CAPACITY - water);
+		int drawn = 0;
+		for (Direction direction : Direction.values()) {
+			if (drawn >= want) {
+				break;
+			}
+			if (level.getBlockEntity(pos.relative(direction)) instanceof TankBlockEntity tank) {
+				drawn += tank.drain(FluidKind.WATER, want - drawn, false);
+			}
+		}
+		water += drawn;
+		return drawn;
+	}
+
+	public int water() {
+		return water;
+	}
+
+	@Override
+	public @Nullable FluidKind fluid() {
+		return kind.usesWater() && water > 0 ? FluidKind.WATER : null;
+	}
+
+	@Override
+	public int fluidAmount() {
+		return kind.usesWater() ? water : 0;
+	}
+
+	@Override
+	public int fluidCapacity() {
+		return kind.usesWater() ? WATER_CAPACITY : 0;
+	}
+
+	@Override
+	public int fill(FluidKind fluid, int amount, boolean simulate) {
+		if (!kind.usesWater() || fluid != FluidKind.WATER || amount <= 0) {
+			return 0;
+		}
+		int accepted = Math.min(amount, WATER_CAPACITY - water);
+		if (accepted > 0 && !simulate) {
+			water += accepted;
+			setChanged();
+		}
+		return accepted;
+	}
+
+	@Override
+	public int drain(FluidKind fluid, int amount, boolean simulate) {
+		return 0;
 	}
 
 	private void merge(int slot, ItemStack stack) {
@@ -437,6 +524,7 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 		progress = input.getIntOr("progress", 0);
 		totalTime = input.getIntOr("total_time", 0);
 		steam = input.getIntOr("steam", 0);
+		water = input.getIntOr("water", 0);
 	}
 
 	@Override
@@ -447,6 +535,9 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 		output.putInt("progress", progress);
 		output.putInt("total_time", totalTime);
 		output.putInt("steam", steam);
+		if (water > 0) {
+			output.putInt("water", water);
+		}
 		ContainerHelper.saveAllItems(output, items);
 	}
 
