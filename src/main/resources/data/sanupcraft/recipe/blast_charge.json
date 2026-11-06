@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "minecraft:gunpowder",
+    "minecraft:gunpowder",
+    "sanupcraft:steel_plate",
+    "sanupcraft:iron_plate"
+  ],
+  "result": {
+    "id": "sanupcraft:blast_charge"
+  }
+}

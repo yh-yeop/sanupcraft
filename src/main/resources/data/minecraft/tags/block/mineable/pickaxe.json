@@ -55,6 +55,8 @@
     "sanupcraft:raw_chromium_block",
     "sanupcraft:raw_aluminium_block",
     "sanupcraft:chromium_block",
-    "sanupcraft:aluminium_block"
+    "sanupcraft:aluminium_block",
+    "sanupcraft:blast_charge",
+    "sanupcraft:loose_rock"
   ]
 }

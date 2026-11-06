@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "sanupcraft:block/blast_charge"
+    },
+    "lit=true": {
+      "model": "sanupcraft:block/blast_charge_lit"
+    }
+  }
+}

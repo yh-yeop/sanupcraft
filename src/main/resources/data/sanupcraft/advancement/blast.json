@@ -1,0 +1,25 @@
+{
+  "parent": "sanupcraft:quarry",
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:blast_charge"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.blast.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.blast.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ]
+}

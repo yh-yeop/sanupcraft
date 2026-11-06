@@ -85,7 +85,9 @@ public final class PlaytestCommand {
 		// M8 I4
 		WRENCH("렌치 · 면 설정: 돌리기 · 내용물째 집기 · 기계 면마다 넣기 / 빼기 / 막기", null, PlaytestCommand::kitWrench),
 		// 확장 3 D1 새 광석
-		ORES("새 광석: 크롬철석 · 보크사이트 · 원석 · 블록 · 가공 기계", null, PlaytestCommand::kitOres);
+		ORES("새 광석: 크롬철석 · 보크사이트 · 원석 · 블록 · 가공 기계", null, PlaytestCommand::kitOres),
+		// 확장 3 D3 · D5
+		BLAST("증기 발파 · 위험 요소: 발파 장약 · 원격 기폭기 · 유독 가스 · 무른 바위", null, PlaytestCommand::kitBlast);
 
 		final String description;
 		final ResourceKey<Level> dimension;
@@ -647,6 +649,23 @@ public final class PlaytestCommand {
 		give(p, io.github.yhyeop.sanupcraft.logistics.ModLogistics.ORE_MARKER, 1);
 		give(p, Items.HOPPER, 4);
 		give(p, Items.CHEST, 2);
+		food(p);
+	}
+
+	/** 확장 3 D3 · D5: 발파 장약 · 원격 기폭기 · 레드스톤, 가스에 불을 붙여 볼 불씨, 무른 바위 · 곡괭이. 가스는 `/setblock ~ ~ ~ sanupcraft:toxic_gas`로 깐다. */
+	private static void kitBlast(ServerPlayer p) {
+		give(p, io.github.yhyeop.sanupcraft.mining.blast.ModBlast.BLAST_CHARGE.asItem(), 16);
+		give(p, io.github.yhyeop.sanupcraft.mining.blast.ModBlast.REMOTE_DETONATOR, 1);
+		give(p, Items.REDSTONE_BLOCK, 4);
+		give(p, Items.LEVER, 2);
+		give(p, Items.DIAMOND_PICKAXE, 1);
+		give(p, Items.FLINT_AND_STEEL, 1);
+		give(p, Items.TORCH, 16);
+		give(p, Items.LAVA_BUCKET, 1);
+		give(p, Items.CHEST, 2);
+		give(p, io.github.yhyeop.sanupcraft.factory.ModMachines.CRUSHER.asItem(), 1);
+		give(p, io.github.yhyeop.sanupcraft.hazard.ModHazard.LOOSE_ROCK.asItem(), 8);
+		give(p, Items.MILK_BUCKET, 2);
 		food(p);
 	}
 }

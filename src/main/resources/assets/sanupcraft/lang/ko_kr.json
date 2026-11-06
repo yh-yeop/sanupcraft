@@ -740,5 +740,22 @@
   "item.sanupcraft.chromium_ingot": "크롬 주괴",
   "item.sanupcraft.aluminium_ingot": "알루미늄 주괴",
   "advancements.sanupcraft.new_metal.title": "새 금속",
-  "advancements.sanupcraft.new_metal.description": "크롬 원석(깊은 심층암 크롬철석, 철 곡괭이) 또는 알루미늄 원석(사바나 · 메사 · 사막의 보크사이트)을 얻었다. 철처럼 가루로 갈아 주괴로 만든다."
+  "advancements.sanupcraft.new_metal.description": "크롬 원석(깊은 심층암 크롬철석, 철 곡괭이) 또는 알루미늄 원석(사바나 · 메사 · 사막의 보크사이트)을 얻었다. 철처럼 가루로 갈아 주괴로 만든다.",
+  "block.sanupcraft.blast_charge": "발파 장약",
+  "block.sanupcraft.blast_charge.tooltip": "레드스톤 신호나 원격 기폭기를 받으면 1초 뒤 5x5x5를 캐서 아이템으로 떨어뜨린다",
+  "block.sanupcraft.blast_charge.tooltip2": "기계 · 상자 · 부술 수 없는 블록은 그대로 둔다 · 둘레 생물은 피해 4 · 방향은 상관없다",
+  "item.sanupcraft.remote_detonator": "원격 기폭기",
+  "item.sanupcraft.remote_detonator.tooltip": "웅크리고 발파 장약 우클릭: 연결 (다시 하면 해제, 최대 8개)",
+  "item.sanupcraft.remote_detonator.tooltip2": "허공에 우클릭: 64칸 안의 연결된 장약에 한꺼번에 불을 붙인다",
+  "item.sanupcraft.remote_detonator.links": "연결된 장약 %s/%s",
+  "item.sanupcraft.remote_detonator.linked": "장약 (%s, %s, %s) 연결 (%s/%s)",
+  "item.sanupcraft.remote_detonator.unlinked": "장약 (%s, %s, %s) 연결 해제",
+  "item.sanupcraft.remote_detonator.full": "더 연결할 수 없다 (최대 %s개)",
+  "item.sanupcraft.remote_detonator.none": "불을 붙일 장약이 없다 (연결 없음 · 다른 차원 · %s칸 밖)",
+  "item.sanupcraft.remote_detonator.fired": "장약 %s개에 불을 붙였다",
+  "block.sanupcraft.toxic_gas": "유독 가스",
+  "block.sanupcraft.loose_rock": "무른 바위",
+  "block.sanupcraft.loose_rock.tooltip": "깊은 동굴 천장의 금 간 돌: 아래가 비면 떨어진다 · 깨진 심층암 조각을 준다",
+  "advancements.sanupcraft.blast.title": "발파 준비",
+  "advancements.sanupcraft.blast.description": "발파 장약을 레드스톤이나 원격 기폭기로 터뜨려 5x5x5를 한 번에 캔다."
 }

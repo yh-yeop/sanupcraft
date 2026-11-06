@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "minecraft:redstone",
+    "sanupcraft:steel_plate",
+    "sanupcraft:gear_part"
+  ],
+  "result": {
+    "id": "sanupcraft:remote_detonator"
+  }
+}

@@ -199,6 +199,15 @@ public final class SanupcraftConfig {
 	public int colossusErosionTicks = io.github.yhyeop.sanupcraft.boss.VoidColossus.EROSION_TICKS;
 	/** 공허 거상: 공허 침식 단계 (1 = 최대 체력 −2). */
 	public int colossusErosionLevel = io.github.yhyeop.sanupcraft.boss.VoidColossus.EROSION_LEVEL;
+	// 확장 3 (D3 증기 발파 · D5 위험 요소)
+	/** 발파 장약: 불이 붙고 터질 때까지(틱). */
+	public int blastFuseTicks = io.github.yhyeop.sanupcraft.mining.blast.ModBlast.FUSE_TICKS;
+	/** 발파 장약: 터질 때 둘레 생물이 받는 피해. */
+	public double blastEntityDamage = io.github.yhyeop.sanupcraft.mining.blast.ModBlast.ENTITY_DAMAGE;
+	/** 위험 요소: 유독 가스 (월드 생성 + 효과). 끄면 새로 깔리지 않고 있는 가스도 아무 일 없다. */
+	public boolean hazardToxicGas = true;
+	/** 위험 요소: 무른 바위 (월드 생성 + 떨어짐). 끄면 새로 깔리지 않고 있는 바위도 떨어지지 않는다. */
+	public boolean hazardLooseRock = true;
 
 	/** float 상수를 0.05F -> 0.05처럼 보이는 그대로의 double로 (파일에 0.0500000007...이 안 찍히게). */
 	private static double asDouble(float value) {
@@ -346,7 +355,16 @@ public final class SanupcraftConfig {
 			new Option("statusEffect", "colossusErosionTicks", io.github.yhyeop.sanupcraft.boss.VoidColossus.EROSION_TICKS, 0, 12_000, true,
 					c -> c.colossusErosionTicks, (c, v) -> c.colossusErosionTicks = (int) v),
 			new Option("statusEffect", "colossusErosionLevel", io.github.yhyeop.sanupcraft.boss.VoidColossus.EROSION_LEVEL, 0, 9, true,
-					c -> c.colossusErosionLevel, (c, v) -> c.colossusErosionLevel = (int) v));
+					c -> c.colossusErosionLevel, (c, v) -> c.colossusErosionLevel = (int) v),
+			// 확장 3 (D3 · D5): 켬/끔은 1/0
+			new Option("blast", "fuseTicks", io.github.yhyeop.sanupcraft.mining.blast.ModBlast.FUSE_TICKS, 1, 200, true,
+					c -> c.blastFuseTicks, (c, v) -> c.blastFuseTicks = (int) v),
+			new Option("blast", "entityDamage", io.github.yhyeop.sanupcraft.mining.blast.ModBlast.ENTITY_DAMAGE, 0.0, 100.0, false,
+					c -> c.blastEntityDamage, (c, v) -> c.blastEntityDamage = v),
+			new Option("hazards", "toxicGas", 1, 0, 1, true,
+					c -> c.hazardToxicGas ? 1 : 0, (c, v) -> c.hazardToxicGas = v >= 0.5),
+			new Option("hazards", "looseRock", 1, 0, 1, true,
+					c -> c.hazardLooseRock ? 1 : 0, (c, v) -> c.hazardLooseRock = v >= 0.5));
 
 	/** 읽은 결과: 설정, 경고 문구, 파일에 빠진 키가 있었는지, 파일을 새로 썼는지. */
 	public record Loaded(SanupcraftConfig config, List<String> warnings, boolean missingKeys, boolean wroteFile) {
