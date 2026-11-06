@@ -53,6 +53,11 @@ public class GuardianAltarBlock extends Block {
 			player.sendOverlayMessage(Component.translatable("block.sanupcraft.guardian_altar.too_cold"));
 			return InteractionResult.FAIL;
 		}
+		Component colossusProblem = VoidColossus.wakeMessage(serverLevel, pos, boss); // M6 공허 거상: 엔드 · 원점에서 500칸 밖
+		if (colossusProblem != null) {
+			player.sendOverlayMessage(colossusProblem);
+			return InteractionResult.FAIL;
+		}
 		if (serverLevel.getDifficulty() == Difficulty.PEACEFUL) {
 			player.sendOverlayMessage(Component.translatable("block.sanupcraft.guardian_altar.peaceful"));
 			return InteractionResult.FAIL;
@@ -97,6 +102,9 @@ public class GuardianAltarBlock extends Block {
 		if (stack.is(ModBoss.WARDEN_SUMMONER)) {
 			return ModBoss.FURNACE_WARDEN;
 		}
+		if (stack.is(io.github.yhyeop.sanupcraft.end.ModEnd.COLOSSUS_SUMMONER)) { // M6
+			return io.github.yhyeop.sanupcraft.end.ModEnd.VOID_COLOSSUS;
+		}
 		return null;
 	}
 
@@ -112,7 +120,7 @@ public class GuardianAltarBlock extends Block {
 
 	/** 제단 위에 보스를 부른다. 깨어날 수 없는 차원이거나 근처에 보스가 있으면 null. */
 	public static <T extends Monster> @Nullable T summon(ServerLevel level, BlockPos altarPos, EntityType<T> type) {
-		if (!canWakeHere(level, type)) {
+		if (!canWakeHere(level, type) || !VoidColossus.canWakeAt(level, altarPos, type)) { // M6 공허 거상 자리 규칙
 			return null;
 		}
 		if (hasBossNearby(level, altarPos)) {
@@ -133,6 +141,6 @@ public class GuardianAltarBlock extends Block {
 	}
 
 	private static boolean isBoss(Monster monster) {
-		return monster instanceof RustyGuardian || monster instanceof FurnaceWarden;
+		return monster instanceof RustyGuardian || monster instanceof FurnaceWarden || monster instanceof VoidColossus; // M6
 	}
 }

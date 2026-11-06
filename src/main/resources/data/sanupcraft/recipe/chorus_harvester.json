@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "sanupcraft:steel_plate",
+    "C": "minecraft:popped_chorus_fruit",
+    "G": "sanupcraft:gear_part",
+    "S": "sanupcraft:steam_pipe",
+    "O": "minecraft:hopper"
+  },
+  "pattern": [
+    "PCP",
+    "GSG",
+    "POP"
+  ],
+  "result": {
+    "id": "sanupcraft:chorus_harvester"
+  }
+}

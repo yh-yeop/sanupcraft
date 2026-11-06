@@ -46,6 +46,7 @@ public class HighPressurePipeBlock extends PipeBlock {
 	private static boolean connectsTo(BlockGetter level, BlockPos pos, BlockState state) {
 		return state.getBlock() instanceof HighPressurePipeBlock
 				|| state.getBlock() instanceof SoulFurnaceBlock
+				|| state.getBlock() instanceof io.github.yhyeop.sanupcraft.end.VoidCondenserBlock // M6 공허 응축기
 				|| level.getBlockEntity(pos) instanceof HPSteamConsumer consumer && consumer.takesHighPressureSteam();
 	}
 

@@ -114,7 +114,8 @@ public class SanupcraftM3GameTest {
 				"heatproof_drill", "ender_anchor", "rusted_shrine", "belt_sorter", "rivet_gun", "steam_boots", "pump", "machine_upgrade",
 				"goal_done", "guide_book", "crop_harvester", "tree_feller", "steam_drill", "chainsaw", "steam_jetpack", "mob_grinder",
 				"backpack", "big_boiler", "steam_locomotive", "cargo_station", "storage_drawer", "storage_terminal", "autocrafter", "stocker",
-				"portable_terminal", "soul_furnace", "precision_part", "debris_sonar", "lava_steamboat", "abandoned_furnace"};
+				"portable_terminal", "soul_furnace", "precision_part", "debris_sonar", "lava_steamboat", "abandoned_furnace",
+				"colossus_summoner", "void_core", "void_gear", "dimensional_vault", "abandoned_station"}; // M6
 		var advancements = helper.getLevel().getServer().getAdvancements();
 		for (String id : ids) {
 			helper.assertTrue(advancements.get(Sanupcraft.id(id)) != null, "발전 과제가 없음: " + id);

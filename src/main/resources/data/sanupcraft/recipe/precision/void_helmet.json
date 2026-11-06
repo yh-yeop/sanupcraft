@@ -1,0 +1,9 @@
+{
+  "type": "sanupcraft:precision",
+  "ingredient": "minecraft:netherite_helmet",
+  "ingredient2": "sanupcraft:void_core",
+  "result": {
+    "id": "sanupcraft:void_helmet"
+  },
+  "time": 600
+}

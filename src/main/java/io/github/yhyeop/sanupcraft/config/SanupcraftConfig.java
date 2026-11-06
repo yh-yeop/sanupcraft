@@ -161,6 +161,15 @@ public final class SanupcraftConfig {
 	public int goldDispenserTicksPerThrow = io.github.yhyeop.sanupcraft.nether.GoldDispenserBlockEntity.TICKS_PER_THROW;
 	/** 잔해 탐지기: 한 번에 드는 증기. */
 	public int debrisSonarSteam = io.github.yhyeop.sanupcraft.nether.DebrisSonarItem.STEAM_COST;
+	// M6 엔드 최종
+	/** 공허 응축기: 틱당 고압 증기. */
+	public int voidCondenserSteamPerTick = io.github.yhyeop.sanupcraft.end.VoidCondenserBlockEntity.STEAM_PER_TICK;
+	/** 후렴 수확기: 훑는 간격(틱). */
+	public int chorusHarvesterTicksPerScan = io.github.yhyeop.sanupcraft.end.ChorusHarvesterBlockEntity.TICKS_PER_SCAN;
+	/** 겉날개 가속: 한 번에 드는 증기. */
+	public int elytraBoostSteamCost = io.github.yhyeop.sanupcraft.end.ElytraBoost.STEAM_COST;
+	/** 공허 장비: 공허에서 구해 준 뒤 다시 구할 때까지(틱). */
+	public int voidGearRescueCooldownTicks = io.github.yhyeop.sanupcraft.end.VoidGear.RESCUE_COOLDOWN;
 
 	/** float 상수를 0.05F -> 0.05처럼 보이는 그대로의 double로 (파일에 0.0500000007...이 안 찍히게). */
 	private static double asDouble(float value) {
@@ -271,7 +280,16 @@ public final class SanupcraftConfig {
 			new Option("goldDispenser", "ticksPerThrow", io.github.yhyeop.sanupcraft.nether.GoldDispenserBlockEntity.TICKS_PER_THROW, 1, 1200, true,
 					c -> c.goldDispenserTicksPerThrow, (c, v) -> c.goldDispenserTicksPerThrow = (int) v),
 			new Option("debrisSonar", "steamCost", io.github.yhyeop.sanupcraft.nether.DebrisSonarItem.STEAM_COST, 0, io.github.yhyeop.sanupcraft.nether.DebrisSonarItem.CAPACITY, true,
-					c -> c.debrisSonarSteam, (c, v) -> c.debrisSonarSteam = (int) v));
+					c -> c.debrisSonarSteam, (c, v) -> c.debrisSonarSteam = (int) v),
+			// M6 엔드 최종
+			new Option("voidCondenser", "steamPerTick", io.github.yhyeop.sanupcraft.end.VoidCondenserBlockEntity.STEAM_PER_TICK, 1, 1000, true,
+					c -> c.voidCondenserSteamPerTick, (c, v) -> c.voidCondenserSteamPerTick = (int) v),
+			new Option("chorusHarvester", "ticksPerScan", io.github.yhyeop.sanupcraft.end.ChorusHarvesterBlockEntity.TICKS_PER_SCAN, 1, 1200, true,
+					c -> c.chorusHarvesterTicksPerScan, (c, v) -> c.chorusHarvesterTicksPerScan = (int) v),
+			new Option("elytraBoost", "steamCost", io.github.yhyeop.sanupcraft.end.ElytraBoost.STEAM_COST, 0, io.github.yhyeop.sanupcraft.gear.SteamCharge.CANISTER_CAPACITY, true,
+					c -> c.elytraBoostSteamCost, (c, v) -> c.elytraBoostSteamCost = (int) v),
+			new Option("voidGear", "rescueCooldownTicks", io.github.yhyeop.sanupcraft.end.VoidGear.RESCUE_COOLDOWN, 0, 1_000_000, true,
+					c -> c.voidGearRescueCooldownTicks, (c, v) -> c.voidGearRescueCooldownTicks = (int) v));
 
 	/** 읽은 결과: 설정, 경고 문구, 파일에 빠진 키가 있었는지, 파일을 새로 썼는지. */
 	public record Loaded(SanupcraftConfig config, List<String> warnings, boolean missingKeys, boolean wroteFile) {

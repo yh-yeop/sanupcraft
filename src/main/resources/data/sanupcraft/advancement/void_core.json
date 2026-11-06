@@ -1,0 +1,32 @@
+{
+  "parent": "sanupcraft:colossus_summoner",
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:void_core"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:void_core"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.void_core.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.void_core.description"
+    },
+    "frame": "challenge"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ]
+}

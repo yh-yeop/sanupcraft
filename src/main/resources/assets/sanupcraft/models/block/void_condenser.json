@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "top": "sanupcraft:block/void_condenser_top",
+    "side": "sanupcraft:block/void_condenser_side",
+    "bottom": "sanupcraft:block/void_condenser_bottom"
+  }
+}

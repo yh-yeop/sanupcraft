@@ -41,6 +41,10 @@
     "sanupcraft:steam_turbine",
     "sanupcraft:precision_assembler",
     "sanupcraft:gold_dispenser",
-    "sanupcraft:barter_collector"
+    "sanupcraft:barter_collector",
+    "sanupcraft:void_condenser",
+    "sanupcraft:chorus_harvester",
+    "sanupcraft:dimensional_vault",
+    "sanupcraft:breath_collector"
   ]
 }

@@ -5,6 +5,7 @@
 녹슨 사당 (rusted_shrine): 오버월드 평지 · 숲에 생기는 무너진 석재 사당. 가운데 수호자 제단, 상자에 소환석과 재료.
 바닥(y=0)은 지면 높이에 묻히도록 놓인다 (structure 의 start_height -1).
 버려진 용광로 (abandoned_furnace, M5): 네더 바닥의 무너진 공방. 수호자 제단 · 부서진 심장 제련로 · 상자.
+버려진 정거장 (abandoned_station, M6): 엔드 바깥 섬 위에 뜬 무너진 승강장. 수호자 제단 · 상자 · 끊긴 선로.
 """
 import gzip
 import io
@@ -198,11 +199,89 @@ def abandoned_furnace() -> Template:
     return t
 
 
+def abandoned_station() -> Template:
+    """버려진 정거장 (M6, 엔드 바깥 섬): 다리 넷 위에 뜬 무너진 퍼퍼 승강장. 가운데 수호자 제단, 상자, 끊긴 선로 · 고압 파이프 · 돛대.
+
+    구조물 종류 sanupcraft:end_island 가 틀의 y=0을 섬 지면 바로 위에 놓는다 (hover 1). 다리(y 0~4)가 땅에 닿고 승강장은 y=5.
+    다리 사이는 비우지 않는다 (섬 지형을 깎지 않게). 크기 11 x 11 x 11. 한쪽 다리에 사다리, 바닥에 구멍.
+    """
+    rnd = random.Random(20261108)
+    t = Template((11, 11, 11))
+    for x in range(11):
+        for z in range(11):
+            for y in range(6, 11):
+                t.set(x, y, z, "air")
+    # 다리: 퍼퍼 기둥 (하나는 반쯤 무너짐 → 엔드 돌 벽돌로 괴어 둠)
+    for (x, z) in ((1, 1), (9, 1), (1, 9), (9, 9)):
+        for y in range(0, 5):
+            if (x, z) == (9, 9) and y >= 2:
+                t.set(x, y, z, "end_stone_bricks")
+            else:
+                t.set(x, y, z, "purpur_pillar", {"axis": "y"})
+    # 승강장 바닥 (y=5): 퍼퍼 · 엔드 돌 벽돌, 가장자리는 퍼퍼 기둥(눕힘), 군데군데 구멍
+    keep = {(5, 5), (4, 5), (6, 5), (5, 4), (5, 6), (8, 2), (1, 2)}
+    for x in range(11):
+        for z in range(11):
+            if (x, z) == (1, 2):
+                continue  # 사다리 구멍
+            if x in (0, 10):
+                t.set(x, 5, z, "purpur_pillar", {"axis": "z"})
+                continue
+            if z in (0, 10):
+                t.set(x, 5, z, "purpur_pillar", {"axis": "x"})
+                continue
+            if (x, z) not in keep and rnd.random() < 0.08:
+                continue
+            if 4 <= x <= 6 and 4 <= z <= 6:
+                t.set(x, 5, z, "obsidian" if (x, z) != (5, 5) else "crying_obsidian")
+                continue
+            t.set(x, 5, z, "purpur_block" if rnd.random() < 0.6 else "end_stone_bricks")
+    # 사다리 (다리 (1,1)의 남쪽 면, 바닥 구멍까지)
+    for y in range(0, 6):
+        t.set(1, y, 2, "ladder", {"facing": "south", "waterlogged": "false"})
+    # 난간: 쇠창살, 군데군데 빠짐
+    for i in range(11):
+        for (x, z) in ((i, 0), (i, 10), (0, i), (10, i)):
+            if rnd.random() < 0.6:
+                t.set(x, 6, z, "iron_bars", {"east": "false", "west": "false", "north": "false", "south": "false", "waterlogged": "false"})
+    # 가운데 수호자 제단, 동쪽 위 상자
+    t.set(5, 6, 5, "sanupcraft:guardian_altar")
+    t.set(8, 6, 2, "chest", {"facing": "south", "type": "single", "waterlogged": "false"},
+          {"id": "minecraft:chest", "LootTable": "sanupcraft:chests/abandoned_station"})
+    # 끊긴 선로 (서쪽 줄)
+    for z in range(2, 9):
+        if z == 6:
+            continue
+        t.set(3, 6, z, "powered_rail" if z == 4 else "rail",
+              {"shape": "north_south", "waterlogged": "false", **({"powered": "false"} if z == 4 else {})})
+    # 고압 파이프 잔해 (남쪽)
+    t.set(6, 6, 8, "sanupcraft:high_pressure_pipe", {"east": "true", "west": "false", "north": "false", "south": "false", "up": "false", "down": "false"})
+    t.set(7, 6, 8, "sanupcraft:high_pressure_pipe", {"east": "false", "west": "true", "north": "false", "south": "false", "up": "false", "down": "false"})
+    # 돛대: 퍼퍼 기둥 + 꼭대기 엔드 막대, 반쯤 걸린 사슬
+    for y in range(6, 10):
+        t.set(1, y, 8, "purpur_pillar", {"axis": "y"})
+    t.set(1, 10, 8, "end_rod", {"facing": "up"})
+    t.set(2, 9, 8, "purpur_slab", {"type": "top", "waterlogged": "false"})
+    t.set(3, 9, 8, "purpur_slab", {"type": "top", "waterlogged": "false"})
+    t.set(3, 8, 8, "iron_chain", {"axis": "y", "waterlogged": "false"})
+    # 상자 위 무너진 차양 (동쪽 위)
+    for y in range(6, 9):
+        t.set(9, y, 1, "purpur_pillar", {"axis": "y"})
+    for x in range(6, 10):
+        for z in range(1, 4):
+            if rnd.random() < 0.7:
+                t.set(x, 9, z, "purpur_slab", {"type": "bottom", "waterlogged": "false"})
+    t.set(7, 6, 3, "end_rod", {"facing": "up"})
+    return t
+
+
 def main():
     n = rusted_shrine().save(OUT / "rusted_shrine.nbt")
     print(f"rusted_shrine.nbt: 블록 {n}개")
     n = abandoned_furnace().save(OUT / "abandoned_furnace.nbt")
     print(f"abandoned_furnace.nbt: 블록 {n}개")
+    n = abandoned_station().save(OUT / "abandoned_station.nbt")
+    print(f"abandoned_station.nbt: 블록 {n}개")
 
 
 if __name__ == "__main__":

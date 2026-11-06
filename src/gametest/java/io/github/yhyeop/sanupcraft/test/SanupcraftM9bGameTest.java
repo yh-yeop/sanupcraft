@@ -129,6 +129,8 @@ public class SanupcraftM9bGameTest {
 		helper.assertTrue(wolf.getHealth() == wolfHealth, "길들인 늑대가 맞음");
 		helper.assertTrue(named.getHealth() == namedHealth, "이름표 붙은 좀비가 맞음");
 		helper.assertValueEqual(grinder.steamStored(), MobGrinderBlockEntity.STEAM_CAPACITY, "증기를 씀");
+		// 월드에 넣은 모의 플레이어를 뺀다: 남아 있으면 같은 자리에 오는 다른 묶음 분쇄기 시험의 경험치 구슬을 끌어간다 (M6에서 고침)
+		level.getServer().getPlayerList().remove(player);
 		helper.succeed();
 	}
 

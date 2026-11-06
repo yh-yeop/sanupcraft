@@ -1,0 +1,32 @@
+{
+  "parent": "sanupcraft:shulker_shell",
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:dimensional_vault"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:dimensional_vault"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.dimensional_vault.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.dimensional_vault.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ]
+}

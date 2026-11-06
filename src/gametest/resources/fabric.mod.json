@@ -26,14 +26,16 @@
 			"io.github.yhyeop.sanupcraft.test.SanupcraftM9bGameTest",
 			"io.github.yhyeop.sanupcraft.test.SanupcraftM8aGameTest",
 			"io.github.yhyeop.sanupcraft.test.SanupcraftStorageGameTest",
-			"io.github.yhyeop.sanupcraft.test.SanupcraftM5GameTest"
+			"io.github.yhyeop.sanupcraft.test.SanupcraftM5GameTest",
+			"io.github.yhyeop.sanupcraft.test.SanupcraftM6GameTest"
 		],
 		"fabric-client-gametest": [
 			"io.github.yhyeop.sanupcraft.test.SanupcraftClientGameTest",
 			"io.github.yhyeop.sanupcraft.test.SanupcraftPromoShots",
 			"io.github.yhyeop.sanupcraft.test.SanupcraftM8aClientGameTest",
 			"io.github.yhyeop.sanupcraft.test.SanupcraftStorageClientGameTest",
-			"io.github.yhyeop.sanupcraft.test.SanupcraftM5ClientGameTest"
+			"io.github.yhyeop.sanupcraft.test.SanupcraftM5ClientGameTest",
+			"io.github.yhyeop.sanupcraft.test.SanupcraftM6ClientGameTest"
 		]
 	},
 	"depends": {

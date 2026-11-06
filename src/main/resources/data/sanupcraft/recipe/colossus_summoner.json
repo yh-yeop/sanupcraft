@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "minecraft:shulker_shell",
+    "sanupcraft:precision_part",
+    "minecraft:ender_eye",
+    "sanupcraft:warden_heart"
+  ],
+  "result": {
+    "id": "sanupcraft:colossus_summoner"
+  }
+}
