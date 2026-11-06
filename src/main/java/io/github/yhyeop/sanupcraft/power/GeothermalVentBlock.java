@@ -55,7 +55,7 @@ public class GeothermalVentBlock extends BaseEntityBlock {
 				case TOO_COLD -> Component.translatable("block.sanupcraft.geothermal_vent.too_cold");
 				case NO_LAVA -> Component.translatable("block.sanupcraft.geothermal_vent.no_lava", steam, capacity);
 				case RUNNING -> Component.translatable("block.sanupcraft.geothermal_vent.status", vent.lava(),
-						vent.lava() * GeothermalVentBlockEntity.STEAM_PER_LAVA, steam, capacity);
+						vent.lava() * GeothermalVentBlockEntity.steamPerLava(), steam, capacity);
 			};
 			player.sendOverlayMessage(message);
 		}

@@ -1,0 +1,27 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "sanupcraft:block/steam_gauge"
+    },
+    "facing=east": {
+      "model": "sanupcraft:block/steam_gauge",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "sanupcraft:block/steam_gauge",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "sanupcraft:block/steam_gauge",
+      "y": 270
+    },
+    "facing=up": {
+      "model": "sanupcraft:block/steam_gauge",
+      "x": 270
+    },
+    "facing=down": {
+      "model": "sanupcraft:block/steam_gauge",
+      "x": 90
+    }
+  }
+}

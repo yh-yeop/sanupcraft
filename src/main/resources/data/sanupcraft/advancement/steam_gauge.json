@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:steam_gauge"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:steam_gauge"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.steam_gauge.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.steam_gauge.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ],
+  "parent": "sanupcraft:boiler"
+}

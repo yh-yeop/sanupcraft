@@ -31,6 +31,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
+import io.github.yhyeop.sanupcraft.config.SanupcraftConfig;
+
 /**
  * 엔더 닻 (엔드 단계). 튀긴 후렴과 하나로 10분 동안 자기 청크와 둘레 8청크(3x3)를 계속 불러 둔다.
  * 아무도 없는 네더 전초기지(지열 분출구 · 굴착기 · 심장 제련로 · 엔더 송신기)가 오버월드에 있는 동안에도 돈다.
@@ -39,11 +41,20 @@ import net.minecraft.world.level.storage.ValueOutput;
  * 다른 켜진 닻이 같은 청크를 덮고 있으면 풀지 않고 그 닻에게 넘긴다.
  */
 public class EnderAnchorBlockEntity extends BlockEntity implements WorldlyContainer {
-	/** 튀긴 후렴과 하나가 버티는 틱 (10분). */
+	/** 튀긴 후렴 하나가 버티는 틱의 기본값 (10분). 실제 값은 {@link #ticksPerFuel()} (config/sanupcraft.json). */
 	public static final int TICKS_PER_FUEL = 12000;
-	/** 둘레 몇 청크까지 (1 = 3x3). */
+	/** 둘레 몇 청크까지의 기본값 (1 = 3x3). 실제 값은 {@link #radius()}. */
 	public static final int RADIUS = 1;
 	private static final int[] SLOTS = {0};
+
+	public static int ticksPerFuel() {
+		return SanupcraftConfig.current().anchorTicksPerFuel;
+	}
+
+	/** 지금 붙잡는 둘레 청크 수 (설정 파일). 이미 켜진 닻은 다시 켤 때부터 바뀐 값을 쓴다. */
+	public static int radius() {
+		return SanupcraftConfig.current().anchorRadius;
+	}
 
 	/** 지금 켜져 있는 닻들 (차원별). 겹치는 청크를 넘겨주려고 본다. */
 	private static final Map<ResourceKey<Level>, Set<EnderAnchorBlockEntity>> ACTIVE = new ConcurrentHashMap<>();
@@ -76,7 +87,7 @@ public class EnderAnchorBlockEntity extends BlockEntity implements WorldlyContai
 			ItemStack fuel = items.get(0);
 			if (!fuel.isEmpty()) {
 				fuel.shrink(1);
-				fuelTicks = TICKS_PER_FUEL;
+				fuelTicks = ticksPerFuel();
 				setChanged();
 			}
 		}
@@ -143,9 +154,10 @@ public class EnderAnchorBlockEntity extends BlockEntity implements WorldlyContai
 	private void setForced(ServerLevel level, BlockPos pos, boolean value) {
 		if (value) {
 			ChunkPos center = ChunkPos.containing(pos);
+			int radius = radius();
 			LongSet already = level.getForceLoadedChunks();
-			for (int dx = -RADIUS; dx <= RADIUS; dx++) {
-				for (int dz = -RADIUS; dz <= RADIUS; dz++) {
+			for (int dx = -radius; dx <= radius; dx++) {
+				for (int dz = -radius; dz <= radius; dz++) {
 					long chunk = ChunkPos.pack(center.x() + dx, center.z() + dz);
 					if (!already.contains(chunk) && level.setChunkForced(center.x() + dx, center.z() + dz, true)) {
 						ownChunks.add(chunk);
@@ -178,12 +190,13 @@ public class EnderAnchorBlockEntity extends BlockEntity implements WorldlyContai
 		if (set == null) {
 			return null;
 		}
+		int radius = radius();
 		for (EnderAnchorBlockEntity other : set) {
 			if (other == this || other.isRemoved() || !other.isActive()) {
 				continue;
 			}
 			ChunkPos c = ChunkPos.containing(other.getBlockPos());
-			if (Math.abs(c.x() - ChunkPos.getX(chunk)) <= RADIUS && Math.abs(c.z() - ChunkPos.getZ(chunk)) <= RADIUS) {
+			if (Math.abs(c.x() - ChunkPos.getX(chunk)) <= radius && Math.abs(c.z() - ChunkPos.getZ(chunk)) <= radius) {
 				return other;
 			}
 		}
@@ -221,7 +234,7 @@ public class EnderAnchorBlockEntity extends BlockEntity implements WorldlyContai
 
 	/** 남은 시간 (틱): 타는 중인 것 + 칸에 남은 연료. */
 	public long remainingTicks() {
-		return (long) fuelTicks + (long) items.get(0).getCount() * TICKS_PER_FUEL;
+		return (long) fuelTicks + (long) items.get(0).getCount() * ticksPerFuel();
 	}
 
 	public static boolean isFuel(ItemStack stack) {

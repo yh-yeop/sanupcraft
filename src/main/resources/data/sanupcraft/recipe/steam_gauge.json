@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "sanupcraft:iron_plate",
+    "G": "minecraft:glass",
+    "S": "sanupcraft:steam_pipe",
+    "R": "minecraft:redstone"
+  },
+  "pattern": [
+    "PGP",
+    "PSP",
+    " R "
+  ],
+  "result": {
+    "id": "sanupcraft:steam_gauge"
+  }
+}

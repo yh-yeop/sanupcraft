@@ -34,13 +34,15 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.level.storage.loot.providers.number.ints.ResolvableInt;
 
 import io.github.yhyeop.sanupcraft.power.SteamConsumer;
+import io.github.yhyeop.sanupcraft.power.SteamFlowMeter;
+import io.github.yhyeop.sanupcraft.power.SteamStorage;
 
 /**
  * 기계의 칸과 진행 상태. 화로처럼 연료를 태우는 동안 재료를 하나씩 처리하고, 레시피에 부산물이 있으면 확률로 부산물 칸에 낸다.
  * 증기 파이프가 이어져 있으면 연료 대신 증기로 돈다 (증기가 있으면 연료를 태우지 않음).
  * 깔때기: 위 → 재료(합금로는 두 칸, 이 기계 레시피의 재료만), 옆 → 연료, 아래 ← 결과 · 부산물 · 쓰고 남은 빈 양동이.
  */
-public class MachineBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, SteamConsumer {
+public class MachineBlockEntity extends BaseContainerBlockEntity implements WorldlyContainer, SteamConsumer, SteamStorage {
 	public static final int SLOT_INPUT = 0;
 	public static final int SLOT_FUEL = 1;
 	public static final int SLOT_RESULT = 2;
@@ -74,6 +76,7 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 	private int progress;
 	private int totalTime;
 	private int steam;
+	private final SteamFlowMeter flow = new SteamFlowMeter();
 	private boolean steamWorking;
 	/** 일하지 않은 연속 틱 수 (저장하지 않음). 처음에는 쉬는 상태. */
 	private int idleTicks = LIT_HOLD_TICKS;
@@ -239,11 +242,31 @@ public class MachineBlockEntity extends BaseContainerBlockEntity implements Worl
 	public int acceptSteam(int amount) {
 		int accepted = Math.min(amount, STEAM_CAPACITY - steam);
 		steam += accepted;
+		flow.add(gameTime(), accepted);
 		return accepted;
 	}
 
 	public int steam() {
 		return steam;
+	}
+
+	@Override
+	public int steamStored() {
+		return steam;
+	}
+
+	@Override
+	public int steamCapacity() {
+		return STEAM_CAPACITY;
+	}
+
+	@Override
+	public int steamReceivedLastSecond() {
+		return flow.lastSecond(gameTime());
+	}
+
+	private long gameTime() {
+		return level != null ? level.getGameTime() : 0L;
 	}
 
 	public static boolean isFuel(ItemStack stack) {

@@ -1,0 +1,78 @@
+{
+  "parent": "minecraft:block/block",
+  "textures": {
+    "front": "sanupcraft:block/steam_gauge_front",
+    "side": "sanupcraft:block/steam_gauge_side",
+    "particle": "#side"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        1,
+        10
+      ],
+      "to": [
+        15,
+        15,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ],
+          "texture": "#front"
+        },
+        "south": {
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ],
+          "texture": "#side"
+        },
+        "east": {
+          "uv": [
+            0,
+            1,
+            6,
+            15
+          ],
+          "texture": "#side"
+        },
+        "west": {
+          "uv": [
+            0,
+            1,
+            6,
+            15
+          ],
+          "texture": "#side"
+        },
+        "up": {
+          "uv": [
+            1,
+            0,
+            15,
+            6
+          ],
+          "texture": "#side"
+        },
+        "down": {
+          "uv": [
+            1,
+            0,
+            15,
+            6
+          ],
+          "texture": "#side"
+        }
+      }
+    }
+  ]
+}

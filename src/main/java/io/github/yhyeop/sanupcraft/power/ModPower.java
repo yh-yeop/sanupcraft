@@ -35,11 +35,21 @@ public final class ModPower {
 			.sound(SoundType.NETHER_BRICKS)
 			.lightLevel(state -> state.getValue(GeothermalVentBlock.LIT) ? 12 : 3));
 
+	/** 증기 계기판: 붙은 기계 · 보일러의 증기 저장률을 비교기 신호로. */
+	public static final SteamGaugeBlock STEAM_GAUGE = ModRegistry.block("steam_gauge", SteamGaugeBlock::new, BlockBehaviour.Properties.of()
+			.mapColor(MapColor.METAL)
+			.strength(1.5F)
+			.sound(SoundType.METAL)
+			.noOcclusion());
+
 	public static final BlockEntityType<BoilerBlockEntity> BOILER_BLOCK_ENTITY = Registry.register(
 			BuiltInRegistries.BLOCK_ENTITY_TYPE, Sanupcraft.id("boiler"), new BlockEntityType<>(BoilerBlockEntity::new, Set.of(BOILER)));
 
 	public static final BlockEntityType<GeothermalVentBlockEntity> GEOTHERMAL_VENT_BLOCK_ENTITY = Registry.register(
 			BuiltInRegistries.BLOCK_ENTITY_TYPE, Sanupcraft.id("geothermal_vent"), new BlockEntityType<>(GeothermalVentBlockEntity::new, Set.of(GEOTHERMAL_VENT)));
+
+	public static final BlockEntityType<SteamGaugeBlockEntity> STEAM_GAUGE_BLOCK_ENTITY = Registry.register(
+			BuiltInRegistries.BLOCK_ENTITY_TYPE, Sanupcraft.id("steam_gauge"), new BlockEntityType<>(SteamGaugeBlockEntity::new, Set.of(STEAM_GAUGE)));
 
 	private ModPower() {
 	}

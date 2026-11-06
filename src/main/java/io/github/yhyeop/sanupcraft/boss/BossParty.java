@@ -29,6 +29,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 import io.github.yhyeop.sanupcraft.Sanupcraft;
+import io.github.yhyeop.sanupcraft.config.SanupcraftConfig;
 
 /**
  * 여러 명이 함께 잡는 보스의 인원 규칙. 보스마다 하나씩 들고 있는다.
@@ -41,6 +42,7 @@ import io.github.yhyeop.sanupcraft.Sanupcraft;
  */
 public final class BossParty {
 	public static final double RADIUS = 48.0;
+	// 아래 세 값은 기본값이다. 실제로 쓰는 값은 config/sanupcraft.json (SanupcraftConfig)
 	public static final double HEALTH_PER_EXTRA_PLAYER = 0.5;
 	public static final double MAX_HEALTH_SCALE = 3.0;
 	/** 이만큼(최대 체력 대비) 깎아야 보상을 받는다. */
@@ -56,7 +58,8 @@ public final class BossParty {
 
 	/** 인원 n일 때 체력 배율. */
 	public static double healthScale(int players) {
-		return Math.min(MAX_HEALTH_SCALE, 1.0 + HEALTH_PER_EXTRA_PLAYER * (Math.max(1, players) - 1));
+		SanupcraftConfig config = SanupcraftConfig.current();
+		return Math.min(config.bossMaxHealthScale, 1.0 + config.bossHealthPerExtraPlayer * (Math.max(1, players) - 1));
 	}
 
 	/** {@code center}에서 {@link #RADIUS} 안의 플레이어 수 (관전 · 크리에이티브 제외). 최소 1. */
@@ -103,7 +106,7 @@ public final class BossParty {
 
 	/** 보상을 받을 수 있는, 접속 중인 기여자들. */
 	public List<ServerPlayer> contributors(ServerLevel level, float maxHealth) {
-		float needed = maxHealth * CONTRIBUTION_SHARE;
+		float needed = maxHealth * (float) SanupcraftConfig.current().bossContributionShare;
 		List<ServerPlayer> result = new ArrayList<>();
 		damage.forEach((uuid, dealt) -> {
 			if (dealt < needed) {

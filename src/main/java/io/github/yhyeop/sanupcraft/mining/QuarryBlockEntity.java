@@ -18,7 +18,10 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
+import io.github.yhyeop.sanupcraft.config.SanupcraftConfig;
 import io.github.yhyeop.sanupcraft.power.SteamConsumer;
+import io.github.yhyeop.sanupcraft.power.SteamFlowMeter;
+import io.github.yhyeop.sanupcraft.power.SteamStorage;
 
 /**
  * 증기 굴착기: 아래 9x9를 위층부터 한 층씩 바닥까지 캔다. 철 곡괭이로 캔 것처럼 떨어뜨린 것을 바로 위 상자 · 깔때기 · 벨트에 넣는다.
@@ -28,11 +31,11 @@ import io.github.yhyeop.sanupcraft.power.SteamConsumer;
  * 처리량이 분쇄기보다 훨씬 커서, 버리지 않으면 위 상자 · 벨트가 돌로 금방 막힌다.
  * 내열 드릴({@link ModMining#HEATPROOF_DRILL})을 끼우면 다이아 곡괭이 등급이 되어 고대 잔해 · 흑요석도 캔다 (네더 전초기지).
  */
-public class QuarryBlockEntity extends BlockEntity implements SteamConsumer {
+public class QuarryBlockEntity extends BlockEntity implements SteamConsumer, SteamStorage {
 	public static final int RADIUS = 4;
 	public static final int STEAM_CAPACITY = 400;
 	public static final int STEAM_PER_BLOCK = 8;
-	/** 이만큼 틱마다 한 블록 (증기 평균 틱당 2). */
+	/** 이만큼 틱마다 한 블록 (증기 평균 틱당 2). 기본값이고 실제 값은 config/sanupcraft.json. */
 	public static final int TICKS_PER_BLOCK = 4;
 	/** 한 번에 빈 칸을 이만큼까지 건너뛴다 (공기 층에서 멈추지 않게). */
 	private static final int MAX_SCAN = 81;
@@ -48,6 +51,7 @@ public class QuarryBlockEntity extends BlockEntity implements SteamConsumer {
 	}
 
 	private int steam;
+	private final SteamFlowMeter flow = new SteamFlowMeter();
 	private int cursor;
 	private int layer;
 	private boolean started;
@@ -80,7 +84,7 @@ public class QuarryBlockEntity extends BlockEntity implements SteamConsumer {
 		if (finished || steam < STEAM_PER_BLOCK) {
 			return false;
 		}
-		if (level.getGameTime() % TICKS_PER_BLOCK != 0) {
+		if (level.getGameTime() % SanupcraftConfig.current().quarryTicksPerBlock != 0) {
 			return true;
 		}
 		if (!started) {
@@ -182,11 +186,31 @@ public class QuarryBlockEntity extends BlockEntity implements SteamConsumer {
 	public int acceptSteam(int amount) {
 		int accepted = Math.min(amount, STEAM_CAPACITY - steam);
 		steam += accepted;
+		flow.add(gameTime(), accepted);
 		return accepted;
 	}
 
 	public int steam() {
 		return steam;
+	}
+
+	@Override
+	public int steamStored() {
+		return steam;
+	}
+
+	@Override
+	public int steamCapacity() {
+		return STEAM_CAPACITY;
+	}
+
+	@Override
+	public int steamReceivedLastSecond() {
+		return flow.lastSecond(gameTime());
+	}
+
+	private long gameTime() {
+		return level != null ? level.getGameTime() : 0L;
 	}
 
 	public int mined() {

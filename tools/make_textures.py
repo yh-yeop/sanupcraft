@@ -929,6 +929,34 @@ def main_m4(made):
     made.append(save(anchor_face("side"), "block/ender_anchor_side.png"))
 
 
+def gauge_front():
+    """증기 계기판 눈금판: 구리 판에 반달 눈금과 바늘."""
+    im = recolor(panel(seed=121), COPPER)
+    for y in range(2, 14):
+        for x in range(2, 14):
+            d = math.hypot(x - 7.5, y - 9.5)
+            if d < 5.6:
+                im.putpixel((x, y), px("e") if d > 4.6 else px("u") if y < 9 else px("d"))
+    for x, y in ((3, 9), (4, 6), (6, 4), (9, 4), (11, 6), (12, 9)):
+        im.putpixel((x, y), px("a"))
+    for x, y in ((8, 8), (9, 7), (10, 6), (7, 9), (8, 9)):
+        im.putpixel((x, y), px("R"))
+    return im
+
+
+def gauge_side():
+    im = recolor(panel(seed=122), COPPER)
+    for x in range(16):
+        im.putpixel((x, 0), px("b"))
+        im.putpixel((x, 15), px("b"))
+    return im
+
+
+def main_bundle1(made):
+    made.append(save(gauge_front(), "block/steam_gauge_front.png"))
+    made.append(save(gauge_side(), "block/steam_gauge_side.png"))
+
+
 def save(im, rel, scale=1):
     path = os.path.join(OUT, *rel.split("/"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -959,6 +987,7 @@ def main():
     main_gui(made)
     main_redesign(made)
     main_m4(made)
+    main_bundle1(made)
 
     if "--sheet" in sys.argv:
         tiles = [Image.open(p) for p in made]

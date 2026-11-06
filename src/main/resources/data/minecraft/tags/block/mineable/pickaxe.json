@@ -13,6 +13,7 @@
     "sanupcraft:alloy_smelter",
     "sanupcraft:steam_quarry",
     "sanupcraft:geothermal_vent",
-    "sanupcraft:ender_anchor"
+    "sanupcraft:ender_anchor",
+    "sanupcraft:steam_gauge"
   ]
 }

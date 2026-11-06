@@ -33,7 +33,7 @@ import org.jspecify.annotations.Nullable;
  * 연료 칸 하나 (깔때기로도 넣을 수 있음). 옆에 물 원천이 있으면 물이 계속 찬다.
  * 증기를 실제로 만든 틱에만 연료가 탄다 (증기가 가득하거나 물이 없으면 불이 붙은 채로 기다린다).
  */
-public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer {
+public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer, SteamStorage {
 	public static final int WATER_CAPACITY = 8000;
 	public static final int STEAM_CAPACITY = 1000;
 	/** 타는 동안 틱마다 만드는 증기 (= 쓰는 물). 1단계 기계 4대를 돌릴 수 있다. */
@@ -47,6 +47,7 @@ public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer {
 	private NonNullList<ItemStack> items = NonNullList.withSize(1, ItemStack.EMPTY);
 	private int water;
 	private int steam;
+	private final SteamFlowMeter flow = new SteamFlowMeter();
 	private int litTime;
 	private int litDuration;
 	/** 증기를 만들지 못한 연속 틱 수 (저장하지 않음). */
@@ -79,6 +80,7 @@ public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer {
 			made = Math.min(STEAM_PER_TICK, Math.min(STEAM_CAPACITY - boiler.steam, boiler.water));
 			if (made > 0) {
 				boiler.steam += made;
+				boiler.flow.add(level.getGameTime(), made);
 				boiler.water -= made;
 				boiler.litTime--;
 			}
@@ -130,6 +132,22 @@ public class BoilerBlockEntity extends BlockEntity implements WorldlyContainer {
 
 	public int steam() {
 		return steam;
+	}
+
+	@Override
+	public int steamStored() {
+		return steam;
+	}
+
+	@Override
+	public int steamCapacity() {
+		return STEAM_CAPACITY;
+	}
+
+	/** 보일러는 만든 양을 센다. */
+	@Override
+	public int steamReceivedLastSecond() {
+		return flow.lastSecond(level != null ? level.getGameTime() : 0L);
 	}
 
 	/** 불이 켜져 있는가: 타는 중이고 최근에 증기를 만들었을 때 (멈춘 채 기다리는 동안은 꺼진 모습). */

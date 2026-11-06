@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 
 import io.github.yhyeop.sanupcraft.boss.ModBoss;
 import io.github.yhyeop.sanupcraft.compat.CorpseGravesCompat;
+import io.github.yhyeop.sanupcraft.config.ConfigCommand;
+import io.github.yhyeop.sanupcraft.config.SanupcraftConfig;
 import io.github.yhyeop.sanupcraft.core.ModItems;
 import io.github.yhyeop.sanupcraft.core.ModTab;
 import io.github.yhyeop.sanupcraft.factory.ModMachines;
@@ -26,6 +28,8 @@ public class Sanupcraft implements ModInitializer {
 
 	@Override
 	public void onInitialize() {
+		SanupcraftConfig.init();
+		ConfigCommand.init();
 		// 등록 순서 = 크리에이티브 탭 순서
 		ModItems.init();
 		ModMachines.init();

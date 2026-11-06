@@ -15,9 +15,11 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
 import io.github.yhyeop.sanupcraft.power.SteamConsumer;
+import io.github.yhyeop.sanupcraft.power.SteamFlowMeter;
+import io.github.yhyeop.sanupcraft.power.SteamStorage;
 
 /** 벨트 모터: 증기를 받아 붙어 있는 벨트 줄(최대 32칸)을 돌린다. 줄 위에 올라탄 것이 없으면 증기를 쓰지 않는다. */
-public class BeltMotorBlockEntity extends BlockEntity implements SteamConsumer {
+public class BeltMotorBlockEntity extends BlockEntity implements SteamConsumer, SteamStorage {
 	public static final int STEAM_CAPACITY = 200;
 	public static final int MAX_BELTS = 32;
 	/** 이만큼 틱마다 한 번 벨트를 켠다. 그때 STEAM_PER_PULSE를 쓴다 (평균 틱당 1). */
@@ -25,6 +27,7 @@ public class BeltMotorBlockEntity extends BlockEntity implements SteamConsumer {
 	private static final int STEAM_PER_PULSE = 10;
 
 	private int steam;
+	private final SteamFlowMeter flow = new SteamFlowMeter();
 	private int belts;
 
 	public BeltMotorBlockEntity(BlockPos pos, BlockState state) {
@@ -90,11 +93,31 @@ public class BeltMotorBlockEntity extends BlockEntity implements SteamConsumer {
 	public int acceptSteam(int amount) {
 		int accepted = Math.min(amount, STEAM_CAPACITY - steam);
 		steam += accepted;
+		flow.add(gameTime(), accepted);
 		return accepted;
 	}
 
 	public int steam() {
 		return steam;
+	}
+
+	@Override
+	public int steamStored() {
+		return steam;
+	}
+
+	@Override
+	public int steamCapacity() {
+		return STEAM_CAPACITY;
+	}
+
+	@Override
+	public int steamReceivedLastSecond() {
+		return flow.lastSecond(gameTime());
+	}
+
+	private long gameTime() {
+		return level != null ? level.getGameTime() : 0L;
 	}
 
 	/** 마지막 펄스 때 이어진 벨트 칸 수 (테스트 · 디버그용). 줄이 비어 안 돌렸어도 칸 수는 센다. */
