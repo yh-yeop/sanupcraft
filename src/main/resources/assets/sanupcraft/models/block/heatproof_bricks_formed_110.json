@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "sanupcraft:block/heatproof_bricks_formed",
+    "north": "sanupcraft:block/heatproof_bricks_side_11",
+    "south": "sanupcraft:block/heatproof_bricks_formed",
+    "east": "sanupcraft:block/heatproof_bricks_formed",
+    "west": "sanupcraft:block/heatproof_bricks_formed",
+    "up": "sanupcraft:block/heatproof_bricks_formed",
+    "down": "sanupcraft:block/heatproof_bricks_formed"
+  }
+}

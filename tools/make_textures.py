@@ -3469,6 +3469,445 @@ def main_blast(made):
     made.append(save(toxic_gas_texture(), "block/toxic_gas.png"))
 
 
+# ---------- 확장 M15 R4 · R5 · R6 (묶음 a5): 기계 부품 · 다중 블록 이음매 · 화면 통일 ----------
+# 화면 색 (client/storage/GuiPanels.java 상수와 같은 값으로 맞춘다)
+A5_GUI = {
+    "outline": "#1b1714", "panel": "#c9c2b4", "light": "#f3ede0", "dark": "#6b6253",
+    "slot": "#8a8377", "slot_dark": "#3a342c", "slot_light": "#f3ede0",
+    "brass_dark": "#5e4318", "brass": "#b8893a", "brass_light": "#e8c46e", "glass": "#1f2429",
+    "arrow": "#f2c14e", "arrow_light": "#fff0b0", "arrow_dark": "#9a6a10",
+}
+# 증기 눈금 채움 (위 밝은 줄 · 몸통), 물 눈금 채움 — 그림 미리보기용, 실제 채움은 화면 코드가 같은 색으로 그린다
+A5_STEAM = ("#eef7ff", "#a9cff2")
+A5_WATER = ("#7fa8f0", "#3f76e4")
+
+
+def a5_rect(d, x0, y0, x1, y1, color):
+    d.rectangle([x0, y0, x1, y1], fill=color)
+
+
+def a5_panel(im, w, h):
+    """화면 판: 둥근 검은 테 · 밝은 위왼쪽 · 어두운 아래오른쪽 테 · 모서리 놋쇠 리벳."""
+    from PIL import ImageDraw
+    d = ImageDraw.Draw(im)
+    g = A5_GUI
+    a5_rect(d, 1, 0, w - 2, h - 1, g["outline"])
+    a5_rect(d, 0, 1, w - 1, h - 2, g["outline"])
+    a5_rect(d, 1, 1, w - 2, h - 2, g["light"])
+    a5_rect(d, 3, 3, w - 2, h - 2, g["dark"])
+    a5_rect(d, 3, 3, w - 4, h - 4, g["panel"])
+    # 테 안쪽 모서리 다듬기 (바닐라처럼)
+    im.putpixel((1, 1), hex_px(g["outline"]))
+    im.putpixel((w - 2, h - 2), hex_px(g["outline"]))
+    im.putpixel((w - 3, 2), hex_px(g["panel"]))
+    im.putpixel((2, h - 3), hex_px(g["panel"]))
+    for x, y in ((4, 4), (w - 7, 4), (4, h - 7), (w - 7, h - 7)):
+        a5_rivet(im, x, y)
+
+
+def a5_rivet(im, x, y):
+    """3x3 놋쇠 리벳 (x, y = 왼쪽 위)."""
+    g = A5_GUI
+    cols = [["brass_light", "brass", "brass"], ["brass", "brass", "brass_dark"], ["brass", "brass_dark", "brass_dark"]]
+    for dy in range(3):
+        for dx in range(3):
+            if (dx, dy) in ((0, 0), (2, 0), (0, 2), (2, 2)):
+                continue
+            im.putpixel((x + dx, y + dy), hex_px(g[cols[dy][dx]]))
+    im.putpixel((x, y + 1), hex_px(g["brass_light"]))
+    im.putpixel((x + 1, y), hex_px(g["brass_light"]))
+
+
+def a5_slot(d, x, y, size=18):
+    """아이템 칸: 위 · 왼쪽 어두운 테, 아래 · 오른쪽 밝은 테 (칸 위치는 예전 그대로)."""
+    g = A5_GUI
+    a5_rect(d, x, y, x + size - 1, y + size - 1, g["slot"])
+    d.line([(x, y), (x + size - 2, y)], fill=g["slot_dark"])
+    d.line([(x, y), (x, y + size - 2)], fill=g["slot_dark"])
+    d.line([(x + 1, y + size - 1), (x + size - 1, y + size - 1)], fill=g["slot_light"])
+    d.line([(x + size - 1, y + 1), (x + size - 1, y + size - 1)], fill=g["slot_light"])
+
+
+def a5_gauge(d, x0, y0, x1, y1):
+    """세로 눈금 틀: 바깥 어두운 놋쇠 · 놋쇠 띠(위왼쪽 밝게) · 안은 어두운 유리. (x0, y0)~(x1, y1)이 바깥 테."""
+    g = A5_GUI
+    a5_rect(d, x0, y0, x1, y1, g["brass_dark"])
+    a5_rect(d, x0 + 1, y0 + 1, x1 - 1, y1 - 1, g["brass"])
+    d.line([(x0 + 1, y0 + 1), (x1 - 1, y0 + 1)], fill=g["brass_light"])
+    d.line([(x0 + 1, y0 + 1), (x0 + 1, y1 - 1)], fill=g["brass_light"])
+    a5_rect(d, x0 + 2, y0 + 2, x1 - 2, y1 - 2, g["glass"])
+    # 위 · 아래 마개 (한 칸 넓게)
+    for y in (y0 - 1, y1 + 1):
+        d.line([(x0 + 1, y), (x1 - 1, y)], fill=g["brass_dark"])
+
+
+# 진행 화살표 (24x16): 몸통 + 머리. 칸은 (x, y) 기준 상대 좌표
+A5_ARROW = [
+    "................#.......",
+    "................##......",
+    "................#o#.....",
+    "................#oo#....",
+    "................#ooo#...",
+    "#################oooo#..",
+    "#oooooooooooooooooooooo#",
+    "#oooooooooooooooooooooo#",
+    "#oooooooooooooooooooooo#",
+    "#oooooooooooooooooooooo#",
+    "#################oooo#..",
+    "................#ooo#...",
+    "................#oo#....",
+    "................#o#.....",
+    "................##......",
+    "................#.......",
+]
+
+
+def a5_arrow(im, x, y, filled):
+    g = A5_GUI
+    for dy, row in enumerate(A5_ARROW):
+        for dx, ch in enumerate(row):
+            if ch == ".":
+                continue
+            if ch == "#":
+                col = g["arrow_dark"] if filled else g["slot_dark"]
+            elif filled:
+                col = g["arrow_light"] if dy in (6,) or (dy < 6 and dx >= 17) else g["arrow"]
+            else:
+                col = g["slot"]
+            im.putpixel((x + dx, y + dy), hex_px(col))
+
+
+A5_FLAME = [
+    "......#.......",
+    "......##......",
+    ".....#o#......",
+    ".....#oo#.....",
+    "....#ooo#.....",
+    "....#oooo#....",
+    "...#ooooo#.#..",
+    "...#oooooo##..",
+    "..#oooyoooo#..",
+    "..#ooyyyooo#..",
+    ".#ooyyyyyooo#.",
+    ".#ooyyyyyyoo#.",
+    ".#oooyyyyooo#.",
+    "..##########..",
+]
+
+
+def a5_flame(im, x, y, lit):
+    """불꽃 (14x14). 꺼진 것은 칸 색 윤곽."""
+    g = A5_GUI
+    for dy, row in enumerate(A5_FLAME):
+        for dx, ch in enumerate(row):
+            if ch == ".":
+                continue
+            if not lit:
+                col = g["slot_dark"] if ch == "#" else g["slot"]
+            else:
+                col = {"#": "#a8380e", "o": "#f08a24" if dy < 8 else "#ff9f2e", "y": "#fff2a8"}[ch]
+            im.putpixel((x + dx, y + dy), hex_px(col))
+
+
+def a5_gui_machine(two_inputs=False, water=False):
+    """기계 화면 (176x166, 칸 위치는 예전과 같다). 오른쪽 끝 세로 증기 눈금, 세척기는 왼쪽 물 눈금.
+    텍스처 오른쪽 빈자리: (176, 0) 채운 화살표, (176, 16) 빈 화살표, (200, 0) 켜진 불꽃 (화면 코드가 잘라 쓴다)."""
+    from PIL import ImageDraw
+    im = Image.new("RGBA", (256, 256))
+    d = ImageDraw.Draw(im)
+    g = A5_GUI
+    w, h = 176, 166
+    a5_panel(im, w, h)
+    a5_slot(d, 55, 16)                     # 재료
+    if two_inputs:
+        a5_slot(d, 33, 16)                 # 둘째 재료
+    a5_slot(d, 55, 52)                     # 연료
+    a5_slot(d, 111, 30, 26)                # 결과 (큰 칸)
+    a5_slot(d, 143, 34)                    # 부산물
+    # 결과 칸 둘레 놋쇠 테
+    d.rectangle([109, 28, 138, 57], outline=g["brass_dark"])
+    for uy in (25, 43):                    # 업그레이드 2칸: 빈 칸에 옅은 위쪽 화살표
+        a5_slot(d, 7, uy)
+        for i, (x0, x1) in enumerate(((15, 15), (14, 16), (13, 17))):
+            d.line([(x0, uy + 6 + i), (x1, uy + 6 + i)], fill="#a39b8d")
+        d.line([(15, uy + 9), (15, uy + 12)], fill="#a39b8d")
+    a5_flame(im, 56, 36, False)            # 불꽃 자리
+    a5_arrow(im, 79, 34, False)            # 진행 화살표 자리
+    # 부산물 표시: 결과와 부산물 사이 작은 +
+    d.line([(139, 43), (141, 43)], fill=g["dark"])
+    d.line([(140, 42), (140, 44)], fill=g["dark"])
+    # 증기 눈금 (안쪽 164..168 x 17..68)
+    a5_gauge(d, 162, 15, 170, 70)
+    if water:                              # 물 눈금 (안쪽 35..44 x 17..68)
+        a5_gauge(d, 33, 15, 46, 70)
+    for row in range(3):
+        for col in range(9):
+            a5_slot(d, 7 + col * 18, 83 + row * 18)
+    for col in range(9):
+        a5_slot(d, 7 + col * 18, 141)
+    # 잘라 쓰는 그림
+    a5_arrow(im, 176, 0, True)
+    a5_arrow(im, 176, 16, False)
+    a5_flame(im, 200, 0, True)
+    return im
+
+
+def a5_box(im, seed, u, v, w, h, d, ramp, rivet=None):
+    box = M11aBox(im, random.Random(seed), u, v, w, h, d)
+    box.fill(ramp)
+    if rivet:
+        for face in ("front", "back", "left", "right"):
+            m11a_edge_rivets(box, face, rivet[0], rivet[1], step=3, inset=0)
+    return box
+
+
+A5_IRON = ["#1a1d22", "#2c3138", "#454c56", "#5f6873", "#7d8794", "#9aa5b2"]
+A5_CHROME = ["#3a414a", "#5a636e", "#8a949f", "#b8c1cb", "#dfe6ec", "#ffffff"]
+A5_BRASS = ["#3e2a0c", "#6e4f1c", "#9a7128", "#c99a3e", "#e8c46e", "#fff0b0"]
+A5_COPPER = ["#3a1f12", "#5e321a", "#8a4c26", "#b06a35", "#d99a5c", "#f2c58f"]
+A5_BLADE = ["#4a525c", "#6d7782", "#97a2ae", "#c3ccd5", "#e4eaf0", "#ffffff"]
+
+
+def a5_machine_parts():
+    """기계 부품 텍스처 (64x64). 자리는 client/machine/MachinePartLayers와 같다."""
+    im = Image.new("RGBA", (64, 64), (0, 0, 0, 0))
+    # 분쇄기 롤러: 굴대 (어두운 쇠) + 톱니 (밝은 쇠, 끝이 반짝)
+    a5_box(im, 1, 0, 0, 10, 3, 3, A5_IRON)
+    for seed, (u, v, w, h, d) in ((2, (0, 6, 9, 5, 1)), (3, (0, 12, 9, 1, 5))):
+        box = a5_box(im, seed, u, v, w, h, d, A5_CHROME[:-1])
+        for face in box.faces:
+            fw, fh = box.size(face)
+            for x in range(0, fw, 3):
+                box.vline(face, x, A5_IRON[2])
+    # 압착기: 기둥 · 가로대 (어두운 쇠 + 리벳), 판 (밝은 쇠, 옆에 노랑 · 검정 줄), 굴대 (크롬)
+    a5_box(im, 4, 32, 0, 2, 9, 2, A5_IRON)
+    a5_box(im, 5, 0, 18, 12, 2, 4, A5_IRON)
+    beam = M11aBox(im, random.Random(5), 0, 18, 12, 2, 4)
+    for face in ("front", "back"):
+        for x in range(1, 12, 3):
+            beam.put(face, x, 0, "#b8c1cb")
+    plate = a5_box(im, 6, 0, 24, 7, 2, 7, A5_CHROME[:-1])
+    for face in ("front", "back", "left", "right"):
+        fw, fh = plate.size(face)
+        for x in range(fw):
+            plate.put(face, x, 1, "#f2c14e" if (x // 2) % 2 == 0 else "#1b1714")
+    a5_box(im, 7, 40, 0, 2, 7, 2, A5_CHROME)
+    # 터빈: 축 (놋쇠), 날개 (밝은 쇠, 앞 가장자리 흰 줄)
+    a5_box(im, 8, 32, 12, 3, 3, 3, A5_BRASS)
+    blade = a5_box(im, 9, 32, 24, 6, 1, 2, A5_BLADE)
+    blade.hline("top", 0, "#ffffff")
+    blade.vline("front", 5, "#e04848")
+    # 굴착기 드릴: 마디마다 나선 줄 (밝은 쇠 · 어두운 쇠 비스듬히), 끝은 반짝
+    for seed, (u, v, w, h, d) in ((10, (0, 34, 6, 3, 6)), (11, (24, 34, 4, 3, 4)), (12, (40, 34, 2, 3, 2))):
+        box = M11aBox(im, random.Random(seed), u, v, w, h, d)
+        for face in box.faces:
+            fw, fh = box.size(face)
+            for y in range(fh):
+                for x in range(fw):
+                    if face in ("top", "bottom"):
+                        col = A5_CHROME[3] if face == "top" else A5_CHROME[1]
+                    else:
+                        col = (A5_IRON[2], A5_CHROME[4], A5_CHROME[3])[(x + y) % 3]
+                    box.put(face, x, y, col)
+    a5_box(im, 13, 48, 34, 1, 2, 1, ["#c5d2e6", "#dfe6ec", "#ffffff", "#ffffff", "#ffffff", "#ffffff"])
+    # 벨트 모터 바퀴: 앞 · 뒤 면에 테 · 바퀴살 넷 · 가운데, 둘레는 어두운 쇠
+    for seed, u in ((14, 0), (15, 20)):
+        box = a5_box(im, seed, u, 44, 9, 9, 1, A5_IRON)
+        for face in ("front", "back"):
+            for y in range(9):
+                for x in range(9):
+                    r = math.hypot(x - 4, y - 4)
+                    if r >= 4.4:
+                        col = A5_COPPER[1]
+                    elif r >= 3.4:
+                        col = A5_COPPER[4] if x + y < 7 else A5_COPPER[3]
+                    elif x == 4 or y == 4:
+                        col = A5_IRON[4]
+                    else:
+                        col = A5_IRON[1]
+                    box.put(face, x, y, col)
+            box.put(face, 4, 4, A5_BRASS[4])
+    a5_box(im, 16, 40, 44, 3, 3, 3, A5_BRASS)
+    return im
+
+
+def a5_crusher_top():
+    """분쇄기 윗면: 가운데 롤러 틈 (어두운 구멍 + 쇠 테두리). 롤러는 렌더러가 그린다."""
+    im = panel(seed=21)
+    for y in range(2, 14):
+        for x in range(2, 14):
+            edge = x in (2, 13) or y in (2, 13)
+            im.putpixel((x, y), px("b" if edge else "a"))
+    for x in range(3, 13):
+        im.putpixel((x, 3), px("m"))
+    for x, y in ((2, 2), (13, 2), (2, 13), (13, 13)):
+        im.putpixel((x, y), px("d"))
+    return im
+
+
+def a5_turbine_top():
+    """터빈 윗면: 날개가 도는 둥근 우물 (날개는 렌더러가 그린다)."""
+    im = recolor(panel(seed=532), HP_STEEL)
+    for y in range(16):
+        for x in range(16):
+            dd = math.hypot(x - 7.5, y - 7.5)
+            if dd < 6.2:
+                im.putpixel((x, y), hex_px(HP_STEEL["a"] if dd < 5.3 else HP_STEEL["d"]))
+            elif dd < 7.0:
+                im.putpixel((x, y), hex_px(HP_STEEL["b"]))
+    for x, y in ((7, 1), (8, 14), (1, 8), (14, 7)):
+        im.putpixel((x, y), hex_px("#b3262a"))
+    return im
+
+
+def a5_big_casing_faces():
+    """대형 보일러 외벽 큰 그림 (48x48 옆면 · 윗면): 둘레 앵글 · 리벳, 가로 구리 띠, 세로 놋쇠 관 둘, 압력계."""
+    rnd = random.Random(5101)
+    side = Image.new("RGBA", (48, 48))
+    top = Image.new("RGBA", (48, 48))
+    for im in (side, top):
+        for y in range(48):
+            for x in range(48):
+                im.putpixel((x, y), hex_px(DARK_STEEL["c"] if rnd.random() < 0.75 else DARK_STEEL["d"]))
+        # 둘레 앵글 (2칸): 위 · 왼쪽 밝게, 아래 · 오른쪽 어둡게
+        for i in range(48):
+            for t in (0, 1):
+                im.putpixel((i, t), hex_px(DARK_STEEL["e"] if t == 0 else DARK_STEEL["d"]))
+                im.putpixel((t, i), hex_px(DARK_STEEL["e"] if t == 0 else DARK_STEEL["d"]))
+                im.putpixel((i, 47 - t), hex_px(DARK_STEEL["a"] if t == 0 else DARK_STEEL["b"]))
+                im.putpixel((47 - t, i), hex_px(DARK_STEEL["a"] if t == 0 else DARK_STEEL["b"]))
+        for i in range(4, 44, 4):
+            for x, y in ((i, 3), (i, 44), (3, i), (44, i)):
+                im.putpixel((x, y), hex_px("#c9d1da"))
+                im.putpixel((x + 1, y + 1), hex_px(DARK_STEEL["a"]))
+    # 옆면: 가운데 줄에 달아오른 구리 띠 (16칸마다 되풀이되어도 이어지게 가운데 줄 안에만)
+    for y in range(20, 28):
+        for x in range(2, 46):
+            if y in (20, 27):
+                col = DARK_STEEL["a"]
+            elif y in (21, 26):
+                col = COPPER["b"]
+            else:
+                col = "#ffc27a" if (x + y) % 5 == 0 else ("#de8442" if (x + y) % 2 else "#c86a2c")
+            side.putpixel((x, y), hex_px(col))
+    for x in range(5, 44, 4):
+        side.putpixel((x, 22), hex_px("#ffe0b0"))
+    # 세로 놋쇠 관 (가운데 줄은 위아래로 이어진다), 위 · 아래 줄에 고정 띠
+    for px0 in (8, 37):
+        for y in range(2, 46):
+            for dx, col in enumerate((A5_BRASS[1], A5_BRASS[4], A5_BRASS[3], A5_BRASS[2])):
+                side.putpixel((px0 + dx, y), hex_px(col))
+        for fy in (6, 41):
+            for y in (fy, fy + 1):
+                for x in range(px0 - 1, px0 + 5):
+                    side.putpixel((x, y), hex_px(DARK_STEEL["a"] if y == fy + 1 else DARK_STEEL["e"]))
+    # 위 줄 가운데 압력계
+    for y in range(3, 14):
+        for x in range(18, 30):
+            dd = math.hypot(x - 23.5, y - 8.0)
+            if dd < 5.2:
+                side.putpixel((x, y), hex_px(A5_BRASS[2] if dd > 4.2 else "#e8eef2"))
+    for x, y in ((23, 8), (24, 7), (25, 6), (26, 5)):
+        side.putpixel((x, y), hex_px("#a3262a"))
+    for x, y in ((20, 8), (23, 5), (27, 8)):
+        side.putpixel((x, y), hex_px(DARK_STEEL["a"]))
+    # 윗면: 가운데 맨홀 (볼트 8개) + 구석 환기구 넷
+    for y in range(14, 34):
+        for x in range(14, 34):
+            dd = math.hypot(x - 23.5, y - 23.5)
+            if dd < 9.0:
+                top.putpixel((x, y), hex_px(DARK_STEEL["a"] if dd > 8.0 else (DARK_STEEL["d"] if dd > 6.8 else DARK_STEEL["c"])))
+    for k in range(8):
+        a = k * math.pi / 4
+        x, y = int(round(23.5 + 7.4 * math.cos(a))), int(round(23.5 + 7.4 * math.sin(a)))
+        top.putpixel((x, y), hex_px("#c9d1da"))
+    for x in range(19, 29):
+        top.putpixel((x, 23), hex_px(DARK_STEEL["e"]))
+        top.putpixel((x, 24), hex_px(DARK_STEEL["a"]))
+    for cx0, cy0 in ((6, 6), (38, 6), (6, 38), (38, 38)):
+        for y in range(cy0, cy0 + 4):
+            for x in range(cx0, cx0 + 4):
+                top.putpixel((x, y), hex_px(DARK_STEEL["a"] if (y - cy0) % 2 == 0 else DARK_STEEL["b"]))
+    return side, top
+
+
+def a5_heatproof_faces():
+    """용광로 탑 외벽 큰 그림 (48x48 옆면 · 윗면): 칸 경계 없이 이어진 벽돌 + 달아오른 줄눈, 둘레 쇠 띠 · 리벳."""
+    rnd = random.Random(5201)
+    side = Image.new("RGBA", (48, 48))
+    top = Image.new("RGBA", (48, 48))
+    mortar = ("#c2551c", "#ff9a3c")
+    for im, offs in ((side, 0), (top, 2)):
+        for y in range(48):
+            for x in range(48):
+                im.putpixel((x, y), hex_px(HEATPROOF_BRICK[rnd.choice("ccdd" if im is side else "cdd")]))
+        for y in range(48):
+            row = y // 4
+            if y % 4 == 3:
+                for x in range(48):
+                    im.putpixel((x, y), hex_px(mortar[(x + y) % 3 == 0]))
+                continue
+            shift = (4 if row % 2 else 0) + offs
+            for x in range(48):
+                if (x - shift) % 8 == 0:
+                    im.putpixel((x, y), hex_px(mortar[0]))
+        for _ in range(40):
+            im.putpixel((rnd.randrange(48), rnd.randrange(48)), hex_px(HEATPROOF_BRICK["e"]))
+    # 옆면: 세로 모서리 앵글, 위 · 아래 쇠 띠 (리벳)
+    for y in range(48):
+        for t, col in ((0, HP_STEEL["e"]), (1, HP_STEEL["d"]), (2, HP_STEEL["b"])):
+            side.putpixel((t, y), hex_px(col))
+            side.putpixel((47 - t, y), hex_px((HP_STEEL["a"], HP_STEEL["c"], HP_STEEL["b"])[t]))
+    for band in ((0, 3), (44, 47)):
+        for y in range(band[0], band[1] + 1):
+            for x in range(48):
+                edge = y in band
+                side.putpixel((x, y), hex_px(HP_STEEL["a"] if edge and y == band[1] else (HP_STEEL["e"] if edge else HP_STEEL["c"])))
+        for x in range(4, 44, 5):
+            side.putpixel((x, band[0] + 1), hex_px("#c9d1da"))
+            side.putpixel((x + 1, band[0] + 2), hex_px(HP_STEEL["a"]))
+    # 윗면: 둘레 쇠 테 + 가운데 쇳살 (탑 윗면 가운데는 비어 있어 거의 안 보인다)
+    for i in range(48):
+        for t in (0, 1, 2):
+            col = (HP_STEEL["e"], HP_STEEL["d"], HP_STEEL["b"])[t]
+            top.putpixel((i, t), hex_px(col))
+            top.putpixel((t, i), hex_px(col))
+            top.putpixel((i, 47 - t), hex_px(col))
+            top.putpixel((47 - t, i), hex_px(col))
+    for i in range(5, 44, 5):
+        for x, y in ((i, 1), (i, 46), (1, i), (46, i)):
+            top.putpixel((x, y), hex_px("#c9d1da"))
+    for y in range(16, 32):
+        for x in range(16, 32):
+            top.putpixel((x, y), hex_px(HP_STEEL["b"] if (x % 3 == 0 or y % 3 == 0) else "#ff9a3c"))
+    return side, top
+
+
+def a5_slice(im, made, prefix, kind):
+    for row in range(3):
+        for col in range(3):
+            tile = im.crop((col * 16, row * 16, col * 16 + 16, row * 16 + 16))
+            made.append(save(tile, f"block/{prefix}_{kind}_{col}{row}.png"))
+
+
+def main_a5(made):
+    # R4: 움직이는 부품 텍스처 · 부품이 드러나는 윗면
+    made.append(save(a5_machine_parts(), "entity/machine_parts.png"))
+    made.append(save(a5_crusher_top(), "block/crusher_top_slot.png"))
+    made.append(save(a5_turbine_top(), "block/steam_turbine_top_well.png"))
+    # R5: 모양이 선 외벽 큰 그림 조각 (옆면 <열><줄>, 윗면 <cx><cz>). 모델 · 블록 상태는 tools/make_casing_models.py
+    side, top = a5_big_casing_faces()
+    a5_slice(side, made, "big_boiler_casing", "side")
+    a5_slice(top, made, "big_boiler_casing", "top")
+    side, top = a5_heatproof_faces()
+    a5_slice(side, made, "heatproof_bricks", "side")
+    a5_slice(top, made, "heatproof_bricks", "top")
+    # R6: 기계 화면 통일 (예전 main_gui · gui_washer 그림을 같은 이름으로 다시 그린다)
+    made.append(save(a5_gui_machine(), "gui/machine.png"))
+    made.append(save(a5_gui_machine(two_inputs=True), "gui/alloy_smelter.png"))
+    made.append(save(a5_gui_machine(water=True), "gui/washer.png"))
+
+
 def save(im, rel, scale=1):
     path = os.path.join(OUT, *rel.split("/"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -3517,6 +3956,7 @@ def main():
     main_ex3_c3(made)
     main_a1(made)  # 확장 3 D1 새 광석
     main_blast(made)
+    main_a5(made)
 
     if "--sheet" in sys.argv:
         tiles = [Image.open(p) for p in made]

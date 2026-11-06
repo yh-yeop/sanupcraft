@@ -9,20 +9,19 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 
 import io.github.yhyeop.sanupcraft.Sanupcraft;
+import io.github.yhyeop.sanupcraft.client.storage.GuiPanels;
 import io.github.yhyeop.sanupcraft.factory.MachineBlockEntity;
 import io.github.yhyeop.sanupcraft.factory.MachineMenu;
 
 /**
- * 기계 화면: 재료(합금로는 둘) · 연료 · 결과 · 부산물 · 업그레이드 2칸. 배경은 tools/make_textures.py가 만든 전용 텍스처,
- * 불꽃 · 진행 화살표는 바닐라 화로 그림을 쓴다.
+ * 기계 화면: 재료(합금로는 둘) · 연료 · 결과 · 부산물 · 업그레이드 2칸. 배경은 tools/make_textures.py가 만든 전용 텍스처.
+ * 확장 M15 R6: 단말 화면과 같은 모양 ({@link GuiPanels}) — 오른쪽 끝 세로 증기 눈금, 놋쇠 진행 화살표 · 불꽃은 같은 텍스처의 빈자리에서 잘라 쓴다.
  */
 public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
 	private static final Identifier TEXTURE = Sanupcraft.id("textures/gui/machine.png");
 	private static final Identifier ALLOY_TEXTURE = Sanupcraft.id("textures/gui/alloy_smelter.png");
 	/** M8 세척기: 기본 화면 + 왼쪽에 물 눈금 틀. */
 	private static final Identifier WASHER_TEXTURE = Sanupcraft.id("textures/gui/washer.png");
-	private static final Identifier LIT_PROGRESS_SPRITE = Identifier.withDefaultNamespace("container/furnace/lit_progress");
-	private static final Identifier BURN_PROGRESS_SPRITE = Identifier.withDefaultNamespace("container/furnace/burn_progress");
 
 	/** 불꽃 그림 자리 (화면 안 좌표). */
 	private static final int FLAME_X = 56;
@@ -33,6 +32,14 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
 	private static final int WATER_Y = 17;
 	private static final int WATER_W = 10;
 	private static final int WATER_H = 52;
+	/** 증기 눈금 안쪽 (화면 안 좌표, 텍스처의 틀과 맞춘다). */
+	private static final int STEAM_X = 164;
+	private static final int STEAM_Y = 17;
+	private static final int STEAM_W = 5;
+	private static final int STEAM_H = 52;
+	/** 진행 화살표 자리. */
+	private static final int ARROW_X = 79;
+	private static final int ARROW_Y = 34;
 
 	public MachineScreen(MachineMenu menu, Inventory inventory, Component title) {
 		super(menu, inventory, title);
@@ -58,7 +65,8 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
 			}
 		} else if (hoveredSlot == null && menu.kind().usesWater() && isHovering(WATER_X, WATER_Y, WATER_W, WATER_H, mouseX, mouseY)) {
 			graphics.setTooltipForNextFrame(font, Component.translatable("gui.sanupcraft.machine.water", menu.water(), MachineBlockEntity.WATER_CAPACITY), mouseX, mouseY);
-		} else if (hoveredSlot == null && isHovering(FLAME_X, FLAME_Y, FLAME_SIZE, FLAME_SIZE, mouseX, mouseY)) {
+		} else if (hoveredSlot == null && (isHovering(FLAME_X, FLAME_Y, FLAME_SIZE, FLAME_SIZE, mouseX, mouseY)
+				|| isHovering(STEAM_X - 2, STEAM_Y - 2, STEAM_W + 4, STEAM_H + 4, mouseX, mouseY))) {
 			graphics.setTooltipForNextFrame(font, Component.translatable(menu.kind().highPressure() ? "gui.sanupcraft.machine.steam_hp" : "gui.sanupcraft.machine.steam", menu.steam(), MachineBlockEntity.STEAM_CAPACITY), mouseX, mouseY);
 		}
 	}
@@ -83,18 +91,14 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
 		Identifier texture = menu.twoInputs() ? ALLOY_TEXTURE : menu.kind().usesWater() ? WASHER_TEXTURE : TEXTURE;
 		graphics.blit(RenderPipelines.GUI_TEXTURED, texture, xo, yo, 0.0F, 0.0F, imageWidth, imageHeight, 256, 256);
 		if (menu.kind().usesWater()) {
-			int level = Mth.clamp(menu.water() * WATER_H / MachineBlockEntity.WATER_CAPACITY, 0, WATER_H);
-			if (level > 0) {
-				int top = yo + WATER_Y + WATER_H - level;
-				graphics.fill(xo + WATER_X, top, xo + WATER_X + WATER_W, yo + WATER_Y + WATER_H, 0xFF3F76E4);
-				graphics.fill(xo + WATER_X, top, xo + WATER_X + WATER_W, top + 1, 0xFF7FA8F0);
-			}
+			GuiPanels.waterFill(graphics, xo + WATER_X, yo + WATER_Y, WATER_W, WATER_H, menu.water(), MachineBlockEntity.WATER_CAPACITY);
 		}
+		GuiPanels.steamFill(graphics, xo + STEAM_X, yo + STEAM_Y, STEAM_W, STEAM_H, menu.steam(), MachineBlockEntity.STEAM_CAPACITY);
 		if (menu.isLit()) {
 			int litHeight = Mth.ceil(menu.litProgress() * 13.0F) + 1;
-			graphics.blitSprite(RenderPipelines.GUI_TEXTURED, LIT_PROGRESS_SPRITE, 14, 14, 0, 14 - litHeight, xo + FLAME_X, yo + FLAME_Y + FLAME_SIZE - litHeight, 14, litHeight);
+			graphics.blit(RenderPipelines.GUI_TEXTURED, texture, xo + FLAME_X, yo + FLAME_Y + FLAME_SIZE - litHeight, 200.0F, FLAME_SIZE - litHeight,
+					FLAME_SIZE, litHeight, 256, 256);
 		}
-		int burnWidth = Mth.ceil(menu.progress() * 24.0F);
-		graphics.blitSprite(RenderPipelines.GUI_TEXTURED, BURN_PROGRESS_SPRITE, 24, 16, 0, 0, xo + 79, yo + 34, burnWidth, 16);
+		GuiPanels.arrowFill(graphics, xo + ARROW_X, yo + ARROW_Y, menu.progress());
 	}
 }

@@ -31,9 +31,7 @@ public class AutocrafterScreen extends AbstractContainerScreen<AutocrafterMenu> 
 		int steam = menu.steam();
 		int barX = leftPos + 148;
 		int barY = topPos + 62;
-		graphics.fill(barX, barY, barX + 24, barY + 5, 0xFF373737);
-		int fill = Math.round(22.0F * Math.min(steam, AutocrafterBlockEntity.STEAM_CAPACITY) / AutocrafterBlockEntity.STEAM_CAPACITY);
-		graphics.fill(barX + 1, barY + 1, barX + 1 + fill, barY + 4, 0xFF6FD0F0);
+		GuiPanels.steamBar(graphics, barX + 1, barY + 1, 22, 3, steam, AutocrafterBlockEntity.STEAM_CAPACITY); // 확장 M15 R6: 기계 화면과 같은 놋쇠 테
 	}
 
 	@Override

@@ -1,7 +1,7 @@
 {
   "parent": "minecraft:block/cube_bottom_top",
   "textures": {
-    "top": "sanupcraft:block/steam_turbine_top",
+    "top": "sanupcraft:block/steam_turbine_top_well",
     "side": "sanupcraft:block/steam_turbine_side",
     "bottom": "sanupcraft:block/machine_side"
   }

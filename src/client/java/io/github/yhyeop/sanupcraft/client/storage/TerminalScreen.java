@@ -158,12 +158,15 @@ public class TerminalScreen extends AbstractContainerScreen<TerminalMenu> {
 		// 굴림 막대
 		int trackTop = topPos + TerminalMenu.LIST_Y - 1;
 		int trackHeight = rows * 18;
-		graphics.fill(leftPos + SCROLL_X, trackTop, leftPos + SCROLL_X + 12, trackTop + trackHeight, 0xFF373737);
-		graphics.fill(leftPos + SCROLL_X + 1, trackTop + 1, leftPos + SCROLL_X + 12, trackTop + trackHeight, 0xFF8B8B8B);
+		graphics.fill(leftPos + SCROLL_X, trackTop, leftPos + SCROLL_X + 12, trackTop + trackHeight, GuiPanels.SLOT_DARK);
+		graphics.fill(leftPos + SCROLL_X + 1, trackTop + 1, leftPos + SCROLL_X + 12, trackTop + trackHeight, GuiPanels.SLOT);
 		int max = maxScroll();
 		int thumb = 15;
 		int thumbY = trackTop + 1 + (max == 0 ? 0 : (trackHeight - 2 - thumb) * scrollRow / max);
-		graphics.fill(leftPos + SCROLL_X + 1, thumbY, leftPos + SCROLL_X + 11, thumbY + thumb, max == 0 ? 0xFFAAAAAA : 0xFFE0E0E0);
+		// 손잡이: 굴릴 수 있으면 놋쇠, 아니면 흐린 판 색 (확장 M15 R6)
+		graphics.fill(leftPos + SCROLL_X + 1, thumbY, leftPos + SCROLL_X + 11, thumbY + thumb, max == 0 ? GuiPanels.PANEL_DARK : GuiPanels.BRASS_DARK);
+		graphics.fill(leftPos + SCROLL_X + 1, thumbY, leftPos + SCROLL_X + 10, thumbY + thumb - 1, max == 0 ? GuiPanels.PANEL : GuiPanels.BRASS);
+		graphics.fill(leftPos + SCROLL_X + 1, thumbY, leftPos + SCROLL_X + 10, thumbY + 1, max == 0 ? GuiPanels.PANEL_LIGHT : GuiPanels.BRASS_LIGHT);
 	}
 
 	@Override

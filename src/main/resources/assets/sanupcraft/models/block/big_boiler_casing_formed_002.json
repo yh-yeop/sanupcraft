@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "particle": "sanupcraft:block/big_boiler_casing_formed",
+    "north": "sanupcraft:block/big_boiler_casing_formed",
+    "south": "sanupcraft:block/big_boiler_casing_side_02",
+    "east": "sanupcraft:block/big_boiler_casing_formed",
+    "west": "sanupcraft:block/big_boiler_casing_side_22",
+    "up": "sanupcraft:block/big_boiler_casing_formed",
+    "down": "sanupcraft:block/big_boiler_casing_formed"
+  }
+}
