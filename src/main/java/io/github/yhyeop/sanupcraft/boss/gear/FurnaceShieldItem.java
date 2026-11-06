@@ -15,6 +15,7 @@ import io.github.yhyeop.sanupcraft.effect.ModEffects;
  */
 public class FurnaceShieldItem extends ShieldItem {
 	public static final int DURABILITY = 672;
+	/** 효과 수치는 보스 설정(statusEffect.*)과 일부러 따로 둔 장비 수치 (툴팁이 이 수치를 적는다). */
 	public static final int OVERHEAT_TICKS = 100;
 	public static final int OVERHEAT_LEVEL = 1;
 

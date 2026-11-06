@@ -370,7 +370,7 @@ public class VoidColossus extends PartyBossMonster {
 		cooldown = isEnraged() ? COOLDOWN_ENRAGED : COOLDOWN;
 	}
 
-	/** 셜커 탄 일제 사격: 32칸 안 플레이어마다 하나. 쏜 수를 돌려준다. */
+	/** 셜커 탄 일제 사격: 32칸 안 플레이어마다 하나 (아무도 없으면 지금 대상에게 하나, 32칸 밖이어도). 쏜 수를 돌려준다. */
 	public int volley(ServerLevel level) {
 		int shots = 0;
 		for (Player player : targets(level, VOLLEY_RANGE)) {

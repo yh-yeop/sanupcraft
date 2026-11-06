@@ -13,6 +13,7 @@ public class RustyHammerItem extends Item {
 	public static final float ATTACK_SPEED = -3.2F;
 	public static final float DISABLE_BLOCKING_SECONDS = 3.0F;
 	public static final int DURABILITY = 900;
+	/** 효과 수치는 보스 설정(statusEffect.*)과 일부러 따로 둔 장비 수치 (툴팁이 이 수치를 적는다). */
 	public static final int RUST_TICKS = 100;
 	public static final int RUST_LEVEL = 2;
 

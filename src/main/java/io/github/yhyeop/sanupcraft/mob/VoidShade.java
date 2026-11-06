@@ -82,8 +82,9 @@ public class VoidShade extends EliteMonster {
 		LivingEntity target = getTarget();
 		if (ambushCooldown <= 0 && target != null && target.isAlive()) {
 			double distance = distanceTo(target);
-			if (distance > AMBUSH_MIN_DISTANCE && distance < AMBUSH_MAX_DISTANCE && teleportBehind(target)) {
-				ambushCooldown = AMBUSH_COOLDOWN + random.nextInt(40);
+			if (distance > AMBUSH_MIN_DISTANCE && distance < AMBUSH_MAX_DISTANCE) {
+				// 실패해도 쿨다운을 걸어 매 틱 순간이동을 되풀이하지 않는다 (좁은 굴 · 대상 뒤가 막힌 경우)
+				ambushCooldown = teleportBehind(target) ? AMBUSH_COOLDOWN + random.nextInt(40) : 20;
 			} else if (distance <= AMBUSH_MIN_DISTANCE) {
 				ambushCooldown = 20;
 			}

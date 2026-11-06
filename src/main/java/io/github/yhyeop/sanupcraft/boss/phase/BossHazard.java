@@ -92,10 +92,6 @@ public class BossHazard extends Entity {
 		return kind() == Kind.RUST_PUDDLE ? PUDDLE_RADIUS : RIFT_TOUCH_RADIUS;
 	}
 
-	public int lifetime() {
-		return lifetime;
-	}
-
 	@Override
 	public void tick() {
 		super.tick();
