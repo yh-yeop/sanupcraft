@@ -230,7 +230,7 @@ public class TerminalScreen extends AbstractContainerScreen<TerminalMenu> {
 
 	private void scrollTo(double mouseY) {
 		int trackTop = topPos + TerminalMenu.LIST_Y;
-		double fraction = (mouseY - trackTop - 7) / (rows * 18 - 15.0);
+		double fraction = (mouseY - trackTop - 7) / (rows * 18 - 17.0);
 		scrollRow = (int) Math.round(Math.max(0.0, Math.min(1.0, fraction)) * maxScroll());
 	}
 

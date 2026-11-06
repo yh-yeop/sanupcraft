@@ -25,6 +25,7 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntitySelector;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.EntityTypes;
@@ -76,6 +77,8 @@ public class RustyGuardian extends Monster implements PartyBoss {
 	/** 패턴 타격이 방패를 깨는 시간 (초). 바닐라 워든과 같다. */
 	public static final float SHIELD_BREAK_SECONDS = 5.0F;
 	private static final int MAX_MINIONS_NEARBY = 8;
+	/** 공격 동작 이벤트 id (클라이언트 휘두르기 애니메이션). 파수꾼과 같은 이름. */
+	public static final byte EVENT_ATTACK = 4;
 
 	private static final int CHARGE_LOCK = 12;
 	private static final int CHARGE_WINDUP = 20;
@@ -246,7 +249,7 @@ public class RustyGuardian extends Monster implements PartyBoss {
 		if (patternTick < CHARGE_END) {
 			setDeltaMovement(chargeDirection.x * 0.9, getDeltaMovement().y, chargeDirection.z * 0.9);
 			faceChargeDirection();
-			for (Player player : level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(0.6))) {
+			for (Player player : level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(0.6), EntitySelector.NO_CREATIVE_OR_SPECTATOR)) {
 				if (hitThisCharge.add(player.getUUID())) {
 					hitWithRust(level, player, CHARGE_DAMAGE, true);
 					player.push(chargeDirection.x * 1.2, 0.4, chargeDirection.z * 1.2);
@@ -300,7 +303,7 @@ public class RustyGuardian extends Monster implements PartyBoss {
 		level.sendParticles(ParticleTypes.EXPLOSION, getX(), getY() + 0.2, getZ(), 6, SLAM_RADIUS / 2, 0.1, SLAM_RADIUS / 2, 0.0);
 		int hits = 0;
 		double reach = slamReach();
-		List<Player> players = level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(reach, 2.0, reach));
+		List<Player> players = level.getEntitiesOfClass(Player.class, getBoundingBox().inflate(reach, 2.0, reach), EntitySelector.NO_CREATIVE_OR_SPECTATOR);
 		for (Player player : players) {
 			if (horizontalDistance(player.position(), position()) > reach) {
 				continue;
@@ -437,7 +440,7 @@ public class RustyGuardian extends Monster implements PartyBoss {
 
 	private void swingArms(ServerLevel level) {
 		attackAnimationTick = 10;
-		level.broadcastEntityEvent(this, (byte) 4);
+		level.broadcastEntityEvent(this, EVENT_ATTACK);
 	}
 
 	@Override
@@ -498,7 +501,7 @@ public class RustyGuardian extends Monster implements PartyBoss {
 
 	@Override
 	public void handleEntityEvent(byte id) {
-		if (id == 4) {
+		if (id == EVENT_ATTACK) {
 			attackAnimationTick = 10;
 		} else {
 			super.handleEntityEvent(id);

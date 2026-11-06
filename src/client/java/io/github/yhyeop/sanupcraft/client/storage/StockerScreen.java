@@ -1,5 +1,7 @@
 package io.github.yhyeop.sanupcraft.client.storage;
 
+import java.util.Locale;
+
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -39,7 +41,7 @@ public class StockerScreen extends AbstractContainerScreen<StockerMenu> {
 		graphics.text(font, playerInventoryTitle, inventoryLabelX, inventoryLabelY, GuiPanels.TEXT, false);
 		graphics.text(font, Component.translatable("gui.sanupcraft.stocker.target", menu.targetCount()), 52, 20, GuiPanels.TEXT, false);
 		graphics.text(font, Component.translatable("gui.sanupcraft.stocker.have", menu.have()), 52, 31, GuiPanels.TEXT, false);
-		graphics.text(font, Component.translatable("gui.sanupcraft.stocker.status." + menu.status().name().toLowerCase()), 52, 42, 0xFF2D6A3E, false);
+		graphics.text(font, Component.translatable("gui.sanupcraft.stocker.status." + menu.status().name().toLowerCase(Locale.ROOT)), 52, 42, 0xFF2D6A3E, false);
 	}
 
 	@Override
