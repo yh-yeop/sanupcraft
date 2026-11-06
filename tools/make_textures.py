@@ -1177,6 +1177,61 @@ def main_bundle3(made):
     made.append(save(charger_bottom(), "block/steam_charger_bottom.png"))
 
 
+BOARD_GOLD = {"a": "#4a3306", "b": "#8a6410", "c": "#c9962a", "d": "#f0c64a", "e": "#fff1a8"}
+
+
+def fill_rect(im, x0, y0, x1, y1, color):
+    """(x0,y0)~(x1,y1) 포함 범위를 #rrggbb 한 색으로 칠한다."""
+    for y in range(y0, y1 + 1):
+        for x in range(x0, x1 + 1):
+            im.putpixel((x, y), hex_px(color))
+
+
+def boss_board_side():
+    """보스 기록판 옆면: 금빛 판에 시상대 (2위 · 1위 · 3위)."""
+    im = recolor(panel(seed=201), BOARD_GOLD)
+    for x0, x1, top, color in ((2, 5, 8, "#9aa4b0"), (6, 9, 5, "#f6d85a"), (10, 13, 10, "#b8733c")):
+        fill_rect(im, x0, top, x1, 13, color)
+        fill_rect(im, x0, top, x1, top, "#ffffff")
+        fill_rect(im, x0, 13, x1, 13, "#3a2a10")
+    for x, y in ((7, 3), (8, 3), (6, 4), (7, 4), (8, 4), (9, 4)):
+        im.putpixel((x, y), hex_px("#fff1a8"))
+    return im
+
+
+def boss_board_top():
+    im = recolor(panel(seed=202), BOARD_GOLD)
+    for d in range(-3, 4):
+        im.putpixel((8 + d, 8), hex_px("#fff1a8"))
+        im.putpixel((8, 8 + d), hex_px("#fff1a8"))
+    return im
+
+
+def goal_board_side():
+    """공용 목표판 옆면: 강철 판에 깃발과 진행 막대 (절반 참)."""
+    im = recolor(panel(seed=203), STEEL)
+    fill_rect(im, 5, 2, 5, 8, "#e8edf5")
+    fill_rect(im, 6, 2, 10, 4, "#e04848")
+    fill_rect(im, 2, 10, 13, 13, "#1e2633")
+    fill_rect(im, 3, 11, 12, 12, "#3c4a5e")
+    fill_rect(im, 3, 11, 8, 12, "#3ac24b")
+    return im
+
+
+def goal_board_top():
+    im = recolor(panel(seed=204), STEEL)
+    fill_rect(im, 4, 7, 11, 8, "#3ac24b")
+    fill_rect(im, 7, 4, 8, 11, "#3ac24b")
+    return im
+
+
+def main_m10(made):
+    made.append(save(boss_board_side(), "block/boss_record_board_side.png"))
+    made.append(save(boss_board_top(), "block/boss_record_board_top.png"))
+    made.append(save(goal_board_side(), "block/goal_board_side.png"))
+    made.append(save(goal_board_top(), "block/goal_board_top.png"))
+
+
 def save(im, rel, scale=1):
     path = os.path.join(OUT, *rel.split("/"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -1210,6 +1265,7 @@ def main():
     main_bundle1(made)
     main_bundle2(made)
     main_bundle3(made)
+    main_m10(made)
 
     if "--sheet" in sys.argv:
         tiles = [Image.open(p) for p in made]

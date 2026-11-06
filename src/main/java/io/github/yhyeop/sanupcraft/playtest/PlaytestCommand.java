@@ -38,6 +38,8 @@ import io.github.yhyeop.sanupcraft.gear.SteelGear;
 import io.github.yhyeop.sanupcraft.logistics.ModLogistics;
 import io.github.yhyeop.sanupcraft.mining.ModMining;
 import io.github.yhyeop.sanupcraft.power.ModPower;
+import io.github.yhyeop.sanupcraft.server.GuideBook;
+import io.github.yhyeop.sanupcraft.server.ModServer;
 
 /**
  * 싱글 실테스트용: {@code /sanupcraft playtest <단계>} (OP). 그 단계를 시험하는 데 필요한 장비 · 재료를 주고,
@@ -55,7 +57,8 @@ public final class PlaytestCommand {
 		FORGE("심장 제련로 · 고대 잔해", Level.NETHER, PlaytestCommand::kitForge),
 		OUTPOST("네더 전초기지: 지열 분출구 · 내열 드릴 굴착기 · 엔더 닻", Level.NETHER, PlaytestCommand::kitOutpost),
 		HOME("오버월드로 돌아오기", Level.OVERWORLD, PlaytestCommand::kitHome),
-		END("엔드 · 엔더 운반기", Level.END, PlaytestCommand::kitEnd);
+		END("엔드 · 엔더 운반기", Level.END, PlaytestCommand::kitEnd),
+		SERVER("서버 기능: 팀 · 보스 기록판 · 공용 목표판 · 설명서", null, PlaytestCommand::kitServer);
 
 		final String description;
 		final ResourceKey<Level> dimension;
@@ -94,9 +97,9 @@ public final class PlaytestCommand {
 			c.getSource().sendFailure(Component.translatable("commands.sanupcraft.playtest.unknown", stages));
 			return 0;
 		});
+		// 뿌리(sanupcraft)에는 권한을 걸지 않고 하위 명령마다 건다 (M10: 팀 명령은 누구나 쓴다)
 		dispatcher.register(Commands.literal("sanupcraft")
-				.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
-				.then(playtest));
+				.then(playtest.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))));
 	}
 
 	/** 단계 적용: 필요하면 차원 이동 → 장비 · 재료 지급. HOME은 이미 오버월드여도 월드 스폰으로 보낸다. */
@@ -315,5 +318,23 @@ public final class PlaytestCommand {
 			}
 			p.setItemSlot(slots.get(i), new ItemStack(items.get(i)));
 		}
+	}
+
+	/** M10 서버 기능: 기록판 · 목표판 · 설명서, 팀 잠금 시험용 엔더 수신기, 목표 재료, 기록용 보스 소환 꾸러미. */
+	private static void kitServer(ServerPlayer p) {
+		give(p, ModServer.BOSS_RECORD_BOARD.asItem(), 1);
+		give(p, ModServer.GOAL_BOARD.asItem(), 2);
+		give(p, GuideBook.create());
+		give(p, ModLogistics.ENDER_RECEIVER.asItem(), 1);
+		give(p, Items.HOPPER, 4);
+		give(p, Items.CHEST, 2);
+		give(p, ModItems.STEEL_INGOT, 64);
+		give(p, ModItems.IRON_PLATE, 64);
+		give(p, SteamGear.RIVET, 64);
+		give(p, ModBoss.GUARDIAN_ALTAR.asItem(), 1);
+		give(p, ModBoss.GUARDIAN_SUMMONER, 2);
+		equip(p, SteelGear.STEEL_HELMET, SteelGear.STEEL_CHESTPLATE, SteelGear.STEEL_LEGGINGS, SteelGear.STEEL_BOOTS);
+		give(p, SteelGear.STEEL_SWORD, 1);
+		food(p);
 	}
 }

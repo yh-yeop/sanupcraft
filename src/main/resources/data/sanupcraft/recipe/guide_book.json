@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "minecraft:book",
+    "sanupcraft:iron_plate"
+  ],
+  "result": {
+    "id": "sanupcraft:guide_book"
+  }
+}

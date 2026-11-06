@@ -52,6 +52,8 @@ public final class BossParty {
 	private static final Codec<Map<UUID, Float>> DAMAGE_CODEC = Codec.unboundedMap(UUIDUtil.STRING_CODEC, Codec.FLOAT);
 
 	private int size = 1;
+	/** 소환한 게임 시각 (M10 보스 기록용). 모르면 -1 (명령어로 불러낸 보스는 기록을 남기지 않는다). */
+	private long summonedAt = -1L;
 	private final Map<UUID, Float> damage = new HashMap<>();
 	/** 이번 세션에 때린 플레이어 객체 (목록에 없는 경우 대비. 저장하지 않는다). */
 	private final Map<UUID, ServerPlayer> seen = new HashMap<>();
@@ -78,6 +80,7 @@ public final class BossParty {
 	/** 인원 {@code players}에 맞춰 최대 체력을 올리고 꽉 채운다. */
 	public void scale(Monster boss, int players) {
 		size = Math.max(1, players);
+		summonedAt = boss.level().getGameTime();
 		AttributeInstance maxHealth = boss.getAttribute(Attributes.MAX_HEALTH);
 		if (maxHealth != null) {
 			maxHealth.removeModifier(HEALTH_MODIFIER);
@@ -129,6 +132,7 @@ public final class BossParty {
 	/** 진행 필수품을 기여자 각자에게 준다. 줄 사람이 없으면 보스 자리에 하나 떨군다. 받은 사람 수를 돌려준다. */
 	public int giveKeyItem(ServerLevel level, Monster boss, Item key) {
 		List<ServerPlayer> players = contributors(level, boss.getMaxHealth());
+		io.github.yhyeop.sanupcraft.server.BossRecords.record(level, boss, summonedAt, size, 0, players); // M10 보스 기록판
 		if (players.isEmpty()) {
 			boss.spawnAtLocation(level, new ItemStack(key));
 			return 0;
@@ -148,11 +152,13 @@ public final class BossParty {
 
 	public void save(ValueOutput output) {
 		output.putInt("party_size", size);
+		output.putLong("party_summoned", summonedAt);
 		output.store("party_damage", DAMAGE_CODEC, damage);
 	}
 
 	public void load(ValueInput input) {
 		size = Math.max(1, input.getIntOr("party_size", 1));
+		summonedAt = input.getLongOr("party_summoned", -1L);
 		damage.clear();
 		input.read("party_damage", DAMAGE_CODEC).ifPresent(damage::putAll);
 	}

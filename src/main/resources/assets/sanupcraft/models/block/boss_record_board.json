@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "sanupcraft:block/boss_record_board_top",
+    "side": "sanupcraft:block/boss_record_board_side"
+  }
+}

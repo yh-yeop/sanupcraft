@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "sanupcraft:iron_plate",
+    "G": "minecraft:gold_ingot",
+    "B": "minecraft:book"
+  },
+  "pattern": [
+    "PGP",
+    "PBP",
+    "PPP"
+  ],
+  "result": {
+    "id": "sanupcraft:boss_record_board"
+  }
+}

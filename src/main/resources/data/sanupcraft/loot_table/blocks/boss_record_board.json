@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "rolls": 1,
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "sanupcraft:boss_record_board"
+        }
+      ]
+    }
+  ],
+  "random_sequence": "sanupcraft:blocks/boss_record_board"
+}

@@ -17,6 +17,8 @@
     "sanupcraft:steam_gauge",
     "sanupcraft:belt_sorter",
     "sanupcraft:filter_hopper",
-    "sanupcraft:steam_charger"
+    "sanupcraft:steam_charger",
+    "sanupcraft:boss_record_board",
+    "sanupcraft:goal_board"
   ]
 }
