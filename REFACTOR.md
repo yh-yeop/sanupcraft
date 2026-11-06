@@ -90,7 +90,6 @@
 - **D12** · `RustyGuardian.java:138-150`, `FurnaceWarden.java:157-169` · 고도화 · 하 — 고정 순환 패턴, 격노는 쿨다운만, 거리 무관 패턴 낭비. 제안: 격노 시 추가 패턴(연속 돌진 / 분출 직후 도약), 거리 조건(내려찍기 8칸 안, 돌진 4~16칸).
 - 문제없음 확인: 보스 바 중복 없음, 세트 판정 정확, 패턴은 플레이어만, 낙하 · 익사 · 불 면역 정상.
 
-
 ## 2. 판정 (Opus) · 반론 (비판적 Sonnet) · 최종 결정
 
 ### 2-1. Opus 판정
@@ -1219,7 +1218,6 @@ public Component problemMessage(Level level, Problem problem, String keyPrefix);
 47. config/SanupcraftConfig.java:276-280 외 · 중복 · 하 — 기본값 리터럴이 필드 초기값과 OPTIONS 표에 따로 (상수로 묶기).
 48. factory/MachineBlockEntity.java:124 · 기타 · 하 — static recipeCache가 이전 서버 RecipeManager를 붙잡음.
 
-
 ### 8-2. Opus 판정
 집계(48건, Opus 샘플링 추가 0): **수정 대상 19** · 오탐 24 · 보류 2 · 2단계로 3 · 3단계로 0. 수정 대상 중 2 · 3 · 10 · 20 · 24 · 27 · 33 · 37 · 40 · 44 · 45는 주석만(동작 변화 없음), 7 · 19는 죽은 코드(7-5 R4 기준: 본 · 클라이언트 · 시험 어디서도 안 부르는 함수와 그 때문에 쓰기만 남는 필드를 지운다).
 
@@ -1385,13 +1383,17 @@ Opus 샘플링(직접 읽음, Haiku 담당 영역): `boss/gear/VoidStaffItem` ·
 2. **#25** `Downed.goDown`에 `LAST_HIT.remove(player.getUUID());`(쓰러질 때마다 새로). `SERVER_STARTING` 훅은 넣지 않는다. 시험 없음
 3. 주석: **#27** `FlamethrowerItem` 클래스 문서에 "물속에서는 증기 · 연료를 쓰고 거품만 난다 (불이 안 붙는다)". **#37** `ToxicGasPocketFeature` "불 · 용암 · 횃불 옆 칸" → "불씨({@link ToxicGasBlock#isIgnitionSource}: 불 · 용암 · 횃불 · 켜진 모닥불) 옆 칸". **#40** `MultiblockShape.unform` 문서 "안 불러온 청크는 건드리지 않는다" → "안 불러온 청크의 이웃 제어기는 못 보므로, 그 제어기가 가진 공유 외벽은 잠시 꺼졌다가 그 제어기의 다음 확인에서 다시 켜진다". **#44** `kitIndustry` 문서 "외벽 33 + 제어기로" → "외벽 33(여분 포함 40개) + 제어기로". **#45** `ModSounds.machine` 문서 "40틱에 한 번쯤" → "40틱(분쇄기 30틱)에 한 번쯤"
 
-#### L1 수정 기록 (보스 · 몹)
+### 8-7. 2단계 계획
+**2단계 없음.** 8-2에서 올린 셋은 반론으로 모두 닫았다: 1은 설계상 장비 상수(주석 한 줄, L1), 5 · 6은 #62 기준 오탐. 3단계도 없음. 다음 라운드 후보는 보류 11(렌더러 기반 클래스, 보스가 넷이 될 때)과 보류 메모 17b · 27b · 28b.
+
+### 8-8. L1 수정 기록 (보스 · 몹, 브랜치 r4-l1)
 - **#4**: `PartyBossMonster.isEnraged()` → `isPhaseTwo() || halfHealthOrLess()` (`getHealth() <= max × PHASE_TWO_HEALTH`, `checkPhaseTwo`와 같은 비공개 도우미). 불러오기의 `phase_two` 기본값은 `isEnraged()`가 아니라 도우미를 직접 쓴다 — 이미 2페이즈인 보스에 예전 저장을 다시 읽으면 기본값이 참이 되어 `phaseTwoSurvivesSaveAndLoad`가 실패했다(8-5의 "그 시점 `isPhaseTwo()`가 거짓" 가정은 재사용된 개체에선 틀림). 시험 `enragedAtExactlyHalfHealthAndAfterHealing`(C4), 고치기 전 "정확히 절반인데 화나지 않음"으로 실패.
 - **#7**: `BossHazard.lifetime()` 삭제.
 - **#32**: `VoidShade.customServerAiStep` 6 ~ 16칸 안에서 `teleportBehind` 실패 시 `ambushCooldown = 20`.
 - **#2 · #10 · #3 · #33 · #1**: 주석만(수호자 · 파수꾼 문서, `VoidColossus.volley`, `EliteMonster` · `EliteAbility` 반사, 장비 상수 셋 "보스 설정과 일부러 따로").
 - 검증: `./gradlew build` GameTest 410개 통과(409 + 새 1), `runClientGameTest` 통과.
-### 8-6a. L2 수정 기록 (모듈 · 장비 · 설정)
+
+### 8-9. L2 수정 기록 (모듈 · 장비 · 설정, 브랜치 r4-l2)
 - **#17** `RepairStationBlockEntity.canPlaceItemThroughFace` 재료 갈래를 `!gear.isEmpty() && gear.isValidRepairItem(stack)`로 (`canPlaceItem` 그대로), 클래스 문서 보강. 시험 `repairStationHopperWaitsForGear` — 고치기 전 실패("빈 수리대에 깔때기로 흙이 들어감").
 - **#19** `working()` · `pool()` · `working` 필드(대입 두 줄) 삭제. `pool` 필드 · 저장 키는 유지.
 - **#20** `GearUpgradeRecipes` 클래스 문서를 `source` 규칙에 맞게. **#24** `SteelGear` 문서 "갑옷은 철의 약 1.5배 · 도구는 2배".
@@ -1399,10 +1401,7 @@ Opus 샘플링(직접 읽음, Haiku 담당 영역): `boss/gear/VoidStaffItem` ·
 - **#47** `ModuleEffects.RAPID_COOLDOWN_PERCENT` · `SCATTER_PELLETS` · `SCATTER_DAMAGE_PERCENT`(50 · 3 · 50), `SanupcraftConfig` 필드 초기값 · `OPTIONS` 기본값이 참조. `configDefaultsMatchConstants`에 세 줄.
 - 결과: `./gradlew build` GameTest 411개(409 + 2) 전부 통과, `runClientGameTest` 종료 코드 0.
 
-### 8-7. 2단계 계획
-**2단계 없음.** 8-2에서 올린 셋은 반론으로 모두 닫았다: 1은 설계상 장비 상수(주석 한 줄, L1), 5 · 6은 #62 기준 오탐. 3단계도 없음. 다음 라운드 후보는 보류 11(렌더러 기반 클래스, 보스가 넷이 될 때)과 보류 메모 17b · 27b · 28b.
-
-### 8-8. L3 수정 기록 (전투 · 기타 주석, 브랜치 r4-l3)
+### 8-10. L3 수정 기록 (전투 · 기타 주석, 브랜치 r4-l3)
 - **#22** `SteamSyringeItem.inject`: 주사기 몫 `have = min(주사기, 비용)`, 모자란 `need`는 `drain` 먼저(모자라면 아무것도 안 빠지고 `NO_STEAM`) 뒤 `take(have)`. 클래스 문서 갱신. 새 시험 `SanupcraftM13GameTest.syringeUsesCanisterOnlyForShortfall`(주사기 150 + 통 100 → 살림 · 주사기 0 · 통 50 / 주사기 50 + 통 100 → `NO_STEAM` · 둘 다 그대로). 고치기 전 실패 확인: "주사기 150 + 통 100으로 못 살림".
 - **#25** `Downed.goDown`에 `LAST_HIT.remove(player.getUUID())` 한 줄 (`SERVER_STARTING` 훅 없음).
 - **#27** `FlamethrowerItem` 클래스 문서에 물속 동작 한 줄 (주석만, 27b 보류).
@@ -1411,3 +1410,18 @@ Opus 샘플링(직접 읽음, Haiku 담당 영역): `boss/gear/VoidStaffItem` ·
 - **#44** `PlaytestCommand.kitIndustry` 문서: 외벽 33(여분 포함 40개).
 - **#45** `ModSounds.machine` 문서: 40틱(분쇄기 30틱).
 - 결과: `./gradlew build` GameTest 410개 전부 통과(409 + 새 시험 1), `runClientGameTest` 종료 코드 0.
+
+### 8-11. 보고 (4차 리팩터링)
+| | 건수 |
+|---|---|
+| 지적 (Haiku 6기) | 48 |
+| 실제 문제로 판정 (최종) | 21 (코드 7 · 죽은 코드 2 · 주석만 12) |
+| 오탐 | 26 |
+| 보류 | 1 (#11 보스 렌더러 공통 부모, 보스가 넷이 되면) + 보류 메모 3 (17b 수리대 장비 바꿀 때 남는 재료 · 27b 물속 화염 방사기 비용 · 28b 같은 차원 먼 순간이동 뒤 조명) |
+| 비판적 Sonnet 반론 | 9건, Opus가 모두 받아들임 (R1 · R6 일부) — 오탐 → 수정 1 (#28), 2단계로 → 닫음 3 (#1 · #5 · #6) |
+| 1단계 수정 (Sonnet 3기, L1 ~ L3 병렬 worktree) | 21 |
+| 2단계 · 3단계로 올린 것 | 0 |
+| 시험 | GameTest 409 → 413개 통과 (두 번 연속, 새 시험 4개는 고치기 전에 실패 확인), 클라이언트 시험 통과 (편의 모드 12개, 스크린샷 175장, 소리 · 텍스처 · 모델 오류 없음) |
+
+주요 실제 버그: 응급 주사기가 주사기 증기 + 증기 통을 합치면 충분한데도 못 살림(#22, 이제 모자란 몫만 통에서), 수리대에 깔때기로 아무 아이템이나 들어가 재료 칸이 막힘(#17), 차원을 옮기면 머리 조명 빛 블록이 옛 차원에 남음(#28), 보스 "화남"과 2페이즈 기준이 달라 회복하면 화남이 풀림(#4), 공허 그림자가 뒤가 막히면 매 틱 순간이동을 다시 시도(#32), 쓰러짐 뒤 마지막 공격자 기록이 남음(#25).
+판정과 다르게 한 곳: #4 불러오기 기본값은 `isEnraged()` 대신 지금 체력(`halfHealthOrLess()`)으로 — 이미 2페이즈인 개체에 예전 저장을 다시 읽는 시험에서 판정 가정이 틀렸다 (8-8).

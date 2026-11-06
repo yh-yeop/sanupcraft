@@ -262,6 +262,7 @@ M3는 네더 · 엔드가 "보스 2 · 내열 · 심장 제련로 · 엔더 운�
 > 전부 구현했다. 아래 표는 처음 설계이고, 실제로 구현한 내용 · 설계와 달라진 점은 각 행의 "구현" 표시와 [docs/EXPANSION.md](docs/EXPANSION.md)의 구현 메모에 있다.
 > 그 뒤에 이어진 M7 보관 · 제작, M8 산업 규모, M9 생산 · 장비, M10 서버 운영, M11 다듬기도 [docs/EXPANSION.md](docs/EXPANSION.md).
 > 마무리 리팩터링(3차)은 [REFACTOR.md](REFACTOR.md) 7절.
+> 확장 계획 3(M12 채광 · M13 전투 · M14 장비 · M15 리소스, 2026-11-06 구현)도 [docs/EXPANSION.md](docs/EXPANSION.md) 아래쪽 절. 마무리 리팩터링(4차)은 [REFACTOR.md](REFACTOR.md) 8절.
 뼈대: **차원마다 동력 하나, 보스 하나, 물류 하나, 이동 하나.** README 순환 그림의 빈칸(탄약 · 이동 수단)과 엔드 보스를 채운다.
 
 | | 오버월드 | 네더 | 엔드 |
