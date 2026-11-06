@@ -48,6 +48,8 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 
 import io.github.yhyeop.sanupcraft.config.SanupcraftConfig;
+import io.github.yhyeop.sanupcraft.boss.gear.ModBossGear;
+import io.github.yhyeop.sanupcraft.boss.phase.BossHazard;
 import io.github.yhyeop.sanupcraft.effect.ModEffects;
 import io.github.yhyeop.sanupcraft.end.ModEnd;
 import io.github.yhyeop.sanupcraft.sound.ModSounds;
@@ -60,6 +62,8 @@ import io.github.yhyeop.sanupcraft.sound.ModSounds;
  *       끌려가는 플레이어는 공허 침식 I(최대 체력 −2, 10초, 확장 3 C3)에 걸린다. 공허 한 벌이면 안 걸린다.</li>
  *   <li>공허 수정: 처음 깨어날 때와 체력이 절반 아래로 내려갈 때 수정 {@link #CRYSTALS}개를 둘레에 띄운다.
  *       수정이 하나라도 살아 있으면 거상은 피해를 받지 않는다 (수정에서 거상으로 빛줄기). 수정은 리벳 · 화살 · 근접으로 부순다.</li>
+ *   <li>공허 균열 (2페이즈, 확장 3 C4): 20틱 동안 플레이어 근처 {@value #RIFTS}곳에 보라 기둥 예고 → 10초 동안 균열 ({@link BossHazard}):
+ *       둘레 5칸 플레이어를 조금씩 끌어당기고, 닿으면 공허 침식 II.</li>
  * </ul>
  * 여러 명이면 체력이 늘고 (바닐라 상한 1024를 넘는 몫은 받는 피해를 줄여 맞춘다, {@link BossParty#incomingDamageScale}), 기여자 각자 공허 핵을 받는다 ({@link BossParty}).
  * 강화 소환석(C3)이면 체력 · 근접 공격력 · 셜커 탄 피해가 단계만큼 오른다. 끌어당기기는 피해가 없어서 그대로.
@@ -92,12 +96,19 @@ public class VoidColossus extends PartyBossMonster {
 	private static final int COOLDOWN = 80;
 	private static final int COOLDOWN_ENRAGED = 50;
 	private static final int SHIELD_MESSAGE_COOLDOWN = 60;
+	public static final int RIFTS = 3;
+	public static final int RIFT_WINDUP = 20;
+	private static final int RIFT_END = 30;
 	/** 수정이 이보다 멀면 (거상이 멀리 끌려감) 사라진 것으로 친다. */
 	private static final double CRYSTAL_LEASH = 64.0;
 
 	public enum Pattern {
-		NONE, VOLLEY, PULL
+		NONE, VOLLEY, PULL, RIFT
 	}
+
+	private static final Pattern[] CYCLE = {Pattern.VOLLEY, Pattern.PULL};
+	/** 2페이즈: 공허 균열로 시작해 세 패턴마다 한 번. */
+	private static final Pattern[] CYCLE_TWO = {Pattern.RIFT, Pattern.VOLLEY, Pattern.PULL};
 
 	/** 깨어날 수 없는 이유. */
 	public enum WakeProblem {
@@ -116,6 +127,7 @@ public class VoidColossus extends PartyBossMonster {
 	/** 0 = 아직 수정 안 띄움, 1 = 처음 수정 띄움, 2 = 절반에서 다시 띄움. */
 	private int shieldWave;
 	private final List<UUID> crystals = new ArrayList<>();
+	private final List<Vec3> riftSpots = new ArrayList<>();
 	/** 플레이어별 "수정이 지킨다" 안내 (60틱에 한 번). */
 	private final BossCombat.PlayerCooldown shieldMessage = new BossCombat.PlayerCooldown(SHIELD_MESSAGE_COOLDOWN);
 
@@ -168,6 +180,23 @@ public class VoidColossus extends PartyBossMonster {
 	@Override
 	protected void announcePhase(ServerLevel level) {
 		ModSounds.bossPhase(level, this, ModSounds.COLOSSUS_RAGE, ParticleTypes.REVERSE_PORTAL); // M11 X2
+	}
+
+	@Override
+	protected Item gearItem() {
+		return ModBossGear.VOID_STAFF;
+	}
+
+	/** 2페이즈: 다음 패턴은 공허 균열부터. */
+	@Override
+	protected void onPhaseTwo(ServerLevel level) {
+		cycleIndex = 0;
+	}
+
+	/** 쿨다운이 끝나면 쓸 패턴 (시험용). */
+	public Pattern upcomingPattern() {
+		Pattern[] cycle = isPhaseTwo() ? CYCLE_TWO : CYCLE;
+		return cycle[cycleIndex % cycle.length];
 	}
 
 	/** 이 차원 · 자리에서 깨어날 수 없는 이유. 깨어나면 null. */
@@ -229,7 +258,9 @@ public class VoidColossus extends PartyBossMonster {
 			if (cooldown > 0) {
 				cooldown--;
 			} else if (target != null && target.isAlive()) {
-				startPattern(level, cycleIndex++ % 2 == 0 ? Pattern.VOLLEY : Pattern.PULL);
+				Pattern next = upcomingPattern();
+				cycleIndex++;
+				startPattern(level, next);
 			}
 		} else {
 			tickPattern(level);
@@ -308,6 +339,9 @@ public class VoidColossus extends PartyBossMonster {
 			playSound(SoundEvents.SHULKER_SHOOT, 2.0F, 0.6F);
 		} else if (next == Pattern.PULL) {
 			playSound(SoundEvents.PORTAL_TRIGGER, 1.5F, 0.6F);
+		} else if (next == Pattern.RIFT) {
+			pickRiftSpots(level);
+			playSound(ModSounds.COLOSSUS_RIFT, 2.0F, 1.0F);
 		}
 	}
 
@@ -324,6 +358,7 @@ public class VoidColossus extends PartyBossMonster {
 				}
 			}
 			case PULL -> tickPull(level);
+			case RIFT -> tickRift(level);
 			case NONE -> {
 			}
 		}
@@ -394,6 +429,71 @@ public class VoidColossus extends PartyBossMonster {
 			level.sendParticles(ParticleTypes.PORTAL, getX(), getY() + 1.0, getZ(), 30, PULL_RANGE / 3, 1.0, PULL_RANGE / 3, -1.0);
 		}
 		return pulled;
+	}
+
+	/** 균열 자리: 32칸 안 플레이어 근처(1 ~ 2.5칸 옆)부터 차례로, 아무도 없으면 둘레 6칸. */
+	private void pickRiftSpots(ServerLevel level) {
+		riftSpots.clear();
+		List<Player> players = targets(level, VOLLEY_RANGE);
+		for (int i = 0; i < RIFTS; i++) {
+			double angle = random.nextDouble() * Math.PI * 2.0;
+			if (players.isEmpty()) {
+				riftSpots.add(position().add(Math.cos(angle) * CRYSTAL_RADIUS, 0.0, Math.sin(angle) * CRYSTAL_RADIUS));
+			} else {
+				double distance = 1.0 + random.nextDouble() * 1.5;
+				riftSpots.add(players.get(i % players.size()).position().add(Math.cos(angle) * distance, 0.0, Math.sin(angle) * distance));
+			}
+		}
+	}
+
+	/** 균열 자리를 직접 정한다 (시험용). */
+	public void setRiftSpots(List<Vec3> spots) {
+		riftSpots.clear();
+		riftSpots.addAll(spots);
+	}
+
+	/** 균열 자리 (시험용). */
+	public List<Vec3> riftSpots() {
+		return List.copyOf(riftSpots);
+	}
+
+	private void tickRift(ServerLevel level) {
+		if (patternTick < RIFT_WINDUP) {
+			if (patternTick % 2 == 0) {
+				for (Vec3 spot : riftSpots) {
+					for (int y = 0; y < 5; y++) {
+						level.sendParticles(ParticleTypes.REVERSE_PORTAL, spot.x, spot.y + y * 0.5, spot.z, 1, 0.05, 0.1, 0.05, 0.0);
+					}
+					for (int i = 0; i < 8; i++) {
+						double a = i * Math.PI * 2.0 / 8.0 + patternTick * 0.2;
+						level.sendParticles(ParticleTypes.WITCH, spot.x + Math.cos(a) * BossHazard.RIFT_TOUCH_RADIUS, spot.y + 0.1,
+								spot.z + Math.sin(a) * BossHazard.RIFT_TOUCH_RADIUS, 1, 0.0, 0.0, 0.0, 0.0);
+					}
+				}
+			}
+			if (patternTick == RIFT_WINDUP - 10) {
+				playAttackAnimation(level);
+			}
+			return;
+		}
+		if (patternTick == RIFT_WINDUP) {
+			openRifts(level);
+			return;
+		}
+		if (patternTick >= RIFT_END) {
+			endPattern();
+		}
+	}
+
+	/** 균열 자리마다 공허 균열을 연다. 연 균열을 돌려준다. */
+	public List<BossHazard> openRifts(ServerLevel level) {
+		List<BossHazard> rifts = new ArrayList<>();
+		for (Vec3 spot : riftSpots) {
+			rifts.add(BossHazard.spawn(level, BossHazard.Kind.VOID_RIFT, spot, BossHazard.RIFT_TICKS, this));
+			level.sendParticles(ParticleTypes.PORTAL, spot.x, spot.y + 1.0, spot.z, 30, 0.3, 1.0, 0.3, 0.5);
+		}
+		playSound(SoundEvents.ENDERMAN_TELEPORT, 2.0F, 0.5F);
+		return rifts;
 	}
 
 	private List<Player> targets(ServerLevel level, double range) {

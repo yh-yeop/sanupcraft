@@ -1,0 +1,54 @@
+{
+  "criteria": {
+    "rusty_hammer": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:rusty_hammer"
+          }
+        ]
+      }
+    },
+    "furnace_shield": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:furnace_shield"
+          }
+        ]
+      }
+    },
+    "void_staff": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:void_staff"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:rusty_hammer"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.boss_gear.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.boss_gear.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "rusty_hammer",
+      "furnace_shield",
+      "void_staff"
+    ]
+  ],
+  "parent": "sanupcraft:guardian_core"
+}

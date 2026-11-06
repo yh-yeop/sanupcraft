@@ -8,6 +8,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
 import io.github.yhyeop.sanupcraft.boss.RustyGuardian;
+import io.github.yhyeop.sanupcraft.client.boss.BossCrackLayer;
 import io.github.yhyeop.sanupcraft.client.boss.BossGlowLayer;
 import io.github.yhyeop.sanupcraft.client.boss.BossModelLayers;
 import io.github.yhyeop.sanupcraft.client.boss.BossRenderState;
@@ -26,6 +27,7 @@ public class RustyGuardianRenderer extends MobRenderer<RustyGuardian, RustyGuard
 	public RustyGuardianRenderer(EntityRendererProvider.Context context) {
 		super(context, new RustyGuardianModel(context.bakeLayer(BossModelLayers.RUSTY_GUARDIAN)), 0.9F * SCALE);
 		addLayer(new BossGlowLayer<>(this, GLOW, RustyGuardianRenderer::glow));
+		addLayer(new BossCrackLayer<>(this, "rusty_guardian")); // 확장 3 C4 · R7 2페이즈 금 간 갑옷
 	}
 
 	/** 천천히 숨 쉬듯 밝아졌다 어두워지고, 화나면 빠르게 깜박인다. */

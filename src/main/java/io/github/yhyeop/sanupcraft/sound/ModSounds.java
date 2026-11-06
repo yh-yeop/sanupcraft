@@ -52,6 +52,17 @@ public final class ModSounds {
 	/** 공허 거상: 체력이 절반 아래로 (화남, 다른 보스의 {@link #BOSS_PHASE} 대신). */
 	public static final SoundEvent COLOSSUS_RAGE = register("boss.colossus.rage");
 	public static final SoundEvent COLOSSUS_DEATH = register("boss.colossus.death");
+	// 확장 3 C4: 보스 2페이즈 패턴 예고 · 보스 전용 장비
+	/** 녹슨 수호자 녹 폭풍 예고 (녹가루가 휘몰아치는 소리). */
+	public static final SoundEvent GUARDIAN_RUST_STORM = register("boss.guardian.rust_storm");
+	/** 용광로 파수꾼 용암 기둥 예고 (땅속에서 끓는 소리). */
+	public static final SoundEvent WARDEN_LAVA_PILLAR = register("boss.warden.lava_pillar");
+	/** 용암 기둥이 솟을 때. */
+	public static final SoundEvent WARDEN_LAVA_ERUPT = register("boss.warden.lava_erupt");
+	/** 공허 거상 공허 균열 예고 (공간이 찢어지는 소리). */
+	public static final SoundEvent COLOSSUS_RIFT = register("boss.colossus.rift");
+	/** 공허 지팡이를 쏠 때. */
+	public static final SoundEvent VOID_STAFF_SHOOT = register("item.void_staff.shoot");
 
 	/** 서버에서 낸 기계 소리 수 (시험용). */
 	private static int playedCount;

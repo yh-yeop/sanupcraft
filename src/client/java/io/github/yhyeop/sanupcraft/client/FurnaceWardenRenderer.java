@@ -8,6 +8,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
 import io.github.yhyeop.sanupcraft.boss.FurnaceWarden;
+import io.github.yhyeop.sanupcraft.client.boss.BossCrackLayer;
 import io.github.yhyeop.sanupcraft.client.boss.BossGlowLayer;
 import io.github.yhyeop.sanupcraft.client.boss.BossModelLayers;
 import io.github.yhyeop.sanupcraft.client.boss.BossRenderState;
@@ -28,6 +29,7 @@ public class FurnaceWardenRenderer extends MobRenderer<FurnaceWarden, FurnaceWar
 	public FurnaceWardenRenderer(EntityRendererProvider.Context context) {
 		super(context, new FurnaceWardenModel(context.bakeLayer(BossModelLayers.FURNACE_WARDEN)), 1.1F * SCALE);
 		addLayer(new BossGlowLayer<>(this, GLOW, FurnaceWardenRenderer::glow));
+		addLayer(new BossCrackLayer<>(this, "furnace_warden")); // 확장 3 C4 · R7 2페이즈 금 간 갑옷
 	}
 
 	private static double glow(FurnaceWardenRenderState state) {

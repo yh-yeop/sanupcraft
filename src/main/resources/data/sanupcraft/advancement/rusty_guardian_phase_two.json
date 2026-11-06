@@ -1,0 +1,25 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:guardian_summoner"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.rusty_guardian_phase_two.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.rusty_guardian_phase_two.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "parent": "sanupcraft:steel"
+}

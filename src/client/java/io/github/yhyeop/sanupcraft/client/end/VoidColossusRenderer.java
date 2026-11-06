@@ -8,6 +8,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 
 import io.github.yhyeop.sanupcraft.boss.VoidColossus;
+import io.github.yhyeop.sanupcraft.client.boss.BossCrackLayer;
 import io.github.yhyeop.sanupcraft.client.boss.BossGlowLayer;
 import io.github.yhyeop.sanupcraft.client.boss.BossModelLayers;
 import io.github.yhyeop.sanupcraft.client.boss.BossRenderState;
@@ -27,6 +28,7 @@ public class VoidColossusRenderer extends MobRenderer<VoidColossus, VoidColossus
 	public VoidColossusRenderer(EntityRendererProvider.Context context) {
 		super(context, new VoidColossusModel(context.bakeLayer(BossModelLayers.VOID_COLOSSUS)), 1.0F * SCALE);
 		addLayer(new BossGlowLayer<>(this, GLOW, VoidColossusRenderer::glow));
+		addLayer(new BossCrackLayer<>(this, "void_colossus")); // 확장 3 C4 · R7 2페이즈 금 간 갑옷
 		addLayer(new VoidShieldLayer(this, context.getModelSet()));
 	}
 

@@ -1,0 +1,25 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:colossus_summoner"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.void_colossus_phase_two.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.void_colossus_phase_two.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "parent": "sanupcraft:colossus_summoner"
+}

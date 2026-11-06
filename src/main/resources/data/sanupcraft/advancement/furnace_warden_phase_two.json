@@ -1,0 +1,25 @@
+{
+  "criteria": {
+    "done": {
+      "trigger": "minecraft:impossible"
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:warden_summoner"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.furnace_warden_phase_two.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.furnace_warden_phase_two.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "done"
+    ]
+  ],
+  "parent": "sanupcraft:warden_summoner"
+}

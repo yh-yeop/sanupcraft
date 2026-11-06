@@ -5,6 +5,9 @@ import java.util.EnumSet;
 import org.jspecify.annotations.Nullable;
 
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerBossEvent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -24,17 +27,24 @@ import net.minecraft.world.level.storage.ValueOutput;
  * 보스 바(이름 + 강화 단계, 체력 비율), 인원 기록 저장 · 읽기, 받은 피해 기록 · 상한 보정, 필수품 나눠 주기,
  * 체력 절반 아래 첫 알림을 맡는다. 패턴 · 받는 피해 규칙({@code hurtServer}) · 효과 면역은 보스마다 다르다.
  * 저장 키는 {@link BossParty#save}의 {@code party_*} 그대로 (부모로 옮겨도 이름이 같다).
+ * <p>2페이즈 (확장 3 C4): 체력이 절반 이하로 처음 내려가면 한 번 들어간다 ({@link #checkPhaseTwo}). 동기화 데이터라 클라이언트가 금 간 모습을 그리고,
+ * 저장 키 {@code phase_two}로 남는다 (예전 저장에 없으면 체력이 절반 아래인지로 정한다). 들어갈 때 화남 소리 · 입자({@link #announcePhase}),
+ * 둘레 플레이어 안내 · 발전 과제({@link io.github.yhyeop.sanupcraft.boss.phase.BossPhaseTwo}), 보스마다 새 패턴({@link #onPhaseTwo}).
+ * 기여자는 필수품과 함께 전용 장비를 확률로 받는다 ({@link #gearItem}, {@link io.github.yhyeop.sanupcraft.boss.gear.BossGearDrops}).
  */
 public abstract class PartyBossMonster extends Monster implements PartyBoss {
 	/** 공격 동작 이벤트 id (클라이언트 휘두르기 · 내려치기 애니메이션). */
 	public static final byte EVENT_ATTACK = 4;
 	/** 공격 동작 길이 (틱). 렌더러가 남은 틱으로 자세를 잡는다. */
 	public static final int ATTACK_ANIMATION_TICKS = 10;
+	/** 이 체력 비율 이하로 내려가면 2페이즈 (확장 3 C4). */
+	public static final float PHASE_TWO_HEALTH = 0.5F;
+	private static final EntityDataAccessor<Boolean> DATA_PHASE_TWO = SynchedEntityData.defineId(PartyBossMonster.class, EntityDataSerializers.BOOLEAN);
 
 	private final ServerBossEvent bossEvent;
 	private final BossParty party = new BossParty();
-	/** 화남(체력 절반 아래)을 알렸는가 (M11 X2). 불러올 때 체력으로 다시 정한다. */
-	private boolean phaseAnnounced;
+	/** 이번 세션에 2페이즈로 들어간 횟수 (시험용, 저장하지 않음 — 한 번만 들어가야 한다). */
+	private int phaseTwoEntries;
 	/** 공격 동작 남은 틱 (서버 · 클라이언트 둘 다, 저장하지 않음). */
 	private int attackTick;
 
@@ -52,8 +62,21 @@ public abstract class PartyBossMonster extends Monster implements PartyBoss {
 	/** 체력이 처음 절반 아래로 내려갈 때 한 번: 화남 소리 · 입자 (M11 X2). */
 	protected abstract void announcePhase(ServerLevel level);
 
+	/** 기여자가 확률로 받는 전용 장비 (확장 3 C4). */
+	protected abstract Item gearItem();
+
+	/** 2페이즈에 들어간 직후 한 번 (보스마다: 다음 패턴을 새 패턴으로). */
+	protected void onPhaseTwo(ServerLevel level) {
+	}
+
 	/** 패턴을 쓰는 중인가 ({@link PatternGoal}이 걷기 · 근접 공격을 멈춘다). */
 	protected abstract boolean inPattern();
+
+	@Override
+	protected void defineSynchedData(SynchedEntityData.Builder builder) {
+		super.defineSynchedData(builder);
+		builder.define(DATA_PHASE_TWO, false);
+	}
 
 	@Override
 	public final BossParty party() {
@@ -69,15 +92,38 @@ public abstract class PartyBossMonster extends Monster implements PartyBoss {
 		return getHealth() < getMaxHealth() / 2.0F;
 	}
 
+	/** 2페이즈인가 (서버 · 클라이언트, 한 번 들어가면 체력이 차도 그대로). */
+	public boolean isPhaseTwo() {
+		return entityData.get(DATA_PHASE_TWO);
+	}
+
+	/** 2페이즈에 들어간 횟수 (시험용). */
+	public int phaseTwoEntries() {
+		return phaseTwoEntries;
+	}
+
+	/**
+	 * 체력이 {@link #PHASE_TWO_HEALTH} 이하이고 아직 1페이즈면 2페이즈로 들어간다: 화남 알림 · 안내 · 발전 과제 · 새 패턴 준비.
+	 * AI 틱마다 부르고, 시험이 직접 부를 수도 있다. 들어갔으면 true.
+	 */
+	public boolean checkPhaseTwo(ServerLevel level) {
+		if (isPhaseTwo() || getHealth() > getMaxHealth() * PHASE_TWO_HEALTH) {
+			return false;
+		}
+		entityData.set(DATA_PHASE_TWO, true);
+		phaseTwoEntries++;
+		announcePhase(level);
+		io.github.yhyeop.sanupcraft.boss.phase.BossPhaseTwo.enter(level, this);
+		onPhaseTwo(level);
+		return true;
+	}
+
 	/** 보스 바 체력 비율 · 화남 알림. 자식은 {@code super} 다음에 패턴을 돌린다. */
 	@Override
 	protected void customServerAiStep(ServerLevel level) {
 		super.customServerAiStep(level);
 		bossEvent.setProgress(getHealth() / getMaxHealth());
-		if (!phaseAnnounced && isEnraged()) {
-			phaseAnnounced = true;
-			announcePhase(level);
-		}
+		checkPhaseTwo(level);
 	}
 
 	/** 실제로 깎인 체력을 공격한 플레이어에게 센다 (죽기 전에 불리므로 마지막 일격도 들어간다). */
@@ -99,12 +145,14 @@ public abstract class PartyBossMonster extends Monster implements PartyBoss {
 	protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
 		super.dropCustomDeathLoot(level, source, killedByPlayer);
 		party.giveKeyItem(level, this, keyItem());
+		io.github.yhyeop.sanupcraft.boss.gear.BossGearDrops.reward(level, this, gearItem()); // 확장 3 C4
 	}
 
 	@Override
 	protected void addAdditionalSaveData(ValueOutput output) {
 		super.addAdditionalSaveData(output);
 		party.save(output);
+		output.putBoolean("phase_two", isPhaseTwo());
 	}
 
 	@Override
@@ -112,7 +160,8 @@ public abstract class PartyBossMonster extends Monster implements PartyBoss {
 		super.readAdditionalSaveData(input);
 		party.load(input);
 		refreshBossBar();
-		phaseAnnounced = isEnraged();
+		// 예전 저장(키 없음)은 화남을 이미 알렸는지 = 체력이 절반 아래인지로 본다
+		entityData.set(DATA_PHASE_TWO, input.getBooleanOr("phase_two", isEnraged()));
 	}
 
 	/** 공격 동작을 시작하고 클라이언트에 알린다. */

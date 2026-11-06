@@ -1,10 +1,12 @@
 package io.github.yhyeop.sanupcraft.boss;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
@@ -38,6 +40,8 @@ import net.minecraft.world.phys.Vec3;
 
 import io.github.yhyeop.sanupcraft.config.SanupcraftConfig;
 import io.github.yhyeop.sanupcraft.core.ModItems;
+import io.github.yhyeop.sanupcraft.boss.gear.ModBossGear;
+import io.github.yhyeop.sanupcraft.boss.phase.BossHazard;
 import io.github.yhyeop.sanupcraft.effect.ModEffects;
 import io.github.yhyeop.sanupcraft.effect.Resistances;
 import io.github.yhyeop.sanupcraft.gear.HeatproofGear;
@@ -50,6 +54,8 @@ import io.github.yhyeop.sanupcraft.sound.ModSounds;
  *   <li>돌진: 20틱 동안 웅크린다. 12틱에 대상 쪽으로 방향을 잠그고(경로가 입자로 보인다) 8틱 뒤 그 방향으로 돌진. 옆으로 피하면 된다.</li>
  *   <li>내려찍기: 25틱 동안 판정 반경과 같은 경고 고리 → 피해 + 띄우기. 경고를 보고 벗어나면 된다.</li>
  *   <li>졸개 소환: 좀벌레 3마리.</li>
+ *   <li>녹 폭풍 (2페이즈, 확장 3 C4): 30틱 동안 장판 {@value #RUST_STORM_ZONES}곳(주변 플레이어 발밑부터, 모자라면 둘레 아무 데나)에 녹가루 고리 →
+ *       8초 동안 녹 장판 ({@link BossHazard}, 안에 서 있으면 녹 II). 고리 밖으로 나가면 된다.</li>
  * </ul>
  * 녹 공격: 강철(또는 내열) 갑옷 한 벌을 다 입지 않은 대상은 피해 1.5배 + 구속 + 녹 II(방어 −4, 5초, 확장 3 C3). 패턴 타격은 방패를 깨고 들어간다.
  * 강철 검 · 내열 검으로 때리면 피해 1.5배. 거미줄에 걸리지 않고 구속이 안 걸린다.
@@ -67,6 +73,10 @@ public class RustyGuardian extends PartyBossMonster {
 	public static final int RUST_TICKS = 100;
 	public static final int RUST_LEVEL = 2;
 	private static final int MAX_MINIONS_NEARBY = 8;
+	/** 녹 폭풍 장판 수. */
+	public static final int RUST_STORM_ZONES = 5;
+	public static final int RUST_STORM_WINDUP = 30;
+	private static final int RUST_STORM_END = 40;
 
 	private static final int CHARGE_LOCK = 12;
 	private static final int CHARGE_WINDUP = 20;
@@ -80,10 +90,12 @@ public class RustyGuardian extends PartyBossMonster {
 	private static final int WARNING_COOLDOWN = 200;
 
 	public enum Pattern {
-		NONE, CHARGE, SLAM, SUMMON
+		NONE, CHARGE, SLAM, SUMMON, RUST_STORM
 	}
 
 	private static final Pattern[] CYCLE = {Pattern.CHARGE, Pattern.SLAM, Pattern.SUMMON, Pattern.SLAM};
+	/** 2페이즈: 녹 폭풍으로 시작해 두 패턴마다 한 번. */
+	private static final Pattern[] CYCLE_TWO = {Pattern.RUST_STORM, Pattern.CHARGE, Pattern.SLAM, Pattern.RUST_STORM, Pattern.SUMMON, Pattern.SLAM};
 
 	private Pattern pattern = Pattern.NONE;
 	private int patternTick;
@@ -91,6 +103,7 @@ public class RustyGuardian extends PartyBossMonster {
 	private int cycleIndex;
 	private Vec3 chargeDirection = Vec3.ZERO;
 	private final Set<UUID> hitThisCharge = new HashSet<>();
+	private final List<Vec3> rustZones = new ArrayList<>();
 	/** 플레이어별 녹 경고 (200틱에 한 번). */
 	private final BossCombat.PlayerCooldown rustWarning = new BossCombat.PlayerCooldown(WARNING_COOLDOWN);
 
@@ -130,6 +143,23 @@ public class RustyGuardian extends PartyBossMonster {
 		ModSounds.bossPhase(level, this, ParticleTypes.CRIT); // M11 X2
 	}
 
+	@Override
+	protected Item gearItem() {
+		return ModBossGear.RUSTY_HAMMER;
+	}
+
+	/** 2페이즈: 다음 패턴은 녹 폭풍부터 (2페이즈 순서의 처음). */
+	@Override
+	protected void onPhaseTwo(ServerLevel level) {
+		cycleIndex = 0;
+	}
+
+	/** 쿨다운이 끝나면 쓸 패턴 (시험용). */
+	public Pattern upcomingPattern() {
+		Pattern[] cycle = isPhaseTwo() ? CYCLE_TWO : CYCLE;
+		return cycle[cycleIndex % cycle.length];
+	}
+
 	/** 한 번에 부르는 졸개 수. 3명마다 하나씩 는다 (혼자 3, 10명 6). */
 	public int minionsPerSummon() {
 		return MINIONS_PER_SUMMON + (party().size() - 1) / 3;
@@ -153,6 +183,10 @@ public class RustyGuardian extends PartyBossMonster {
 			case CHARGE -> playSound(SoundEvents.RAVAGER_ROAR, 1.5F, 0.7F);
 			case SLAM -> playSound(SoundEvents.IRON_GOLEM_REPAIR, 1.5F, 0.5F);
 			case SUMMON -> playSound(SoundEvents.EVOKER_PREPARE_SUMMON, 1.5F, 0.8F);
+			case RUST_STORM -> {
+				pickRustZones(level);
+				playSound(ModSounds.GUARDIAN_RUST_STORM, 2.0F, 1.0F);
+			}
 			case NONE -> {
 			}
 		}
@@ -166,7 +200,9 @@ public class RustyGuardian extends PartyBossMonster {
 			if (cooldown > 0) {
 				cooldown--;
 			} else if (target != null && target.isAlive()) {
-				startPattern(level, CYCLE[cycleIndex++ % CYCLE.length]);
+				Pattern next = upcomingPattern();
+				cycleIndex++;
+				startPattern(level, next);
 			}
 			return;
 		}
@@ -181,6 +217,7 @@ public class RustyGuardian extends PartyBossMonster {
 			case CHARGE -> tickCharge(level);
 			case SLAM -> tickSlam(level);
 			case SUMMON -> tickSummon(level);
+			case RUST_STORM -> tickRustStorm(level);
 			case NONE -> {
 			}
 		}
@@ -328,6 +365,64 @@ public class RustyGuardian extends PartyBossMonster {
 			summoned++;
 		}
 		return summoned;
+	}
+
+	/** 녹 폭풍 장판 자리: 20칸 상자 안 플레이어 발밑부터, 모자라면 둘레 3 ~ 7칸 아무 데나. */
+	private void pickRustZones(ServerLevel level) {
+		rustZones.clear();
+		for (Player player : BossCombat.targets(level, getBoundingBox().inflate(20.0))) {
+			if (rustZones.size() < RUST_STORM_ZONES) {
+				rustZones.add(player.position());
+			}
+		}
+		while (rustZones.size() < RUST_STORM_ZONES) {
+			double angle = random.nextDouble() * Math.PI * 2.0;
+			double distance = 3.0 + random.nextDouble() * 4.0;
+			rustZones.add(position().add(Math.cos(angle) * distance, 0.0, Math.sin(angle) * distance));
+		}
+	}
+
+	/** 녹 폭풍 장판 자리 (시험용). */
+	public List<Vec3> rustZones() {
+		return List.copyOf(rustZones);
+	}
+
+	private void tickRustStorm(ServerLevel level) {
+		if (patternTick < RUST_STORM_WINDUP) {
+			if (patternTick % 3 == 0) {
+				DustParticleOptions dust = new DustParticleOptions(0xDE8442, 1.2F);
+				for (Vec3 center : rustZones) {
+					for (int i = 0; i < 16; i++) {
+						double a = i * Math.PI * 2.0 / 16.0;
+						level.sendParticles(dust, center.x + Math.cos(a) * BossHazard.PUDDLE_RADIUS, center.y + 0.1,
+								center.z + Math.sin(a) * BossHazard.PUDDLE_RADIUS, 1, 0.0, 0.0, 0.0, 0.0);
+					}
+				}
+				// 몸에서 녹가루가 휘몰아친다
+				level.sendParticles(new DustParticleOptions(0xA85628, 1.6F), getX(), getY() + getBbHeight() * 0.6, getZ(), 10, 1.0, 1.0, 1.0, 0.0);
+			}
+			if (patternTick == RUST_STORM_WINDUP - 10) {
+				playAttackAnimation(level);
+			}
+			return;
+		}
+		if (patternTick == RUST_STORM_WINDUP) {
+			spawnRustPuddles(level);
+			return;
+		}
+		if (patternTick >= RUST_STORM_END) {
+			endPattern();
+		}
+	}
+
+	/** 장판 자리마다 녹 장판을 깐다. 깐 장판을 돌려준다. */
+	public List<BossHazard> spawnRustPuddles(ServerLevel level) {
+		List<BossHazard> puddles = new ArrayList<>();
+		for (Vec3 center : rustZones) {
+			puddles.add(BossHazard.spawn(level, BossHazard.Kind.RUST_PUDDLE, center, BossHazard.PUDDLE_TICKS, this));
+		}
+		playSound(SoundEvents.GRINDSTONE_USE, 2.0F, 0.5F);
+		return puddles;
 	}
 
 	/** 녹 공격 (근접). */

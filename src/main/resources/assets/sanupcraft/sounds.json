@@ -449,5 +449,77 @@
         "pitch": 0.6
       }
     ]
+  },
+  "boss.guardian.rust_storm": {
+    "subtitle": "subtitles.sanupcraft.boss.guardian.rust_storm",
+    "sounds": [
+      {
+        "name": "minecraft:block.grindstone.use",
+        "type": "event",
+        "pitch": 0.5
+      },
+      {
+        "name": "minecraft:weather.rain",
+        "type": "event",
+        "volume": 0.6,
+        "pitch": 0.6
+      }
+    ]
+  },
+  "boss.warden.lava_pillar": {
+    "subtitle": "subtitles.sanupcraft.boss.warden.lava_pillar",
+    "sounds": [
+      {
+        "name": "minecraft:block.lava.ambient",
+        "type": "event",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:entity.blaze.shoot",
+        "type": "event",
+        "pitch": 0.5
+      }
+    ]
+  },
+  "boss.warden.lava_erupt": {
+    "subtitle": "subtitles.sanupcraft.boss.warden.lava_erupt",
+    "sounds": [
+      {
+        "name": "minecraft:item.firecharge.use",
+        "type": "event",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:block.lava.extinguish",
+        "type": "event",
+        "pitch": 0.7
+      }
+    ]
+  },
+  "boss.colossus.rift": {
+    "subtitle": "subtitles.sanupcraft.boss.colossus.rift",
+    "sounds": [
+      {
+        "name": "minecraft:block.respawn_anchor.charge",
+        "type": "event",
+        "pitch": 0.6
+      },
+      {
+        "name": "minecraft:block.portal.trigger",
+        "type": "event",
+        "volume": 0.5,
+        "pitch": 1.4
+      }
+    ]
+  },
+  "item.void_staff.shoot": {
+    "subtitle": "subtitles.sanupcraft.item.void_staff.shoot",
+    "sounds": [
+      {
+        "name": "minecraft:entity.shulker.shoot",
+        "type": "event",
+        "pitch": 1.4
+      }
+    ]
   }
 }

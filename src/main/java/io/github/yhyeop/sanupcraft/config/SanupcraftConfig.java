@@ -258,6 +258,11 @@ public final class SanupcraftConfig {
 	public int mobWispOverheatTicks = io.github.yhyeop.sanupcraft.mob.EmberWisp.OVERHEAT_TICKS;
 	/** 공허 그림자: 공허 침식 I 시간(틱). */
 	public int mobShadeErosionTicks = io.github.yhyeop.sanupcraft.mob.VoidShade.EROSION_TICKS;
+	// 확장 3 C4 보스 전용 장비
+	/** 보스 장비: 기여자 한 명이 받을 기본 확률. */
+	public double bossGearChance = io.github.yhyeop.sanupcraft.boss.gear.BossGearDrops.BASE_CHANCE;
+	/** 보스 장비: 강화 단계마다 더하는 확률. */
+	public double bossGearChancePerTier = io.github.yhyeop.sanupcraft.boss.gear.BossGearDrops.CHANCE_PER_TIER;
 
 	/** float 상수를 0.05F -> 0.05처럼 보이는 그대로의 double로 (파일에 0.0500000007...이 안 찍히게). */
 	private static double asDouble(float value) {
@@ -465,7 +470,12 @@ public final class SanupcraftConfig {
 			new Option("mobs", "wispOverheatTicks", io.github.yhyeop.sanupcraft.mob.EmberWisp.OVERHEAT_TICKS, 0, 12_000, true,
 					c -> c.mobWispOverheatTicks, (c, v) -> c.mobWispOverheatTicks = (int) v),
 			new Option("mobs", "shadeErosionTicks", io.github.yhyeop.sanupcraft.mob.VoidShade.EROSION_TICKS, 0, 12_000, true,
-					c -> c.mobShadeErosionTicks, (c, v) -> c.mobShadeErosionTicks = (int) v));
+					c -> c.mobShadeErosionTicks, (c, v) -> c.mobShadeErosionTicks = (int) v),
+			// 확장 3 C4 보스 전용 장비
+			new Option("bossGear", "chance", io.github.yhyeop.sanupcraft.boss.gear.BossGearDrops.BASE_CHANCE, 0.0, 1.0, false,
+					c -> c.bossGearChance, (c, v) -> c.bossGearChance = v),
+			new Option("bossGear", "chancePerTier", io.github.yhyeop.sanupcraft.boss.gear.BossGearDrops.CHANCE_PER_TIER, 0.0, 1.0, false,
+					c -> c.bossGearChancePerTier, (c, v) -> c.bossGearChancePerTier = v));
 
 	/** 읽은 결과: 설정, 경고 문구, 파일에 빠진 키가 있었는지, 파일을 새로 썼는지. */
 	public record Loaded(SanupcraftConfig config, List<String> warnings, boolean missingKeys, boolean wroteFile) {
