@@ -47,7 +47,7 @@ public final class PlaytestCommand {
 		START("바닐라 초반 → 분쇄기 만들기", null, PlaytestCommand::kitStart),
 		FACTORY("공장 1단계: 분쇄 · 합금 · 강철", null, PlaytestCommand::kitFactory),
 		BOSS1("녹슨 수호자", null, PlaytestCommand::kitBoss1),
-		STEAM("보일러 · 파이프 · 벨트 · 굴착기", null, PlaytestCommand::kitSteam),
+		STEAM("보일러 · 파이프 · 벨트 · 분류기 · 굴착기", null, PlaytestCommand::kitSteam),
 		NETHER("내열 한 벌로 네더 탐험", Level.NETHER, PlaytestCommand::kitNether),
 		BOSS2("네더 제단 · 용광로 파수꾼", Level.NETHER, PlaytestCommand::kitBoss2),
 		FORGE("심장 제련로 · 고대 잔해", Level.NETHER, PlaytestCommand::kitForge),
@@ -188,6 +188,9 @@ public final class PlaytestCommand {
 		give(p, Items.COAL, 32);
 		give(p, ModLogistics.BELT_MOTOR.asItem(), 1);
 		give(p, ModLogistics.BELT.asItem(), 32);
+		give(p, ModLogistics.BELT_SORTER.asItem(), 2);
+		give(p, ModLogistics.FILTER_HOPPER.asItem(), 2);
+		give(p, ModLogistics.ORE_MARKER, 1);
 		give(p, ModMachines.CRUSHER.asItem(), 1);
 		give(p, ModMachines.ASSEMBLER.asItem(), 1);
 		give(p, ModMining.STEAM_QUARRY.asItem(), 1);

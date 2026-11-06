@@ -101,22 +101,31 @@ public class BeltBlockEntity extends BlockEntity implements Container {
 		if (target == null) {
 			return;
 		}
-		ItemStack rest = item.getItem().copy();
-		if (target instanceof MachineBlockEntity) {
-			if (MachineBlockEntity.isFuel(rest)) {
-				rest = HopperBlockEntity.addItem(null, target, rest, facing.getOpposite());
-			}
-			if (!rest.isEmpty()) {
-				rest = HopperBlockEntity.addItem(null, target, rest, Direction.UP);
-			}
-		} else {
-			rest = HopperBlockEntity.addItem(null, target, rest, facing.getOpposite());
-		}
+		ItemStack rest = insert(target, item.getItem().copy(), facing);
 		if (rest.isEmpty()) {
 			item.discard();
 		} else {
 			item.setItem(rest);
 		}
+	}
+
+	/**
+	 * {@code travel} 방향으로 나르던 {@code stack}을 {@code target}에 넣고 남은 것을 돌려준다 (벨트 끝 · 분류기 출구가 같이 쓴다).
+	 * 대상이 기계이면 연료는 옆면(연료 칸) 먼저, 남으면 위(재료 칸)로 넣고, 연료가 아닌 것은 위로만 넣는다.
+	 */
+	public static ItemStack insert(Container target, ItemStack stack, Direction travel) {
+		ItemStack rest = stack;
+		if (target instanceof MachineBlockEntity) {
+			if (MachineBlockEntity.isFuel(rest)) {
+				rest = HopperBlockEntity.addItem(null, target, rest, travel.getOpposite());
+			}
+			if (!rest.isEmpty()) {
+				rest = HopperBlockEntity.addItem(null, target, rest, Direction.UP);
+			}
+		} else {
+			rest = HopperBlockEntity.addItem(null, target, rest, travel.getOpposite());
+		}
+		return rest;
 	}
 
 	// ---- 깔때기용: 칸 하나짜리 상자인 척 ----

@@ -1,0 +1,43 @@
+{
+  "criteria": {
+    "sorter": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:belt_sorter"
+          }
+        ]
+      }
+    },
+    "hopper": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:filter_hopper"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:belt_sorter"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.belt_sorter.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.belt_sorter.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "sorter",
+      "hopper"
+    ]
+  ],
+  "parent": "sanupcraft:belt_motor"
+}

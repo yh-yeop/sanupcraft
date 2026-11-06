@@ -22,7 +22,9 @@ import net.fabricmc.loader.api.FabricLoader;
 
 import io.github.yhyeop.sanupcraft.Sanupcraft;
 import io.github.yhyeop.sanupcraft.boss.BossParty;
+import io.github.yhyeop.sanupcraft.logistics.BeltSorterBlockEntity;
 import io.github.yhyeop.sanupcraft.logistics.EnderAnchorBlockEntity;
+import io.github.yhyeop.sanupcraft.logistics.FilterHopperBlockEntity;
 import io.github.yhyeop.sanupcraft.mining.QuarryBlockEntity;
 import io.github.yhyeop.sanupcraft.power.GeothermalVentBlockEntity;
 
@@ -54,6 +56,10 @@ public final class SanupcraftConfig {
 	public int anchorRadius = EnderAnchorBlockEntity.RADIUS;
 	/** 증기 굴착기: 블록 하나를 캐는 데 걸리는 틱. */
 	public int quarryTicksPerBlock = QuarryBlockEntity.TICKS_PER_BLOCK;
+	/** 벨트 분류기: 한 덩어리를 내보내 보는 간격(틱). */
+	public int sorterTicksPerMove = BeltSorterBlockEntity.TICKS_PER_MOVE;
+	/** 필터 깔때기: 아이템 하나를 옮기는 간격(틱). 바닐라 깔때기는 8. */
+	public int filterHopperTicksPerMove = FilterHopperBlockEntity.TICKS_PER_MOVE;
 
 	/** float 상수를 0.05F -> 0.05처럼 보이는 그대로의 double로 (파일에 0.0500000007...이 안 찍히게). */
 	private static double asDouble(float value) {
@@ -79,7 +85,11 @@ public final class SanupcraftConfig {
 			new Option("enderAnchor", "radius", EnderAnchorBlockEntity.RADIUS, 0, 3, true,
 					c -> c.anchorRadius, (c, v) -> c.anchorRadius = (int) v),
 			new Option("quarry", "ticksPerBlock", QuarryBlockEntity.TICKS_PER_BLOCK, 1, 200, true,
-					c -> c.quarryTicksPerBlock, (c, v) -> c.quarryTicksPerBlock = (int) v));
+					c -> c.quarryTicksPerBlock, (c, v) -> c.quarryTicksPerBlock = (int) v),
+			new Option("beltSorter", "ticksPerMove", BeltSorterBlockEntity.TICKS_PER_MOVE, 1, 200, true,
+					c -> c.sorterTicksPerMove, (c, v) -> c.sorterTicksPerMove = (int) v),
+			new Option("filterHopper", "ticksPerMove", FilterHopperBlockEntity.TICKS_PER_MOVE, 1, 200, true,
+					c -> c.filterHopperTicksPerMove, (c, v) -> c.filterHopperTicksPerMove = (int) v));
 
 	/** 읽은 결과: 설정, 경고 문구, 파일에 빠진 키가 있었는지, 파일을 새로 썼는지. */
 	public record Loaded(SanupcraftConfig config, List<String> warnings, boolean missingKeys, boolean wroteFile) {

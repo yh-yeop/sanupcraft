@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    "sanupcraft:iron_plate",
+    "minecraft:raw_iron"
+  ],
+  "result": {
+    "id": "sanupcraft:ore_marker"
+  }
+}

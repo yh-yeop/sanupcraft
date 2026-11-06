@@ -6,6 +6,9 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -14,7 +17,7 @@ import net.minecraft.world.level.material.MapColor;
 import io.github.yhyeop.sanupcraft.Sanupcraft;
 import io.github.yhyeop.sanupcraft.core.ModRegistry;
 
-/** 운반: 컨베이어 벨트와 벨트 모터 (2단계), 엔더 운반기 · 엔더 닻 (엔드 단계). */
+/** 운반: 컨베이어 벨트와 벨트 모터 (2단계), 벨트 분류기 · 필터 깔때기, 엔더 운반기 · 엔더 닻 (엔드 단계). */
 public final class ModLogistics {
 	public static final BeltBlock BELT = ModRegistry.block("conveyor_belt", BeltBlock::new, BlockBehaviour.Properties.of()
 			.mapColor(MapColor.COLOR_GRAY)
@@ -27,6 +30,25 @@ public final class ModLogistics {
 			.strength(3.5F)
 			.requiresCorrectToolForDrops()
 			.sound(SoundType.METAL));
+
+	/** 벨트 분류기: 필터에 맞는 것은 왼쪽, 나머지는 앞으로. 벨트 줄 가운데에 놓는다. */
+	public static final BeltSorterBlock BELT_SORTER = ModRegistry.block("belt_sorter", BeltSorterBlock::new, BlockBehaviour.Properties.of()
+			.mapColor(MapColor.METAL)
+			.strength(2.5F)
+			.requiresCorrectToolForDrops()
+			.sound(SoundType.METAL)
+			.noOcclusion());
+
+	/** 필터 깔때기: 바닐라 깔때기와 같되 필터 5칸에 맞는 것만 지나간다. */
+	public static final FilterHopperBlock FILTER_HOPPER = ModRegistry.block("filter_hopper", FilterHopperBlock::new, BlockBehaviour.Properties.of()
+			.mapColor(MapColor.METAL)
+			.strength(3.0F, 4.8F)
+			.requiresCorrectToolForDrops()
+			.sound(SoundType.METAL)
+			.noOcclusion());
+
+	/** 원석 표지: 필터 칸에 놓으면 원석 · 광석 태그(c:raw_materials, c:ores)의 아이템이 전부 맞는다. */
+	public static final Item ORE_MARKER = ModRegistry.item("ore_marker");
 
 	/** 엔더 운반기 (엔드 단계). 셜커 껍데기 + 엔더 진주로 만든다. */
 	public static final EnderLinkBlock ENDER_SENDER = ModRegistry.block("ender_sender", p -> new EnderLinkBlock(true, p), enderLinkProperties());
@@ -45,6 +67,19 @@ public final class ModLogistics {
 
 	public static final BlockEntityType<BeltMotorBlockEntity> BELT_MOTOR_BLOCK_ENTITY = Registry.register(
 			BuiltInRegistries.BLOCK_ENTITY_TYPE, Sanupcraft.id("belt_motor"), new BlockEntityType<>(BeltMotorBlockEntity::new, Set.of(BELT_MOTOR)));
+
+	public static final BlockEntityType<BeltSorterBlockEntity> BELT_SORTER_BLOCK_ENTITY = Registry.register(
+			BuiltInRegistries.BLOCK_ENTITY_TYPE, Sanupcraft.id("belt_sorter"), new BlockEntityType<>(BeltSorterBlockEntity::new, Set.of(BELT_SORTER)));
+
+	public static final BlockEntityType<FilterHopperBlockEntity> FILTER_HOPPER_BLOCK_ENTITY = Registry.register(
+			BuiltInRegistries.BLOCK_ENTITY_TYPE, Sanupcraft.id("filter_hopper"), new BlockEntityType<>(FilterHopperBlockEntity::new, Set.of(FILTER_HOPPER)));
+
+	/** 필터 화면: 분류기(9칸, 발사기 모양)와 필터 깔때기(5칸, 깔때기 모양). */
+	public static final MenuType<FilterMenu> SORTER_MENU = Registry.register(
+			BuiltInRegistries.MENU, Sanupcraft.id("belt_sorter"), new MenuType<>(FilterMenu::sorter, FeatureFlags.VANILLA_SET));
+
+	public static final MenuType<FilterMenu> FILTER_HOPPER_MENU = Registry.register(
+			BuiltInRegistries.MENU, Sanupcraft.id("filter_hopper"), new MenuType<>(FilterMenu::hopper, FeatureFlags.VANILLA_SET));
 
 	public static final BlockEntityType<EnderLinkBlockEntity> ENDER_LINK_BLOCK_ENTITY = Registry.register(
 			BuiltInRegistries.BLOCK_ENTITY_TYPE, Sanupcraft.id("ender_link"), new BlockEntityType<>(EnderLinkBlockEntity::new, Set.of(ENDER_SENDER, ENDER_RECEIVER)));

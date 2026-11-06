@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "sanupcraft:block/belt_sorter"
+    },
+    "facing=east": {
+      "model": "sanupcraft:block/belt_sorter",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "sanupcraft:block/belt_sorter",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "sanupcraft:block/belt_sorter",
+      "y": 270
+    }
+  }
+}

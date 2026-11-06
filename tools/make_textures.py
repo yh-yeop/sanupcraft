@@ -957,6 +957,108 @@ def main_bundle1(made):
     made.append(save(gauge_side(), "block/steam_gauge_side.png"))
 
 
+FILTER = {"a": "#142a33", "b": "#2f5566", "c": "#4f8a9e", "d": "#7bbccd", "e": "#bfe8f2"}
+
+FILTER_HOPPER_ICON = [
+    "................",
+    ".aaaaaaaaaaaaaa.",
+    ".adeeeeeeeeeeca.",
+    ".acddddddddddba.",
+    ".abccccccccccba.",
+    "..abcccccccbba..",
+    "..abbcccccbbba..",
+    "...abbcccbbba...",
+    "...abcbbbbcba...",
+    "....abbbbbba....",
+    ".....abbbba.....",
+    ".....abbcba.....",
+    ".....abbcba.....",
+    ".....abbbba.....",
+    ".....aaaaaa.....",
+    "................",
+]
+
+ORE_MARKER_ICON = [
+    "................",
+    "................",
+    "....aaaaaaaa....",
+    "...aeeeeeeeea...",
+    "..aeddddddddca..",
+    "..aedrrrrrrdca..",
+    "..aedrsttsrdca..",
+    "..aedrtuutrdca..",
+    "..aedrtuutrdca..",
+    "..aedrsttsrdca..",
+    "..aedrrrrrrdca..",
+    "..aeddddddddca..",
+    "..abcccccccbba..",
+    "...aabbbbbbaa...",
+    "................",
+    "................",
+]
+
+
+def sorter_top():
+    """벨트 분류기 윗면: 벨트 줄 화살(앞=위)과 왼쪽으로 꺾이는 주황 화살."""
+    im = belt_frame(0)
+    for y in range(16):
+        for x in range(16):
+            if 2 <= x <= 13 and 2 <= y <= 13 and (x + y) % 2 == 0:
+                im.putpixel((x, y), px("m"))
+    # 앞(위)으로 가는 화살
+    for y in range(1, 9):
+        im.putpixel((8, y), px("e"))
+    for i in range(1, 4):
+        im.putpixel((8 - i, 1 + i), px("e"))
+        im.putpixel((8 + i, 1 + i), px("e"))
+    # 왼쪽으로 가는 주황 화살
+    for x in range(1, 7):
+        im.putpixel((x, 10), px("u"))
+    for i in range(1, 3):
+        im.putpixel((1 + i, 10 - i), px("t"))
+        im.putpixel((1 + i, 10 + i), px("t"))
+    return im
+
+
+def sorter_side():
+    im = Image.new("RGBA", (16, 16))
+    noise_fill(im, "bcc", 201)
+    for x in range(16):
+        im.putpixel((x, 10), px("d"))
+        im.putpixel((x, 15), px("a"))
+        if x % 5 == 2:
+            im.putpixel((x, 12), px("e"))
+    return im
+
+
+def filter_hopper_outside():
+    return recolor(panel(seed=211), FILTER)
+
+
+def filter_hopper_top():
+    im = recolor(panel(seed=212), FILTER)
+    for y in range(4, 12):
+        for x in range(4, 12):
+            im.putpixel((x, y), hex_px(FILTER["a"]))
+    return im
+
+
+def filter_hopper_inside():
+    im = Image.new("RGBA", (16, 16))
+    noise_fill(im, "aab", 213)
+    return recolor(im, FILTER)
+
+
+def main_bundle2(made):
+    made.append(save(sorter_top(), "block/belt_sorter_top.png"))
+    made.append(save(sorter_side(), "block/belt_sorter_side.png"))
+    made.append(save(filter_hopper_outside(), "block/filter_hopper_outside.png"))
+    made.append(save(filter_hopper_top(), "block/filter_hopper_top.png"))
+    made.append(save(filter_hopper_inside(), "block/filter_hopper_inside.png"))
+    made.append(save(recolor(from_art(FILTER_HOPPER_ICON), FILTER), "item/filter_hopper.png"))
+    made.append(save(from_art(ORE_MARKER_ICON), "item/ore_marker.png"))
+
+
 def save(im, rel, scale=1):
     path = os.path.join(OUT, *rel.split("/"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -988,6 +1090,7 @@ def main():
     main_redesign(made)
     main_m4(made)
     main_bundle1(made)
+    main_bundle2(made)
 
     if "--sheet" in sys.argv:
         tiles = [Image.open(p) for p in made]

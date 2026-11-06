@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "sanupcraft:iron_plate",
+    "B": "sanupcraft:conveyor_belt",
+    "H": "minecraft:hopper",
+    "R": "minecraft:redstone"
+  },
+  "pattern": [
+    "PRP",
+    "BHB"
+  ],
+  "result": {
+    "id": "sanupcraft:belt_sorter"
+  }
+}

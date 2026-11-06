@@ -14,6 +14,8 @@
     "sanupcraft:steam_quarry",
     "sanupcraft:geothermal_vent",
     "sanupcraft:ender_anchor",
-    "sanupcraft:steam_gauge"
+    "sanupcraft:steam_gauge",
+    "sanupcraft:belt_sorter",
+    "sanupcraft:filter_hopper"
   ]
 }

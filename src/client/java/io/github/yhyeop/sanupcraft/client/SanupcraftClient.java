@@ -14,11 +14,14 @@ import net.minecraft.world.item.ItemStack;
 
 import io.github.yhyeop.sanupcraft.boss.ModBoss;
 import io.github.yhyeop.sanupcraft.factory.ModMachines;
+import io.github.yhyeop.sanupcraft.logistics.ModLogistics;
 
 public class SanupcraftClient implements ClientModInitializer {
 	@Override
 	public void onInitializeClient() {
 		MenuScreens.register(ModMachines.MACHINE_MENU, MachineScreen::new);
+		MenuScreens.register(ModLogistics.SORTER_MENU, FilterScreen::new);
+		MenuScreens.register(ModLogistics.FILTER_HOPPER_MENU, FilterScreen::new);
 		EntityRendererRegistry.register(ModBoss.RUSTY_GUARDIAN, RustyGuardianRenderer::new);
 		EntityRendererRegistry.register(ModBoss.FURNACE_WARDEN, FurnaceWardenRenderer::new);
 		ItemTooltipCallback.EVENT.register((stack, context, flag, lines) -> addGuideTooltip(stack, lines));
