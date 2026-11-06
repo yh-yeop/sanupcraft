@@ -33,6 +33,7 @@ import io.github.yhyeop.sanupcraft.core.ModItems;
 import io.github.yhyeop.sanupcraft.factory.ModMachines;
 import io.github.yhyeop.sanupcraft.fluid.ModFluid;
 import io.github.yhyeop.sanupcraft.gear.HeatproofGear;
+import io.github.yhyeop.sanupcraft.gear.ProductionGear;
 import io.github.yhyeop.sanupcraft.gear.SteamCharge;
 import io.github.yhyeop.sanupcraft.gear.SteamGear;
 import io.github.yhyeop.sanupcraft.gear.SteelGear;
@@ -41,6 +42,7 @@ import io.github.yhyeop.sanupcraft.mining.ModMining;
 import io.github.yhyeop.sanupcraft.power.ModPower;
 import io.github.yhyeop.sanupcraft.server.GuideBook;
 import io.github.yhyeop.sanupcraft.server.ModServer;
+import io.github.yhyeop.sanupcraft.production.ModProduction;
 
 /**
  * 싱글 실테스트용: {@code /sanupcraft playtest <단계>} (OP). 그 단계를 시험하는 데 필요한 장비 · 재료를 주고,
@@ -59,7 +61,9 @@ public final class PlaytestCommand {
 		OUTPOST("네더 전초기지: 지열 분출구 · 내열 드릴 굴착기 · 엔더 닻", Level.NETHER, PlaytestCommand::kitOutpost),
 		HOME("오버월드로 돌아오기", Level.OVERWORLD, PlaytestCommand::kitHome),
 		END("엔드 · 엔더 운반기", Level.END, PlaytestCommand::kitEnd),
-		SERVER("서버 기능: 팀 · 보스 기록판 · 공용 목표판 · 설명서", null, PlaytestCommand::kitServer);
+		SERVER("서버 기능: 팀 · 보스 기록판 · 공용 목표판 · 설명서", null, PlaytestCommand::kitServer),
+		// 확장 M9a
+		PRODUCTION("생산 · 장비: 작물 수확기 · 벌목기 · 증기 드릴 · 전기톱 · 제트팩", null, PlaytestCommand::kitProduction);
 
 		final String description;
 		final ResourceKey<Level> dimension;
@@ -349,6 +353,29 @@ public final class PlaytestCommand {
 		give(p, ModBoss.GUARDIAN_SUMMONER, 2);
 		equip(p, SteelGear.STEEL_HELMET, SteelGear.STEEL_CHESTPLATE, SteelGear.STEEL_LEGGINGS, SteelGear.STEEL_BOOTS);
 		give(p, SteelGear.STEEL_SWORD, 1);
+		food(p);
+	}
+
+	/** 확장 M9a 생산 · 장비: 보일러 · 파이프로 수확기 · 벌목기를 돌리고, 가득 찬 드릴 · 전기톱 · 제트팩을 바로 써 본다. */
+	private static void kitProduction(ServerPlayer p) {
+		give(p, ModPower.BOILER.asItem(), 1);
+		give(p, ModPower.STEAM_PIPE.asItem(), 16);
+		give(p, Items.WATER_BUCKET, 1);
+		give(p, Items.COAL, 32);
+		give(p, ModPower.STEAM_CHARGER.asItem(), 1);
+		give(p, ModProduction.CROP_HARVESTER.asItem(), 1);
+		give(p, ModProduction.TREE_FELLER.asItem(), 1);
+		give(p, Items.HOPPER, 2);
+		give(p, Items.CHEST, 2);
+		give(p, Items.WHEAT_SEEDS, 16);
+		give(p, Items.CARROT, 8);
+		give(p, Items.BONE_MEAL, 32);
+		give(p, Items.OAK_SAPLING, 8);
+		give(p, Items.DIRT, 32);
+		give(p, charged(ProductionGear.STEAM_DRILL));
+		give(p, charged(ProductionGear.CHAINSAW));
+		give(p, charged(ProductionGear.STEAM_JETPACK));
+		give(p, SteamGear.STEAM_CANISTER, 2);
 		food(p);
 	}
 }

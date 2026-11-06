@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "sanupcraft:steel_plate",
+    "A": "minecraft:iron_axe",
+    "G": "sanupcraft:gear_part",
+    "S": "sanupcraft:steam_pipe",
+    "O": "minecraft:hopper"
+  },
+  "pattern": [
+    "PAP",
+    "GSG",
+    "POP"
+  ],
+  "result": {
+    "id": "sanupcraft:tree_feller"
+  }
+}

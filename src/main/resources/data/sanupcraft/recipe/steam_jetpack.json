@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "sanupcraft:steel_chestplate",
+    "sanupcraft:steam_canister",
+    "sanupcraft:steam_canister",
+    "sanupcraft:gear_part",
+    "sanupcraft:gear_part",
+    "sanupcraft:steam_pipe"
+  ],
+  "result": {
+    "id": "sanupcraft:steam_jetpack"
+  }
+}

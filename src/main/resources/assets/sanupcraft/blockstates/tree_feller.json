@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "sanupcraft:block/tree_feller"
+    },
+    "facing=east": {
+      "model": "sanupcraft:block/tree_feller",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "sanupcraft:block/tree_feller",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "sanupcraft:block/tree_feller",
+      "y": 270
+    }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:chainsaw"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:chainsaw"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.chainsaw.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.chainsaw.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ],
+  "parent": "sanupcraft:steam_drill"
+}

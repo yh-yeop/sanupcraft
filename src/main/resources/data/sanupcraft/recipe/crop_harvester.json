@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "sanupcraft:steel_plate",
+    "H": "minecraft:iron_hoe",
+    "G": "sanupcraft:gear_part",
+    "S": "sanupcraft:steam_pipe",
+    "O": "minecraft:hopper"
+  },
+  "pattern": [
+    "PHP",
+    "GSG",
+    "POP"
+  ],
+  "result": {
+    "id": "sanupcraft:crop_harvester"
+  }
+}
