@@ -133,8 +133,8 @@ public class SanupcraftM9bGameTest {
 	}
 
 	/** 죽이면 (플레이어가 잡은 것처럼) 경험치 구슬이 나오고, 붙은 경험치 탱크로 모인다. */
-	// 혼자 돈다: 이웃 시험의 가짜 플레이어가 8칸 안에 있으면 경험치 구슬이 그쪽으로 날아간다
-	@GameTest(environment = "sanupcraft-test:alone")
+	// 따로 돈다 (전용 환경): 같은 묶음의 가짜 플레이어가 8칸 안에 있으면 경험치 구슬이 그쪽으로 날아간다
+	@GameTest(environment = "sanupcraft-test:alone_grinder")
 	public void grinderKillFeedsExperienceTank(GameTestHelper helper) {
 		helper.setBlock(GRINDER, ModGrinder.MOB_GRINDER);
 		BlockPos tankPos = GRINDER.east();
@@ -162,8 +162,8 @@ public class SanupcraftM9bGameTest {
 	}
 
 	/** 탱크가 없으면 안 저장고에 모으고, 탱크를 붙이면 옮겨 간다. 빈손 우클릭으로 받는다. */
-	// 혼자 돈다: 이웃 시험의 가짜 플레이어가 8칸 안에 있으면 경험치 구슬이 그쪽으로 날아간다
-	@GameTest(environment = "sanupcraft-test:alone")
+	// 따로 돈다 (전용 환경): 같은 묶음의 가짜 플레이어가 8칸 안에 있으면 경험치 구슬이 그쪽으로 날아간다
+	@GameTest(environment = "sanupcraft-test:alone_grinder")
 	public void grinderBufferMovesToTankAndPlayer(GameTestHelper helper) {
 		helper.setBlock(GRINDER, ModGrinder.MOB_GRINDER);
 		MobGrinderBlockEntity grinder = helper.getBlockEntity(GRINDER, MobGrinderBlockEntity.class);
