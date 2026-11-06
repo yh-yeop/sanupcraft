@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "L": "minecraft:leather",
+    "I": "sanupcraft:iron_plate",
+    "C": "minecraft:chest"
+  },
+  "pattern": [
+    "LIL",
+    "LCL",
+    "L L"
+  ],
+  "result": {
+    "id": "sanupcraft:backpack"
+  }
+}

@@ -1375,6 +1375,109 @@ def main_m10(made):
     made.append(save(goal_board_top(), "block/goal_board_top.png"))
 
 
+# ---- M9 part B: 몹 분쇄기 · 경험치 탱크 · 배낭 ----
+XP_GREEN = {"k": "#145a2a", "g": "#3ae05a", "h": "#c8ffa6"}
+
+
+def grinder_side():
+    """몹 분쇄기 옆면: 강철 판에 가운데 톱날 틈과 이빨."""
+    im = panel(seed=601)
+    fill_rect(im, 3, 6, 12, 9, "#14181d")
+    for x in range(3, 13, 2):
+        fill_rect(im, x, 5, x, 5, "#eaf0f5")
+        fill_rect(im, x, 10, x, 10, "#eaf0f5")
+    fill_rect(im, 3, 7, 12, 7, "#5f6873")
+    return im
+
+
+def grinder_top():
+    """몹 분쇄기 윗면: 둥근 톱날 (이빨 8개)."""
+    im = panel(seed=602)
+    for y in range(16):
+        for x in range(16):
+            d = math.hypot(x - 7.5, y - 7.5)
+            ang = math.atan2(y - 7.5, x - 7.5)
+            tooth = 6.4 if int(round(ang / (math.pi / 4))) % 2 == 0 else 5.2
+            if d < tooth:
+                im.putpixel((x, y), px("e") if d > 4.4 else px("d") if d > 2.6 else px("b"))
+    for y in range(6, 10):
+        for x in range(6, 10):
+            im.putpixel((x, y), px("a"))
+    return im
+
+
+def grinder_bottom():
+    return panel(seed=603)
+
+
+def xp_tank_side():
+    """경험치 탱크 옆면: 철판 테두리에 초록 유리창."""
+    im = panel(seed=611)
+    for y in range(2, 14):
+        for x in range(4, 12):
+            edge = x in (4, 11) or y in (2, 13)
+            if edge:
+                im.putpixel((x, y), px("a"))
+            else:
+                im.putpixel((x, y), hex_px(XP_GREEN["h"]) if x == 5 and y < 9 else hex_px(XP_GREEN["g"]) if y > 6 else hex_px(XP_GREEN["k"]))
+    for y in (5, 8, 11):
+        im.putpixel((10, y), px("e"))
+    return im
+
+
+def xp_tank_top():
+    """경험치 탱크 윗면: 둥근 뚜껑 가운데에 초록 구슬."""
+    im = tank_top()
+    for y in range(6, 10):
+        for x in range(6, 10):
+            if math.hypot(x - 7.5, y - 7.5) < 2.2:
+                im.putpixel((x, y), hex_px(XP_GREEN["g"]))
+    im.putpixel((7, 7), hex_px(XP_GREEN["h"]))
+    return im
+
+
+def art_hex(rows, legend):
+    assert len(rows) == 16 and all(len(r) == 16 for r in rows), rows
+    im = Image.new("RGBA", (16, 16))
+    for y, row in enumerate(rows):
+        for x, ch in enumerate(row):
+            if ch != ".":
+                im.putpixel((x, y), hex_px(legend[ch]))
+    return im
+
+
+BACKPACK_ART = [
+    "................",
+    ".....aaaaaa.....",
+    "....abbbbbba....",
+    "...abccccccba...",
+    "..abccccccccba..",
+    "..abcdddddddba..",
+    "..abcdeeeeedba..",
+    "..abcdeeeeedba..",
+    "..abcdddddddba..",
+    "..abccccccccba..",
+    "..abcfffffcccba.",
+    "..abcfgggfcccba.",
+    "..abcfffffccba..",
+    "..abccccccccba..",
+    "...abbbbbbbba...",
+    "....aaaaaaaa....",
+]
+BACKPACK_LEATHER = {"a": "#2e1a0c", "b": "#5c3a1e", "c": "#8a5a30", "d": "#6b4423", "e": "#b5844e", "f": "#2e1a0c", "g": "#d9b45a"}
+BACKPACK_STEEL = {"a": "#1e2633", "b": "#3c4a5e", "c": "#5f708a", "d": "#8a9bb5", "e": "#c5d2e6", "f": "#1e2633", "g": "#f0c64a"}
+
+
+def main_m9b(made):
+    made.append(save(grinder_side(), "block/mob_grinder_side.png"))
+    made.append(save(grinder_top(), "block/mob_grinder_top.png"))
+    made.append(save(grinder_bottom(), "block/mob_grinder_bottom.png"))
+    made.append(save(xp_tank_side(), "block/experience_tank_side.png"))
+    made.append(save(xp_tank_top(), "block/experience_tank_top.png"))
+    made.append(save(art_hex(BACKPACK_ART, BACKPACK_LEATHER), "item/backpack.png"))
+    made.append(save(art_hex(BACKPACK_ART, BACKPACK_STEEL), "item/steel_backpack.png"))
+
+
 def save(im, rel, scale=1):
     path = os.path.join(OUT, *rel.split("/"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -1410,6 +1513,7 @@ def main():
     main_bundle3(made)
     main_bundle4(made)
     main_m10(made)
+    main_m9b(made)
 
     if "--sheet" in sys.argv:
         tiles = [Image.open(p) for p in made]

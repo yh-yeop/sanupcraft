@@ -30,6 +30,7 @@ import io.github.yhyeop.sanupcraft.logistics.BeltSorterBlockEntity;
 import io.github.yhyeop.sanupcraft.logistics.EnderAnchorBlockEntity;
 import io.github.yhyeop.sanupcraft.logistics.FilterHopperBlockEntity;
 import io.github.yhyeop.sanupcraft.mining.QuarryBlockEntity;
+import io.github.yhyeop.sanupcraft.production.grinder.MobGrinderBlockEntity;
 import io.github.yhyeop.sanupcraft.power.GeothermalVentBlockEntity;
 import io.github.yhyeop.sanupcraft.power.SteamChargerBlockEntity;
 
@@ -89,6 +90,13 @@ public final class SanupcraftConfig {
 	public int pumpSteamPerBucket = PumpBlockEntity.STEAM_PER_BUCKET;
 	/** 펌프: 원천 하나를 빨아들이는 간격(틱). */
 	public int pumpTicksPerBucket = PumpBlockEntity.TICKS_PER_BUCKET;
+	// ---- M9b 몹 분쇄기 ----
+	/** 몹 분쇄기: 한 번 벨 때 몹 하나가 받는 피해. */
+	public double grinderDamage = asDouble(MobGrinderBlockEntity.DAMAGE);
+	/** 몹 분쇄기: 몹 하나를 한 번 베는 데 드는 증기. */
+	public int grinderSteamPerHit = MobGrinderBlockEntity.STEAM_PER_HIT;
+	/** 몹 분쇄기: 베는 간격(틱). */
+	public int grinderTicksPerHit = MobGrinderBlockEntity.TICKS_PER_HIT;
 
 	/** float 상수를 0.05F -> 0.05처럼 보이는 그대로의 double로 (파일에 0.0500000007...이 안 찍히게). */
 	private static double asDouble(float value) {
@@ -142,7 +150,14 @@ public final class SanupcraftConfig {
 			new Option("pump", "steamPerBucket", PumpBlockEntity.STEAM_PER_BUCKET, 0, PumpBlockEntity.STEAM_CAPACITY, true,
 					c -> c.pumpSteamPerBucket, (c, v) -> c.pumpSteamPerBucket = (int) v),
 			new Option("pump", "ticksPerBucket", PumpBlockEntity.TICKS_PER_BUCKET, 1, 1200, true,
-					c -> c.pumpTicksPerBucket, (c, v) -> c.pumpTicksPerBucket = (int) v));
+					c -> c.pumpTicksPerBucket, (c, v) -> c.pumpTicksPerBucket = (int) v),
+			// M9b 몹 분쇄기
+			new Option("mobGrinder", "damage", asDouble(MobGrinderBlockEntity.DAMAGE), 0.0, 1000.0, false,
+					c -> c.grinderDamage, (c, v) -> c.grinderDamage = v),
+			new Option("mobGrinder", "steamPerHit", MobGrinderBlockEntity.STEAM_PER_HIT, 0, MobGrinderBlockEntity.STEAM_CAPACITY, true,
+					c -> c.grinderSteamPerHit, (c, v) -> c.grinderSteamPerHit = (int) v),
+			new Option("mobGrinder", "ticksPerHit", MobGrinderBlockEntity.TICKS_PER_HIT, 1, 1200, true,
+					c -> c.grinderTicksPerHit, (c, v) -> c.grinderTicksPerHit = (int) v));
 
 	/** 읽은 결과: 설정, 경고 문구, 파일에 빠진 키가 있었는지, 파일을 새로 썼는지. */
 	public record Loaded(SanupcraftConfig config, List<String> warnings, boolean missingKeys, boolean wroteFile) {

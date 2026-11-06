@@ -1,0 +1,32 @@
+{
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:mob_grinder"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:mob_grinder"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.mob_grinder.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.mob_grinder.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ],
+  "parent": "sanupcraft:boiler"
+}
