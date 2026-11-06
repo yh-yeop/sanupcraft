@@ -56,10 +56,12 @@ public final class Jetpack {
 		ServerPlayNetworking.registerGlobalReceiver(ThrustPayload.TYPE, (payload, context) -> thrust(context.player()));
 	}
 
-	/** 지금 입고 있는 제트팩 (없으면 빈 것). */
+	/** 지금 입고 있는 제트팩 (없으면 빈 것). 제트팩 모듈을 끼운 증기 흉갑(확장 3 G5 파워 아머)도 제트팩이다. */
 	public static ItemStack worn(Player player) {
 		ItemStack chest = player.getItemBySlot(EquipmentSlot.CHEST);
-		return chest.is(ProductionGear.STEAM_JETPACK) ? chest : ItemStack.EMPTY;
+		boolean module = SteamCharge.holdsSteam(chest)
+				&& io.github.yhyeop.sanupcraft.module.GearModules.has(chest, io.github.yhyeop.sanupcraft.module.GearModule.JETPACK);
+		return chest.is(ProductionGear.STEAM_JETPACK) || module ? chest : ItemStack.EMPTY;
 	}
 
 	/** 한 틱 뜰 증기가 들어 있나 (설정값, 0이어도 1 이상은 있어야 뜬다). 서버 · 클라이언트가 같은 판정을 쓴다. */

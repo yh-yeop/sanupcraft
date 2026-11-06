@@ -1,0 +1,32 @@
+{
+  "parent": "sanupcraft:steam_jetpack",
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:power_armor_chestplate"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:power_armor_chestplate"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.power_armor.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.power_armor.description"
+    },
+    "frame": "goal"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ]
+}

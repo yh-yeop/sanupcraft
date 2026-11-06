@@ -39,8 +39,15 @@ public final class GearUpgradeRecipes {
 	static void init() {
 	}
 
-	/** 격자의 첫 장비 (내구도가 있는 것). */
+	/** 격자의 첫 장비 (내구도가 있는 것). 확장 3 G5: 장비가 둘 이상이면(멀티툴 = 드릴 + 전기톱 + 괭이) 옮길 것(마법 부여 · 모듈 · 이름)이 있는 첫 것을 먼저 본다. */
 	static ItemStack source(CraftingInput input) {
+		for (int i = 0; i < input.size(); i++) {
+			ItemStack stack = input.getItem(i);
+			if (GearInheritance.isGear(stack) && (stack.isEnchanted() || stack.has(ModModules.MODULES)
+					|| stack.has(net.minecraft.core.component.DataComponents.CUSTOM_NAME))) {
+				return stack;
+			}
+		}
 		for (int i = 0; i < input.size(); i++) {
 			ItemStack stack = input.getItem(i);
 			if (!stack.isEmpty() && stack.isDamageableItem()) {

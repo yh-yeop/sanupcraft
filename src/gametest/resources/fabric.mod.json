@@ -42,7 +42,8 @@
 			"io.github.yhyeop.sanupcraft.test.SanupcraftAlloyGearGameTest",
 			"io.github.yhyeop.sanupcraft.test.SanupcraftC2MobGameTest",
 			"io.github.yhyeop.sanupcraft.test.SanupcraftC4GameTest",
-			"io.github.yhyeop.sanupcraft.test.SanupcraftModulesGameTest"
+			"io.github.yhyeop.sanupcraft.test.SanupcraftModulesGameTest",
+			"io.github.yhyeop.sanupcraft.test.SanupcraftSpecialGearGameTest"
 		],
 		"fabric-client-gametest": [
 			"io.github.yhyeop.sanupcraft.test.SanupcraftClientGameTest",
@@ -59,7 +60,8 @@
 			"io.github.yhyeop.sanupcraft.test.SanupcraftA5ClientGameTest",
 			"io.github.yhyeop.sanupcraft.test.SanupcraftAlloyGearClientGameTest",
 			"io.github.yhyeop.sanupcraft.test.SanupcraftC2MobClientGameTest",
-			"io.github.yhyeop.sanupcraft.test.SanupcraftC4ClientGameTest"
+			"io.github.yhyeop.sanupcraft.test.SanupcraftC4ClientGameTest",
+			"io.github.yhyeop.sanupcraft.test.SanupcraftSpecialGearClientGameTest"
 		]
 	},
 	"depends": {

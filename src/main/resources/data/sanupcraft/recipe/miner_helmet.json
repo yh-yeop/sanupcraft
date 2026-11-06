@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "C": "sanupcraft:chrome_steel_ingot",
+    "L": "minecraft:lantern"
+  },
+  "pattern": [
+    "CLC",
+    "C C"
+  ],
+  "result": {
+    "id": "sanupcraft:miner_helmet"
+  }
+}

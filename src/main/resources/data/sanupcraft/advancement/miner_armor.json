@@ -1,0 +1,37 @@
+{
+  "parent": "sanupcraft:chrome_steel",
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "sanupcraft:miner_helmet",
+              "sanupcraft:miner_chestplate",
+              "sanupcraft:miner_leggings",
+              "sanupcraft:miner_boots"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:miner_helmet"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.miner_armor.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.miner_armor.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ]
+}

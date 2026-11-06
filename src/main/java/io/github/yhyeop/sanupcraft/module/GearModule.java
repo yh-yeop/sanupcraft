@@ -47,7 +47,10 @@ public enum GearModule implements StringRepresentable {
 	/** 쿨다운 반. */
 	RAPID_FIRE("rapid_fire", Kind.RIVET_GUN),
 	/** 리벳 1개로 3발 부채꼴 (한 발 피해 50%). */
-	SCATTER("scatter", Kind.RIVET_GUN);
+	SCATTER("scatter", Kind.RIVET_GUN),
+	// 확장 3 G5: 증기를 담는 흉갑(파워 아머)에만
+	/** 흉갑이 제트팩처럼 뜬다 (흉갑의 증기를 씀, {@code gear.Jetpack#worn}). */
+	JETPACK("jetpack", Kind.ARMOR);
 
 	/** 모듈을 끼우는 장비 종류. */
 	public enum Kind {

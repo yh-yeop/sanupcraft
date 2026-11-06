@@ -73,6 +73,11 @@ public final class GearModules {
 		if (!ModuleSlots.kinds(gear).contains(module.kind())) {
 			return false;
 		}
+		if (module == GearModule.JETPACK) { // 확장 3 G5: 증기를 담는 흉갑만 (제트팩 자신은 빼고)
+			net.minecraft.world.item.equipment.Equippable equippable = gear.get(net.minecraft.core.component.DataComponents.EQUIPPABLE);
+			return equippable != null && equippable.slot() == EquipmentSlot.CHEST
+					&& io.github.yhyeop.sanupcraft.gear.SteamCharge.holdsSteam(gear) && !gear.is(io.github.yhyeop.sanupcraft.gear.ProductionGear.STEAM_JETPACK);
+		}
 		if (module == GearModule.AREA) {
 			return !AreaMining.isAreaToolItem(gear) && !(gear.getItem() instanceof SteamToolItem)
 					&& (gear.is(net.minecraft.tags.ItemTags.PICKAXES) || gear.is(net.minecraft.tags.ItemTags.SHOVELS)

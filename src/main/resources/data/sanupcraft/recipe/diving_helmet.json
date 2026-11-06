@@ -1,0 +1,18 @@
+{
+  "type": "sanupcraft:gear_upgrade_shaped",
+  "category": "equipment",
+  "key": {
+    "P": "minecraft:copper_ingot",
+    "G": "minecraft:glass",
+    "H": "sanupcraft:steel_helmet",
+    "C": "sanupcraft:steam_canister"
+  },
+  "pattern": [
+    "PGP",
+    "GHG",
+    " C "
+  ],
+  "result": {
+    "id": "sanupcraft:diving_helmet"
+  }
+}

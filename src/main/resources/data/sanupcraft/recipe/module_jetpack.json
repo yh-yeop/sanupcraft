@@ -1,0 +1,11 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "equipment",
+  "ingredients": [
+    "sanupcraft:module_frame",
+    "sanupcraft:steam_jetpack"
+  ],
+  "result": {
+    "id": "sanupcraft:module_jetpack"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "type": "sanupcraft:gear_upgrade_shaped",
+  "category": "equipment",
+  "key": {
+    "G": "sanupcraft:gear_part",
+    "P": "sanupcraft:precision_part",
+    "N": "minecraft:netherite_leggings"
+  },
+  "pattern": [
+    "GPG",
+    "GNG",
+    "G G"
+  ],
+  "result": {
+    "id": "sanupcraft:power_armor_leggings"
+  }
+}

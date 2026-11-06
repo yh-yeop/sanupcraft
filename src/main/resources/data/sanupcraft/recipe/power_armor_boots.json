@@ -1,0 +1,16 @@
+{
+  "type": "sanupcraft:gear_upgrade_shaped",
+  "category": "equipment",
+  "key": {
+    "G": "sanupcraft:gear_part",
+    "P": "sanupcraft:precision_part",
+    "N": "minecraft:netherite_boots"
+  },
+  "pattern": [
+    "PNP",
+    "G G"
+  ],
+  "result": {
+    "id": "sanupcraft:power_armor_boots"
+  }
+}

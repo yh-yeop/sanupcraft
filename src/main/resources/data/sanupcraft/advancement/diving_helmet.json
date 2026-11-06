@@ -1,0 +1,32 @@
+{
+  "parent": "sanupcraft:steam_boots",
+  "criteria": {
+    "has": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": "sanupcraft:diving_helmet"
+          }
+        ]
+      }
+    }
+  },
+  "display": {
+    "icon": {
+      "id": "sanupcraft:diving_helmet"
+    },
+    "title": {
+      "translate": "advancements.sanupcraft.diving_helmet.title"
+    },
+    "description": {
+      "translate": "advancements.sanupcraft.diving_helmet.description"
+    },
+    "frame": "task"
+  },
+  "requirements": [
+    [
+      "has"
+    ]
+  ]
+}

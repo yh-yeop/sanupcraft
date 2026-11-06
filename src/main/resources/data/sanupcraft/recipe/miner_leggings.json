@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "C": "sanupcraft:chrome_steel_ingot",
+    "L": "minecraft:leather",
+    "Y": "minecraft:yellow_dye"
+  },
+  "pattern": [
+    "CYC",
+    "L L",
+    "C C"
+  ],
+  "result": {
+    "id": "sanupcraft:miner_leggings"
+  }
+}

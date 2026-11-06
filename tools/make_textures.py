@@ -5402,6 +5402,609 @@ def main_g3(made):
         made.append(save(g3_repair_station(part), f"block/steam_repair_station_{part}.png"))
 
 
+# ---------- 확장 3 G5 · G6: 잠수 헬멧 · 광부 갑옷 · 증기 파워 아머 · 멀티툴 (아이콘 · 착용 모습 · 손에 든 모델) ----------
+# 세트 색: 잠수 = 놋쇠 + 파란 유리, 광부 = 안전모 노랑 + 남색 작업복 + 반사띠, 파워 아머 = 쇳빛 판 + 놋쇠 테 + 구리 관 + 하늘색 증기 빛
+G5_DIVING = {"a": "#3a2210", "b": "#7a4f1e", "c": "#b8822f", "d": "#e3b45c", "e": "#fff0b0",
+             "r": "#f2cf7e", "g": "#235e7e", "h": "#6fc6e6", "H": "#e8fbff", "k": "#143a52",
+             "n": "#5d646c", "R": "#cfd6dc"}
+G5_MINER = {"a": "#1c1a16", "Y": "#ffd23a", "y": "#e3a81a", "o": "#a8700e", "w": "#3a3f47", "W": "#fff6c0",
+            "t": "#5a3a20", "T": "#c0c8d0", "S": "#c4ccd4", "s": "#7f8a96", "j": "#24344e", "J": "#36507a",
+            "v": "#e8eef4", "L": "#9a6a3e", "l": "#6e4628", "b": "#3a2414"}
+G5_POWER = {"a": "#15171b", "m": "#30353c", "M": "#4c535c", "N": "#78818b", "c": "#7e5520", "C": "#c08a36",
+            "B": "#f0cf7a", "g": "#3fb8e8", "G": "#c6f2ff", "p": "#a9552a"}
+
+G5_DIVING_HELMET = [
+    "................",
+    ".....aaaaaa.....",
+    "...aaeeddcbaa...",
+    "..aedddddccbba..",
+    ".aeddaaaaaacbba.",
+    ".aedarhHggracba.",
+    ".adcahHgggracba.",
+    ".adcarggggracba.",
+    ".adcargggkracba.",
+    ".acbaarrrraacba.",
+    "..acbbaaaabbba..",
+    "..aabbbbbbbbaa..",
+    ".annnnnnnnnnnna.",
+    ".anRnnRnnRnnRna.",
+    "..aaaaaaaaaaaa..",
+    "................",
+]
+G5_MINER_HELMET = [
+    "................",
+    "................",
+    "......aaaa......",
+    "....aaYYYyaa....",
+    "...aYYwWYyyya...",
+    "..aYYaWWayyyya..",
+    "..aYyaaaayyyoa..",
+    "..ayyyyyyyyooa..",
+    ".aaooooooooooaa.",
+    "aYyyyyyyyyyyyooa",
+    ".aaaaaaaaaaaaaa.",
+    ".....tt..tt.....",
+    "......tttt......",
+    "................",
+    "................",
+    "................",
+]
+G5_MINER_CHEST = [
+    "................",
+    "..aaa......aaa..",
+    ".aSsa......aSsa.",
+    ".aSsjaaaaaajSsa.",
+    ".asjJJJtJJJJjsa.",
+    "..aajJJtJJJjaa..",
+    "...ajJJtJJJja...",
+    "...aYYYvYYYYa...",
+    "...ajJJtJJJja...",
+    "...ajJJtJJJja...",
+    "...aYYYvYYYYa...",
+    "...ajjjtjjjja...",
+    "...atttTtttta...",
+    "....aaaaaaaa....",
+    "................",
+    "................",
+]
+G5_MINER_LEGS = [
+    "................",
+    "................",
+    "...aaaaaaaaaaa..",
+    "...attttTtttta..",
+    "...ajJJJJJJJja..",
+    "...ajJJJaJJJja..",
+    "...ajJJa.ajJJa..",
+    "...aYYYa.aYYYa..",
+    "...asSsa.asSsa..",
+    "...aSSsa.aSSsa..",
+    "...ajJJa.ajJJa..",
+    "...ajjja.ajjja..",
+    "...aaaaa.aaaaa..",
+    "................",
+    "................",
+    "................",
+]
+G5_MINER_BOOTS = [
+    "................",
+    "................",
+    "................",
+    "................",
+    "................",
+    "................",
+    "...aaaa..aaaa...",
+    "...aLla..aLla...",
+    "...aYYa..aYYa...",
+    "...aLla..aLla...",
+    "..aLlla..aLlla..",
+    ".aSsLla..aSsLla.",
+    ".abbbba..abbbba.",
+    ".aaaaaa..aaaaaa.",
+    "................",
+    "................",
+]
+G5_POWER_HELMET = [
+    "................",
+    "................",
+    ".....aaaaaa.....",
+    "...aaCBBBCcaa...",
+    "..aNMMMCBCMMma..",
+    "..aNMMMCCMMMma..",
+    "..aNaaaaaaaama..",
+    "..aNaGGgGGgama..",
+    "..aNMaaaaaaMma..",
+    "..acMMpMMpMMca..",
+    "..acCMMMMMMCca..",
+    "...acccccccca...",
+    "....aaaaaaaa....",
+    "................",
+    "................",
+    "................",
+]
+G5_POWER_CHEST = [
+    "................",
+    ".aaaa......aaaa.",
+    "aBCCca....aBCCca",
+    "aCCcmaaaaaamCcca",
+    ".aaaNMMMMMMMaaa.",
+    "..aNMMaaaaMMma..",
+    "..aNMaGGGgaMma..",
+    "..aNMaGBggaMma..",
+    "..aNMaggggaMma..",
+    "..aNMMaaaaMMma..",
+    "..apMMMMMMMMpa..",
+    "..apNMMCCMMMpa..",
+    "..acCCCCCCCCca..",
+    "...aaaaaaaaaa...",
+    "................",
+    "................",
+]
+G5_POWER_LEGS = [
+    "................",
+    "................",
+    "...aaaaaaaaaaa..",
+    "...acCCCBCCCca..",
+    "...aNMMMMMMMma..",
+    "...aNMMMaMMMma..",
+    "...aNMMa.aNMMa..",
+    "...apMMa.apMMa..",
+    "...aCBCa.aCBCa..",
+    "...aCCca.aCCca..",
+    "...aNMMa.aNMMa..",
+    "...aNgMa.aNgMa..",
+    "...aaaaa.aaaaa..",
+    "................",
+    "................",
+    "................",
+]
+G5_POWER_BOOTS = [
+    "................",
+    "................",
+    "................",
+    "................",
+    "................",
+    "................",
+    "...aaaa..aaaa...",
+    "...aNMa..aNMa...",
+    "...aCBa..aCBa...",
+    "...aNMa..aNMa...",
+    "..aNMMa..aNMMa..",
+    ".aCBCMa..aCBCMa.",
+    ".acccca..acccca.",
+    ".aaaaaa..aaaaaa.",
+    "................",
+    "................",
+]
+# 멀티툴: 놋쇠 자루 + 증기 통, 머리 = 곡괭이 끝(왼쪽 위) · 도끼날(오른쪽 아래) · 삽날(위 끝)
+G5_TOOL = {"a": "#15171b", "m": "#30353c", "M": "#4c535c", "N": "#78818b", "e": "#dfe6ec", "E": "#ffffff",
+           "c": "#7e5520", "C": "#c08a36", "B": "#f0cf7a", "t": "#5a3a20", "T": "#8a5a32", "g": "#3fb8e8", "G": "#c6f2ff"}
+G5_MULTITOOL = [
+    "..aaa......aaa..",
+    ".aNeea....aeEea.",
+    "..aNNea..aeEeNa.",
+    "...aMNeaaeeNMa..",
+    "....aMNMMNMMa...",
+    ".....aMmBmMaa...",
+    "......aMmMeeEa..",
+    ".....aCgaNeeeEa.",
+    "....aCGgaaNeeea.",
+    "...aTCgga.aNNa..",
+    "..aTtaaa...aa...",
+    ".aTta...........",
+    "aTta............",
+    "atTa............",
+    ".aa.............",
+    "................",
+]
+
+
+def g5_art(rows, pal):
+    assert len(rows) == 16 and all(len(r) == 16 for r in rows), [len(r) for r in rows]
+    im = Image.new("RGBA", (16, 16))
+    for y, row in enumerate(rows):
+        for x, ch in enumerate(row):
+            if ch != ".":
+                im.putpixel((x, y), hex_px(pal[ch]))
+    return im
+
+
+class G5Armor(B1Armor):
+    """B1Armor 붓을 G5 팔레트로 (여러 붓이 한 그림을 같이 쓸 수 있게 im을 받는다)."""
+
+    def __init__(self, pal, seed, im=None):
+        self.name = "g5"
+        self.pal = pal
+        self.rnd = random.Random(seed)
+        self.im = Image.new("RGBA", (64, 32)) if im is None else im
+
+
+# 착용 팔레트 (B1Armor 열쇠: o 윤곽 · s 그늘 · b 바탕 · l 밝음 · h 반짝임 · t · T 장식 · g · G 빛 · r 리벳)
+G5W_HAT = {"o": "#5a3e08", "s": "#b8860b", "b": "#e8b020", "l": "#ffd050", "h": "#fff0a0",
+           "t": "#3a3f47", "T": "#5b626c", "g": "#fff6c0", "G": "#ffffff", "r": "#c0c8d0"}
+G5W_JACKET = {"o": "#121a28", "s": "#23324a", "b": "#324566", "l": "#435b86", "h": "#5d78a8",
+              "t": "#5a3a20", "T": "#8a5a32", "g": "#f0c020", "G": "#ffe070", "r": "#d8dee6"}
+G5W_STEEL = {"o": "#2a3038", "s": "#56606c", "b": "#7f8a96", "l": "#a7b1bc", "h": "#d4dbe2",
+             "t": "#5a3a20", "T": "#8a5a32", "g": "#f0c020", "G": "#ffe070", "r": "#e8eef4"}
+G5W_LEATHER = {"o": "#2a1a0c", "s": "#4e3018", "b": "#6e4628", "l": "#8e6038", "h": "#b08050",
+               "t": "#3a2414", "T": "#5a3a20", "g": "#f0c020", "G": "#ffe070", "r": "#c4ccd4"}
+G5W_POWER = {"o": "#111317", "s": "#2c3138", "b": "#454c55", "l": "#626a74", "h": "#8a939d",
+             "t": "#8a5f22", "T": "#d0a048", "g": "#3fb8e8", "G": "#c6f2ff", "r": "#f0cf7a"}
+G5W_BRASS = {"o": "#3a2210", "s": "#7a4f1e", "b": "#a8762c", "l": "#d09a48", "h": "#f2cf7e",
+             "t": "#5d646c", "T": "#8f99a3", "g": "#2a7090", "G": "#b8ecff", "r": "#fff0b0"}
+G5_COPPER = "#a9552a"
+G5_COPPER_L = "#d47a44"
+
+
+def g5_miner_layers():
+    hat = G5Armor(G5W_HAT, 8501)
+    im = hat.im
+    jacket = G5Armor(G5W_JACKET, 8502, im)
+    steel = G5Armor(G5W_STEEL, 8503, im)
+    boot = G5Armor(G5W_LEATHER, 8504, im)
+    # 안전모: 위 · 옆 0~3행 노랑, 4행 챙, 아래는 비워 얼굴이 보이게. 앞에 머리 조명, 옆에 턱끈
+    top = hat.rect(B1_HEAD, "top")
+    hat.metal(top)
+    hat.bevel(top, 0, 7)
+    hat.vline(top, 3, "h", 0, 7)
+    hat.vline(top, 4, "l", 0, 7)
+    for f in ("right", "front", "left", "back"):
+        r = hat.rect(B1_HEAD, f)
+        hat.metal(r, rows=range(0, 4))
+        hat.hline(r, 0, "l")
+        hat.hline(r, 3, "s")
+        hat.hline(r, 4, "o")
+        hat.clear(r, 0, 5, 7, 7)
+        if f in ("front", "back"):
+            hat.vline(r, 3, "h", 0, 2)
+            hat.vline(r, 4, "l", 0, 2)
+        if f in ("right", "left"):
+            hat.vline(r, 2, "#5a3a20", 5, 7)   # 턱끈
+            hat.put(r, 5, 1, "s")
+    fr = hat.rect(B1_HEAD, "front")
+    for i, j, k in ((2, 0, "t"), (3, 0, "t"), (4, 0, "t"), (5, 0, "t"), (2, 1, "t"), (5, 1, "t"), (2, 2, "T"), (3, 2, "T"),
+                    (4, 2, "T"), (5, 2, "T"), (3, 1, "g"), (4, 1, "G")):
+        hat.put(fr, i, j, k)
+    bk = hat.rect(B1_HEAD, "back")
+    hat.put(bk, 3, 1, "#5a3a20")   # 조명 끈 버클
+    hat.put(bk, 4, 1, "#5a3a20")
+
+    # 작업복 윗도리: 남색 천 + 노랑 · 은색 반사띠 (가슴 가로 + 어깨에서 내려오는 세로), 지퍼, 허리 가죽띠
+    for f in ("top", "bottom", "right", "front", "left", "back"):
+        jacket.metal(jacket.rect(B1_BODY, f))
+    jacket.bevel(jacket.rect(B1_BODY, "top"), 0, 3)
+    for f in ("front", "back"):
+        r = jacket.rect(B1_BODY, f)
+        jacket.bevel(r, 0, 11)
+        jacket.hline(r, 0, "o", 2, 5)
+        for i in (1, 6):
+            jacket.vline(r, i, "g", 1, 6)
+        jacket.hline(r, 7, "g")
+        jacket.hline(r, 8, "r")
+        jacket.hline(r, 9, "g")
+        jacket.hline(r, 10, "t")
+        jacket.hline(r, 11, "o")
+    fr = jacket.rect(B1_BODY, "front")
+    jacket.vline(fr, 3, "s", 1, 6)
+    jacket.vline(fr, 4, "o", 1, 6)
+    jacket.put(fr, 3, 10, "r")
+    jacket.put(fr, 4, 10, "T")
+    jacket.put(fr, 2, 3, "T")    # 가슴 주머니 단추
+    jacket.put(fr, 5, 3, "T")
+    for f in ("right", "left"):
+        r = jacket.rect(B1_BODY, f)
+        jacket.bevel(r, 0, 11)
+        jacket.hline(r, 7, "g", 0, 3)
+        jacket.hline(r, 8, "r", 0, 3)
+        jacket.hline(r, 9, "g", 0, 3)
+        jacket.hline(r, 10, "t", 0, 3)
+        jacket.hline(r, 11, "o", 0, 3)
+    # 팔: 소매(천) + 강철 어깨받이(0~3행, 리벳) + 소매 반사띠
+    for f in ("top", "right", "front", "left", "back", "bottom"):
+        jacket.metal(jacket.rect(B1_ARM, f))
+    steel.metal(steel.rect(B1_ARM, "top"))
+    steel.bevel(steel.rect(B1_ARM, "top"), 0, 3)
+    for f in ("right", "front", "left", "back"):
+        r = steel.rect(B1_ARM, f)
+        steel.metal(r, rows=range(0, 4))
+        steel.hline(r, 0, "h")
+        steel.hline(r, 3, "o")
+        if f == "right":
+            steel.rivet(r, 1, 1)
+        jacket.hline(r, 8, "g", 0, 3)
+        jacket.hline(r, 9, "r", 0, 3)
+        jacket.hline(r, 11, "o", 0, 3)
+    # 장화: 가죽 + 노랑 띠 + 앞코 강철
+    for f in ("right", "front", "left", "back"):
+        r = boot.rect(B1_LEG, f)
+        boot.metal(r, rows=range(7, 12))
+        boot.hline(r, 7, "g", 0, 3)
+        boot.hline(r, 8, "l", 0, 3)
+        boot.hline(r, 11, "o", 0, 3)
+        if f == "front":
+            for i in range(4):
+                steel.put(r, i, 10, "s")
+            steel.put(r, 1, 10, "b")
+            steel.put(r, 2, 10, "b")
+        else:
+            boot.hline(r, 10, "s", 0, 3)
+    for j in range(4):
+        boot.hline(boot.rect(B1_LEG, "bottom"), j, "o")
+
+    # 작업복 바지: 허리 가죽띠 · 남색 천 · 무릎 강철 덧대기 · 노랑 띠
+    legs = G5Armor(G5W_JACKET, 8505)
+    knee = G5Armor(G5W_STEEL, 8506, legs.im)
+    for f in ("right", "front", "left", "back"):
+        r = legs.rect(B1_BODY, f)
+        legs.metal(r, rows=range(0, 5))
+        legs.hline(r, 0, "o")
+        legs.hline(r, 1, "t")
+        legs.hline(r, 4, "s")
+        if f == "front":
+            legs.put(r, 3, 1, "r")
+            legs.put(r, 4, 1, "T")
+            legs.vline(r, 3, "s", 2, 4)
+    for f in ("top", "bottom"):
+        legs.metal(legs.rect(B1_BODY, f))
+    for f in ("right", "front", "left", "back"):
+        r = legs.rect(B1_LEG, f)
+        legs.metal(r, rows=range(0, 9))
+        legs.hline(r, 0, "l")
+        legs.hline(r, 2, "g")
+        legs.hline(r, 8, "o")
+        if f == "front":
+            for i in (1, 2):
+                for j in (5, 6):
+                    knee.put(r, i, j, "s")
+            knee.put(r, 1, 5, "b")
+            knee.put(r, 2, 4, "o")
+            knee.put(r, 1, 4, "o")
+    legs.metal(legs.rect(B1_LEG, "top"))
+    return im, legs.im
+
+
+def g5_power_layers():
+    a = G5Armor(G5W_POWER, 8601)
+    # 투구: 닫힌 쇠 투구, 하늘색 눈 틈, 놋쇠 볏, 입 쪽 구리 환기구
+    for f in ("top", "right", "front", "left", "back"):
+        r = a.rect(B1_HEAD, f)
+        a.metal(r)
+        a.bevel(r, 0, 7)
+    top = a.rect(B1_HEAD, "top")
+    a.vline(top, 3, "T", 0, 7)
+    a.vline(top, 4, "t", 0, 7)
+    for f in ("right", "left", "back"):
+        r = a.rect(B1_HEAD, f)
+        a.hline(r, 0, "T")
+        a.hline(r, 6, "t", 1, 6)
+        a.put(r, 1, 2, "r")
+        a.put(r, 6, 2, "r")
+        if f != "back":
+            a.put(r, 3, 4, "o")    # 귀 쪽 숨구멍
+            a.put(r, 4, 4, "o")
+            a.put(r, 3, 3, "g")
+        else:
+            for j in range(2, 6):  # 뒤통수 관
+                a.put(r, 3, j, G5_COPPER)
+                a.put(r, 4, j, G5_COPPER_L)
+    fr = a.rect(B1_HEAD, "front")
+    a.hline(fr, 0, "T")
+    a.put(fr, 3, 0, "r")
+    a.put(fr, 4, 0, "r")
+    a.hline(fr, 2, "o", 1, 6)
+    a.hline(fr, 3, "g", 1, 6)
+    a.put(fr, 2, 3, "G")
+    a.put(fr, 5, 3, "G")
+    a.hline(fr, 4, "o", 1, 6)
+    for i in (2, 3, 4, 5):
+        a.put(fr, i, 6, G5_COPPER if i % 2 else G5_COPPER_L)
+    a.put(fr, 1, 6, "t")
+    a.put(fr, 6, 6, "t")
+
+    # 흉갑: 가운데 압력계(놋쇠 테 · 하늘색 유리 · 바늘), 양옆 구리 관, 놋쇠 허리띠. 등에는 증기 통 둘.
+    for f in ("top", "bottom", "right", "front", "left", "back"):
+        a.metal(a.rect(B1_BODY, f))
+    a.bevel(a.rect(B1_BODY, "top"), 0, 3)
+    fr = a.rect(B1_BODY, "front")
+    bk = a.rect(B1_BODY, "back")
+    for r in (fr, bk):
+        a.bevel(r, 0, 11)
+        a.hline(r, 0, "o", 2, 5)
+        a.hline(r, 10, "T", 0, 7)
+        a.hline(r, 11, "t", 0, 7)
+        a.hline(r, 9, "o", 0, 7)
+    for j in range(1, 9):
+        a.put(fr, 0, j, G5_COPPER)
+        a.put(fr, 7, j, G5_COPPER_L if j % 3 else "r")
+    for i, j in ((3, 2), (4, 2), (2, 3), (5, 3), (2, 4), (5, 4), (3, 5), (4, 5)):
+        a.put(fr, i, j, "T")
+    for i, j in ((3, 3), (4, 3), (3, 4), (4, 4)):
+        a.put(fr, i, j, "g")
+    a.put(fr, 4, 3, "G")
+    a.put(fr, 3, 4, "r")
+    a.hline(fr, 7, "s", 1, 6)
+    a.put(fr, 2, 7, "g")
+    a.put(fr, 5, 7, "g")
+    a.put(fr, 3, 10, "r")
+    a.put(fr, 4, 10, "r")
+    # 등: 증기 통 둘 (놋쇠 띠)
+    for x0 in (1, 4):
+        for j in range(1, 9):
+            a.put(bk, x0, j, "r" if j % 3 else G5_COPPER_L)
+            a.put(bk, x0 + 1, j, "T" if j % 3 else G5_COPPER)
+            a.put(bk, x0 + 2, j, "t") if x0 + 2 < 7 else None
+        a.put(bk, x0, 1, "G")
+        a.put(bk, x0 + 1, 1, "g")
+    a.vline(bk, 7, "s", 1, 8)
+    for f in ("right", "left"):
+        r = a.rect(B1_BODY, f)
+        a.bevel(r, 0, 11)
+        a.hline(r, 10, "T", 0, 3)
+        a.hline(r, 11, "t", 0, 3)
+        a.vline(r, 1, G5_COPPER, 2, 8)
+        a.vline(r, 2, G5_COPPER_L, 2, 8)
+    # 팔: 큰 어깨받이(놋쇠 테) · 팔뚝 덮개 + 하늘색 빛 줄
+    for f in ("top", "right", "front", "left", "back", "bottom"):
+        a.metal(a.rect(B1_ARM, f))
+    a.bevel(a.rect(B1_ARM, "top"), 0, 3)
+    for f in ("right", "front", "left", "back"):
+        r = a.rect(B1_ARM, f)
+        a.hline(r, 0, "h")
+        a.hline(r, 3, "T")
+        a.hline(r, 4, "o")
+        a.clear(r, 0, 5, 3, 6)
+        a.hline(r, 7, "l")
+        a.hline(r, 9, "g")
+        a.hline(r, 10, "t")
+        a.hline(r, 11, "o")
+        if f == "right":
+            a.put(r, 1, 1, "r")
+            a.put(r, 2, 2, "r")
+    # 부츠: 두꺼운 쇠 + 놋쇠 발목 띠 + 앞코 빛
+    for f in ("right", "front", "left", "back"):
+        r = a.rect(B1_LEG, f)
+        a.metal(r, rows=range(7, 12))
+        a.hline(r, 7, "T", 0, 3)
+        a.hline(r, 8, "t", 0, 3)
+        a.hline(r, 11, "o", 0, 3)
+        if f == "front":
+            a.put(r, 1, 10, "g")
+            a.put(r, 2, 10, "G")
+    for j in range(4):
+        a.hline(a.rect(B1_LEG, "bottom"), j, "o")
+
+    legs = G5Armor(G5W_POWER, 8602)
+    for f in ("right", "front", "left", "back"):
+        r = legs.rect(B1_BODY, f)
+        legs.metal(r, rows=range(0, 5))
+        legs.hline(r, 0, "o")
+        legs.hline(r, 1, "T")
+        legs.hline(r, 2, "t")
+        legs.hline(r, 4, "s")
+        if f == "front":
+            legs.put(r, 3, 3, "g")
+            legs.put(r, 4, 3, "G")
+    for f in ("top", "bottom"):
+        legs.metal(legs.rect(B1_BODY, f))
+    for f in ("right", "front", "left", "back"):
+        r = legs.rect(B1_LEG, f)
+        legs.metal(r, rows=range(0, 9))
+        legs.hline(r, 0, "l")
+        legs.hline(r, 3, "o")
+        legs.hline(r, 8, "o")
+        if f == "front":
+            legs.put(r, 1, 5, "r")
+            legs.put(r, 2, 5, "T")
+            legs.put(r, 1, 6, "T")
+            legs.put(r, 2, 6, "t")
+        if f in ("right", "left"):
+            legs.vline(r, 1, G5_COPPER, 1, 7)
+            legs.vline(r, 2, G5_COPPER_L, 1, 7)
+        if f == "back":
+            legs.vline(r, 1, "g", 4, 7)
+    legs.metal(legs.rect(B1_LEG, "top"))
+    return a.im, legs.im
+
+
+def g5_diving_layer():
+    a = G5Armor(G5W_BRASS, 8701)
+    for f in ("top", "right", "front", "left", "back", "bottom"):
+        r = a.rect(B1_HEAD, f)
+        a.metal(r)
+        if f != "bottom":
+            a.bevel(r, 0, 7)
+    top = a.rect(B1_HEAD, "top")
+    for i, j in ((3, 3), (4, 3), (3, 4), (4, 4)):   # 공기 관 이음쇠
+        a.put(top, i, j, "T")
+    a.put(top, 3, 3, "r")
+    for f in ("right", "left", "back", "front"):
+        r = a.rect(B1_HEAD, f)
+        a.hline(r, 7, "t")      # 목 깃 (쇠, 볼트)
+        a.hline(r, 6, "T")
+        for i in (1, 4, 6):
+            a.put(r, i, 7, "r")
+    fr = a.rect(B1_HEAD, "front")
+    # 큰 앞 창: 둥근 테(밝은 놋쇠) + 파란 유리 + 반사
+    for i in range(2, 6):
+        a.put(fr, i, 1, "h")
+        a.put(fr, i, 6, "s")
+    for j in range(2, 6):
+        a.put(fr, 1, j, "h")
+        a.put(fr, 6, j, "s")
+    for j in range(2, 6):
+        for i in range(2, 6):
+            a.put(fr, i, j, "g")
+    a.put(fr, 2, 2, "G")
+    a.put(fr, 3, 2, "G")
+    a.put(fr, 2, 3, "G")
+    a.put(fr, 5, 5, "#174a62")
+    for i, j in ((1, 1), (6, 1), (1, 6), (6, 6)):
+        a.put(fr, i, j, "r")
+    for f in ("right", "left"):    # 옆 작은 창
+        r = a.rect(B1_HEAD, f)
+        for i, j in ((3, 2), (4, 2), (3, 3), (4, 3)):
+            a.put(r, i, j, "g")
+        a.put(r, 3, 2, "G")
+        for i, j in ((2, 2), (5, 2), (2, 3), (5, 3), (3, 1), (4, 1), (3, 4), (4, 4)):
+            a.put(r, i, j, "h" if j < 3 else "s")
+    bk = a.rect(B1_HEAD, "back")
+    for j in range(1, 6):   # 뒤 공기 관 (구리)
+        a.put(bk, 3, j, G5_COPPER)
+        a.put(bk, 4, j, G5_COPPER_L)
+    return a.im
+
+
+# 멀티툴 3D 모델 텍스처 (16x16): 칸마다 부품 색 — 자루 · 놋쇠 · 쇳빛 · 날 · 유리 · 어두운 쇠
+def g5_multitool_model_texture():
+    rnd = random.Random(8801)
+    im = Image.new("RGBA", (16, 16))
+
+    def fill(x0, y0, x1, y1, cols):
+        for y in range(y0, y1):
+            for x in range(x0, x1):
+                im.putpixel((x, y), hex_px(cols[rnd.randrange(len(cols))]))
+
+    fill(0, 0, 4, 16, ["#5a3a20", "#6a4628"])           # 자루: 가죽 감은 손잡이
+    for y in range(0, 16, 3):
+        for x in range(0, 4):
+            im.putpixel((x, y), hex_px("#3a2414"))
+    fill(4, 0, 8, 8, ["#c08a36", "#b07c2e", "#d09a48"])  # 놋쇠
+    for x in range(4, 8):
+        im.putpixel((x, 0), hex_px("#f0cf7a"))
+        im.putpixel((x, 7), hex_px("#7e5520"))
+    fill(8, 0, 12, 8, ["#4c535c", "#555c66", "#454c55"])  # 쇳빛
+    im.putpixel((9, 2), hex_px("#f0cf7a"))
+    im.putpixel((10, 5), hex_px("#f0cf7a"))
+    for y in range(0, 8):                                # 날: 위는 밝게 (끝 = 반짝임)
+        for x in range(12, 16):
+            im.putpixel((x, y), hex_px(["#ffffff", "#dfe6ec", "#c4ccd4", "#a7b1bc", "#8a939d", "#78818b", "#6a727c", "#5d646c"][y]))
+    fill(4, 8, 8, 16, ["#3fb8e8", "#36a6d4"])            # 유리 (증기)
+    im.putpixel((5, 9), hex_px("#c6f2ff"))
+    im.putpixel((5, 10), hex_px("#c6f2ff"))
+    fill(8, 8, 16, 16, ["#30353c", "#2c3138", "#34393f"])  # 어두운 쇠
+    for x in range(8, 16):
+        im.putpixel((x, 8), hex_px("#4c535c"))
+    return im
+
+
+def main_g5(made):
+    """확장 3 G5 · G6: 잠수 헬멧 · 광부 갑옷 · 파워 아머 · 멀티툴 아이콘, 착용 모습 셋, 멀티툴 3D 모델 텍스처, 제트팩 모듈 칩."""
+    made.append(save(g5_art(G5_DIVING_HELMET, G5_DIVING), "item/diving_helmet.png"))
+    for part, art in (("helmet", G5_MINER_HELMET), ("chestplate", G5_MINER_CHEST), ("leggings", G5_MINER_LEGS), ("boots", G5_MINER_BOOTS)):
+        made.append(save(g5_art(art, G5_MINER), f"item/miner_{part}.png"))
+    for part, art in (("helmet", G5_POWER_HELMET), ("chestplate", G5_POWER_CHEST), ("leggings", G5_POWER_LEGS), ("boots", G5_POWER_BOOTS)):
+        made.append(save(g5_art(art, G5_POWER), f"item/power_armor_{part}.png"))
+    made.append(save(g5_art(G5_MULTITOOL, G5_TOOL), "item/multitool.png"))
+    made.append(save(g5_multitool_model_texture(), "item/multitool_model.png"))
+    made.append(save(g3_chip("armor", ("#ffb040", ["XX.XX", "XX.XX", "XX.XX", "X...X", ".X.X."])), "item/module_jetpack.png"))
+    worn, legs = g5_miner_layers()
+    made.append(save(worn, "entity/equipment/humanoid/miner.png"))
+    made.append(save(legs, "entity/equipment/humanoid_leggings/miner.png"))
+    worn, legs = g5_power_layers()
+    made.append(save(worn, "entity/equipment/humanoid/power_armor.png"))
+    made.append(save(legs, "entity/equipment/humanoid_leggings/power_armor.png"))
+    made.append(save(g5_diving_layer(), "entity/equipment/humanoid/diving_helmet.png"))
+
+
 def save(im, rel, scale=1):
     path = os.path.join(OUT, *rel.split("/"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -5457,6 +6060,7 @@ def main():
     main_ex3_c2(made)
     main_c4(made)  # 확장 3 C4 보스 2페이즈 · 전용 장비
     main_g3(made)  # 확장 3 G3 · G4 장비 모듈 · 작업대 · 수리대
+    main_g5(made)  # 확장 3 G5 · G6 특수 장비 · 멀티툴
 
     if "--sheet" in sys.argv:
         tiles = [Image.open(p) for p in made]
