@@ -2969,6 +2969,212 @@ def main_m8c(made):
     made.append(save(from_art(wrench), "item/wrench.png"))
 
 
+# ---------- 마지막 묶음 (fin): 공허 거상 전용 모델 텍스처 ----------
+# 흑요석 같은 검보라 몸, 자홍 빛 금 · 핵 · 눈, 떠 있는 바위판은 회보라 돌
+VC_OBS = ["#0b0812", "#160f22", "#22172f", "#2e2042", "#3d2b58", "#523b76"]
+VC_ROCK = ["#141019", "#211b29", "#2f2739", "#3e344b", "#51455f", "#685a78"]
+VC_VEIN = ["#1f0f33", "#36195a", "#572a8a", "#7a3cb8"]
+VC_GLOW = ["#3d0b52", "#7a1a9e", "#b632d8", "#e872ff", "#ffd2ff"]
+VC_CRYSTAL = ["#2a1240", "#4a1f70", "#6d2fa0", "#9550cc", "#c088ec"]
+
+
+def void_colossus_textures():
+    rnd = random.Random(1103)
+    im = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
+    glow = Image.new("RGBA", (128, 128), (0, 0, 0, 0))
+
+    def box(u, v, w, h, d, ramp=VC_OBS):
+        b = M11aBox(im, rnd, u, v, w, h, d)
+        b.fill(ramp)
+        return b
+
+    def glow_px(b, face, x, y, col):
+        fx, fy, fw, fh = b.faces[face]
+        if 0 <= x < fw and 0 <= y < fh:
+            glow.putpixel((fx + x, fy + y), m11a_hex(col))
+
+    def crack(b, face, x, y, length, lit=0):
+        """아래로 구불구불 내려가는 금. lit > 0이면 그 세기로 빛난다."""
+        fw, fh = b.size(face)
+        for i in range(length):
+            if not (0 <= x < fw and 0 <= y < fh):
+                break
+            b.put(face, x, y, VC_VEIN[1] if i % 3 else VC_VEIN[2])
+            if lit:
+                glow_px(b, face, x, y, VC_GLOW[min(4, lit + (1 if i == 0 else 0))])
+            y += 1
+            r = rnd.random()
+            if r < 0.3:
+                x -= 1
+            elif r > 0.7:
+                x += 1
+
+    def strata(b, face, rows, col):
+        fw, _ = b.size(face)
+        for y in rows:
+            for x in range(fw):
+                if rnd.random() < 0.8:
+                    b.put(face, x, y, col)
+
+    # 가슴 20x10x12: 앞면 한가운데 핵이 든 구멍(빛나는 테), 거기서 퍼지는 금
+    chest = box(0, 0, 20, 10, 12)
+    cx0, cy0, cx1, cy1 = 6, 1, 13, 8
+    for y in range(cy0, cy1 + 1):
+        for x in range(cx0, cx1 + 1):
+            edge = x in (cx0, cx1) or y in (cy0, cy1)
+            corner = x in (cx0, cx1) and y in (cy0, cy1)
+            if corner:
+                continue
+            if edge:
+                chest.put("front", x, y, VC_VEIN[2])
+                glow_px(chest, "front", x, y, VC_GLOW[2])
+            else:
+                dd = math.hypot(x - 9.5, y - 4.5)
+                chest.put("front", x, y, "#050309" if dd > 1.6 else "#12051c")
+                if dd < 2.6:
+                    glow_px(chest, "front", x, y, VC_GLOW[1] if dd > 1.5 else VC_GLOW[2])
+    for x, y, n in ((5, 2, 7), (14, 3, 6), (4, 6, 4), (15, 7, 3), (9, 9, 1)):
+        crack(chest, "front", x, y, n, lit=1)
+    chest.hline("front", 0, VC_OBS[4])
+    for face in ("right", "left", "back"):
+        fw, fh = chest.size(face)
+        for _ in range(3 if face == "back" else 2):
+            crack(chest, face, rnd.randrange(1, fw - 1), rnd.randrange(0, 3), rnd.randint(4, 8), lit=1 if rnd.random() < 0.5 else 0)
+        strata(chest, face, [fh - 2], VC_OBS[1])
+    for _ in range(6):
+        chest.put("top", rnd.randrange(20), rnd.randrange(12), VC_OBS[5])
+
+    # 머리 8x9x8: 눈 틈 둘 (자홍), 이마의 빛나는 금
+    head = box(64, 0, 8, 9, 8)
+    head.hline("front", 2, VC_OBS[4])
+    for x0 in (1, 5):
+        for x in (x0, x0 + 1):
+            head.put("front", x, 3, VC_GLOW[0])
+            head.put("front", x, 4, "#050309")
+            glow_px(head, "front", x, 3, VC_GLOW[4])
+            glow_px(head, "front", x, 4, VC_GLOW[2])
+    crack(head, "front", 4, 0, 2, lit=2)
+    head.rect("front", 2, 7, 5, 7, VC_OBS[1])
+    for face in ("right", "left", "back"):
+        crack(head, face, rnd.randrange(1, 7), 0, rnd.randint(3, 6))
+
+    # 배 14x8x9 · 골반 12x4x8: 층진 돌
+    belly = box(0, 22, 14, 8, 9)
+    for face in ("front", "back", "right", "left"):
+        strata(belly, face, [2, 5], VC_OBS[1])
+    crack(belly, "front", 4, 0, 5, lit=1)
+    crack(belly, "front", 10, 1, 4)
+    pelvis = box(46, 22, 12, 4, 8, VC_OBS[:5])
+    for face in ("front", "back", "right", "left"):
+        pelvis.hline(face, 0, VC_OBS[4])
+
+    # 위팔 6x14x6: 세로 결 + 앞면에 빛나는 금 하나
+    upper = box(96, 0, 6, 14, 6)
+    for face in ("front", "back", "right", "left"):
+        strata(upper, face, [4, 9], VC_OBS[1])
+    crack(upper, "front", 2, 1, 11, lit=1)
+    crack(upper, "right", 3, 2, 6)
+
+    # 아래팔 7x14x7: 지그재그로 빛나는 금 (공허 무늬)
+    fore = box(86, 20, 7, 14, 7)
+    for face in ("front", "back", "right", "left"):
+        fw, fh = fore.size(face)
+        x = rnd.randrange(1, fw - 1)
+        for y in range(1, fh - 1):
+            x = max(0, min(fw - 1, x + (1 if (y // 3) % 2 == 0 else -1)))
+            fore.put(face, x, y, VC_VEIN[2])
+            if face in ("front", "left", "right"):
+                glow_px(fore, face, x, y, VC_GLOW[2] if y % 4 else VC_GLOW[3])
+        strata(fore, face, [fh - 1], VC_OBS[1])
+
+    # 손 8x5x8: 앞쪽 주먹 마디
+    hand = box(0, 39, 8, 5, 8)
+    for x in (0, 2, 4, 6):
+        hand.put("front", x, 1, VC_OBS[5])
+        hand.put("front", x + 1, 1, VC_OBS[4])
+        hand.put("front", x, 3, VC_OBS[1])
+    hand.rect("bottom", 1, 1, 6, 6, VC_OBS[0])
+    for x in (1, 3, 5):
+        glow_px(hand, "front", x, 2, VC_GLOW[1])
+
+    # 다리 7x12x7 · 발 9x4x9
+    leg = box(32, 39, 7, 12, 7)
+    for face in ("front", "back", "right", "left"):
+        strata(leg, face, [4, 8], VC_OBS[1])
+    crack(leg, "front", 3, 0, 7, lit=1)
+    crack(leg, "right", 2, 2, 5)
+    foot = box(60, 41, 9, 4, 9)
+    for face in ("front", "back", "right", "left"):
+        foot.hline(face, 0, VC_OBS[4])
+    for x in (1, 4, 7):
+        foot.put("front", x, 2, VC_OBS[5])
+
+    # 떠 있는 바위판 12x4x12 + 덩어리 7x4x7: 회보라 돌, 위에 빛나는 금
+    plate = box(0, 60, 12, 4, 12, VC_ROCK)
+    for _ in range(4):
+        crack(plate, "top", rnd.randrange(1, 11), rnd.randrange(0, 5), rnd.randint(4, 8), lit=1)
+    for face in ("front", "back", "right", "left"):
+        plate.hline(face, 3, VC_ROCK[0])
+        crack(plate, face, rnd.randrange(1, 11), 0, 3, lit=1 if rnd.random() < 0.5 else 0)
+    plate.rect("bottom", 2, 2, 9, 9, VC_ROCK[0])
+    for (x, y) in ((5, 5), (6, 6), (5, 6), (6, 5)):
+        plate.put("bottom", x, y, VC_GLOW[0])
+        glow_px(plate, "bottom", x, y, VC_GLOW[2])
+    chunk = box(48, 60, 7, 4, 7, VC_ROCK)
+    crack(chunk, "top", 3, 0, 6, lit=1)
+    for face in ("front", "right", "left"):
+        crack(chunk, face, rnd.randrange(1, 6), 0, 3)
+
+    # 핵 4x4x4: 자홍 빛 덩어리
+    core = M11aBox(im, rnd, 76, 60, 4, 4, 4)
+    core.fill(VC_GLOW[:4], bevel=False)
+    for face, (fx, fy, fw, fh) in core.faces.items():
+        for y in range(fh):
+            for x in range(fw):
+                dd = math.hypot(x - 1.5, y - 1.5)
+                glow.putpixel((fx + x, fy + y), m11a_hex(VC_GLOW[4] if dd < 0.8 else (VC_GLOW[3] if dd < 1.6 else VC_GLOW[2])))
+
+    # 머리 위 조각 3x5x3 · 등 가시 3x8x3: 자수정 같은 결정, 끝이 빛남
+    shard = box(92, 60, 3, 5, 3, VC_CRYSTAL)
+    for face in ("front", "back", "right", "left"):
+        shard.vline(face, 1, VC_CRYSTAL[4], 0, 3)
+        glow_px(shard, face, 1, 0, VC_GLOW[3])
+        glow_px(shard, face, 1, 1, VC_GLOW[2])
+    for x in range(3):
+        for y in range(3):
+            glow_px(shard, "top", x, y, VC_GLOW[3 if (x, y) == (1, 1) else 2])
+    spike = box(104, 60, 3, 8, 3, VC_CRYSTAL)
+    for face in ("front", "back", "right", "left"):
+        spike.vline(face, 1, VC_CRYSTAL[4], 0, 4)
+        for y in range(0, 3):
+            glow_px(spike, face, 1, y, VC_GLOW[3 if y == 0 else 2])
+    for x in range(3):
+        for y in range(3):
+            glow_px(spike, "top", x, y, VC_GLOW[3])
+    return im, glow
+
+
+def void_shield_texture():
+    """보호막 무늬 128x128 (모델 텍스처와 같은 크기라 면마다 줄무늬가 몇 개씩 보인다): 이어 붙여도 이음매가 없는 비스듬한 물결.
+    밝기만 칠하고 색은 렌더러가 곱한다 (더하기 섞기라 검정 = 안 보임)."""
+    im = Image.new("RGBA", (128, 128), (0, 0, 0, 255))
+    for y in range(128):
+        for x in range(128):
+            a = math.sin((x + y) * 2 * math.pi / 16)
+            b = math.sin((x - 2 * y) * 2 * math.pi / 32 + 1.3)
+            v = max(0.0, (a + b) / 2) ** 2
+            g = int(255 * v)
+            im.putpixel((x, y), (g, g, g, 255))
+    return im
+
+
+def main_fin(made):
+    im, glow = void_colossus_textures()
+    made.append(save(im, "entity/void_colossus.png"))
+    made.append(save(glow, "entity/void_colossus_glow.png"))
+    made.append(save(void_shield_texture(), "entity/void_colossus_shield.png"))
+
+
 def save(im, rel, scale=1):
     path = os.path.join(OUT, *rel.split("/"))
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -3013,6 +3219,7 @@ def main():
     main_m8b(made)
     main_m6(made)
     main_m8c(made)
+    main_fin(made)
 
     if "--sheet" in sys.argv:
         tiles = [Image.open(p) for p in made]

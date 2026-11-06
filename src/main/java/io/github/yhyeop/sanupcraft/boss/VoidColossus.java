@@ -112,6 +112,11 @@ public class VoidColossus extends Monster implements PartyBoss {
 	private int cooldown = 60;
 	private int cycleIndex;
 	private int attackTick;
+	/** 클라이언트 동작 (0 → 1로 천천히): 끌어당기기 자세 · 수정 보호막 일렁임. 이전 틱 값은 보간용. */
+	private float pullAnim;
+	private float pullAnimO;
+	private float shieldAnim;
+	private float shieldAnimO;
 	/** 화남(체력 절반 아래)을 알렸는가 (M11 X2). 불러올 때 체력으로 다시 정한다. */
 	private boolean phaseAnnounced;
 	/** 0 = 아직 수정 안 띄움, 1 = 처음 수정 띄움, 2 = 절반에서 다시 띄움. */
@@ -510,14 +515,31 @@ public class VoidColossus extends Monster implements PartyBoss {
 		if (attackTick > 0) {
 			attackTick--;
 		}
-		if (level().isClientSide() && random.nextInt(2) == 0) {
-			level().addParticle(ParticleTypes.PORTAL, getRandomX(0.8), getRandomY(), getRandomZ(0.8),
-					(random.nextDouble() - 0.5) * 2.0, -random.nextDouble(), (random.nextDouble() - 0.5) * 2.0);
+		if (level().isClientSide()) {
+			int flags = flags();
+			pullAnimO = pullAnim;
+			shieldAnimO = shieldAnim;
+			pullAnim = Mth.approach(pullAnim, (flags & (FLAG_PULL_WINDUP | FLAG_PULLING)) != 0 ? 1.0F : 0.0F, 0.1F);
+			shieldAnim = Mth.approach(shieldAnim, (flags & FLAG_SHIELDED) != 0 ? 1.0F : 0.0F, 0.05F);
+			if (random.nextInt(2) == 0) {
+				level().addParticle(ParticleTypes.PORTAL, getRandomX(0.8), getRandomY(), getRandomZ(0.8),
+						(random.nextDouble() - 0.5) * 2.0, -random.nextDouble(), (random.nextDouble() - 0.5) * 2.0);
+			}
 		}
 	}
 
 	public int getAttackTick() {
 		return attackTick;
+	}
+
+	/** 끌어당기기 자세 (클라이언트, 0 ~ 1). */
+	public float pullAnimation(float partialTicks) {
+		return Mth.lerp(partialTicks, pullAnimO, pullAnim);
+	}
+
+	/** 수정 보호막 일렁임 (클라이언트, 0 ~ 1). */
+	public float shieldAnimation(float partialTicks) {
+		return Mth.lerp(partialTicks, shieldAnimO, shieldAnim);
 	}
 
 	@Override
