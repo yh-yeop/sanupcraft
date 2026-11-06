@@ -204,6 +204,37 @@ public class SanupcraftM8bGameTest {
 		helper.succeed();
 	}
 
+	/** 굽는 도중 재료를 빼면 묶음이 그 틱에 접힌다: 다 빼면 취소(증기를 안 씀), 일부만 빼면 남은 수로 줄어든다. */
+	@GameTest
+	public void towerCancelsBatchWhenInputsTaken(GameTestHelper helper) {
+		FurnaceTowerControllerBlockEntity tower = buildTower(helper);
+		ServerLevel level = helper.getLevel();
+		BlockPos abs = helper.absolutePos(CONTROLLER);
+		tower.setItem(0, new ItemStack(ModItems.IRON_DUST, 4));
+		tower.setItem(4, new ItemStack(ModItems.IRON_DUST, 4));
+		tower.acceptHighPressureSteam(FurnaceTowerControllerBlockEntity.STEAM_CAPACITY);
+		helper.assertTrue(tower.check(level, abs, level.getBlockState(abs)), "모양이 서지 않음: " + tower.problem());
+		for (int i = 0; i < 5; i++) {
+			FurnaceTowerControllerBlockEntity.serverTick(level, abs, level.getBlockState(abs), tower);
+		}
+		helper.assertValueEqual(tower.batchUnits(), 8, "굽기 시작한 개수");
+
+		// 일부만 빼면: 남은 수(5개)로 묶음이 줄어든다
+		tower.setItem(0, new ItemStack(ModItems.IRON_DUST, 1));
+		FurnaceTowerControllerBlockEntity.serverTick(level, abs, level.getBlockState(abs), tower);
+		helper.assertValueEqual(tower.batchUnits(), 5, "일부 뺀 뒤 묶음 개수");
+
+		// 다 빼면: 묶음이 취소되고 그 틱에 증기를 쓰지 않는다
+		tower.setItem(0, ItemStack.EMPTY);
+		tower.setItem(4, ItemStack.EMPTY);
+		int steamBefore = tower.steam();
+		FurnaceTowerControllerBlockEntity.serverTick(level, abs, level.getBlockState(abs), tower);
+		helper.assertValueEqual(tower.batchUnits(), 0, "재료를 다 뺀 뒤 묶음 개수");
+		helper.assertValueEqual(tower.steam(), steamBefore, "재료가 없는데 증기가 줄었다");
+		helper.assertValueEqual(tower.progressPercent(), 0, "취소된 묶음의 진행");
+		helper.succeed();
+	}
+
 	/** 실테스트 단계 industry2: 용광로 탑 한 벌 · 세척기 · 고압 정련기를 준다. */
 	@GameTest
 	public void playtestIndustry2KitGivesTower(GameTestHelper helper) {

@@ -40,7 +40,7 @@ import io.github.yhyeop.sanupcraft.power.SteamStorage;
 
 /**
  * 용광로 탑 제어기 (M8 묶음 B). 3x3 · 높이 3 내열 벽돌 모양({@link #SHAPE})이 맞을 때만 돈다.
- * 재료 9칸(0..8) · 결과 9칸(9..17). 한 번에 레시피 하나를 최대 {@link #BATCH_SIZE}개 굽는다: 합금로 레시피를 먼저, 없으면 화로(바닐라 굽기) 레시피.
+ * 재료 9칸(0..8) · 결과 9칸(9..17). 한 번에 레시피 하나를 최대 설정값(기본 {@link #BATCH_SIZE})개 굽는다: 합금로 레시피를 먼저, 없으면 화로(바닐라 굽기) 레시피.
  * 걸리는 시간은 그 레시피 하나의 시간 (화로 = 보통 200틱), 고압 증기는 개수 × {@link #STEAM_PER_ITEM}을 시간 동안 나눠 쓴다.
  * 고압 증기는 제어기 또는 아무 외벽에 붙은 고압 파이프로 받는다. 깔때기: 아래 ← 결과, 나머지 면 → 재료 (구울 수 있는 것만).
  * 경험치는 주지 않는다.
@@ -126,9 +126,23 @@ public class FurnaceTowerControllerBlockEntity extends BaseContainerBlockEntity 
 		}
 	}
 
-	/** 한 틱 굽는다. 증기가 모자라면 기다린다. 다 구우면 결과를 내고 다음 묶음을 찾는다. 일했으면 true. */
+	/**
+	 * 한 틱 굽는다. 굽는 동안 재료를 빼 가면 묶음을 접는다: 다 빼면 취소(증기를 쓰지 않는다), 일부만 빼면 남은 수로 줄인다.
+	 * 증기가 모자라면 기다린다. 다 구우면 결과를 내고 다음 묶음을 찾는다. 일했으면 true.
+	 */
 	private boolean work(ServerLevel level) {
 		Batch current = batch;
+		int left = available(current);
+		if (left <= 0) {
+			batch = null;
+			progress = 0;
+			searchTimer = 0;
+			return false;
+		}
+		if (left < current.units()) {
+			current = new Batch(current.first(), current.firstCount(), current.second(), current.secondCount(), current.resultEach(), left, current.time());
+			batch = current;
+		}
 		double perTick = (double) current.units() * SanupcraftConfig.current().furnaceTowerSteamPerItem / current.time();
 		double need = steamCarry + perTick;
 		int whole = (int) need;
