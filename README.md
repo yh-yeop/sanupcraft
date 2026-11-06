@@ -90,6 +90,8 @@
 | `server` | 10명 서버 운영: 팀(`/sanupcraft team`) · 보스 기록판 · 공용 목표판 · 설명서 (M10) |
 | `production/grinder` | 몹 분쇄기(증기, 가짜 플레이어가 베어 전리품 · 경험치) · 경험치 탱크 (M9b) |
 | `gear/backpack` | 배낭 27칸 · 강철 배낭 54칸, 내용은 아이템 컴포넌트 (M9b) |
+| `industry` | 다중 블록 기계: 대형 보일러 (외벽 + 제어기, 보일러 코드를 물려받음) |
+| `transport` | 증기 기관차 · 화물칸 · 연결 고리 · 적재 · 하역 역 |
 
 `src/main` 공통 · 서버, `src/client` 클라이언트 전용(렌더링), `src/gametest` 자동 검사.
 

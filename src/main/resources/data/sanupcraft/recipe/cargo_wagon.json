@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "sanupcraft:steel_plate",
+    "C": "minecraft:chest_minecart",
+    "G": "sanupcraft:gear_part"
+  },
+  "pattern": [
+    "P P",
+    "PCP",
+    "G G"
+  ],
+  "result": {
+    "id": "sanupcraft:cargo_wagon"
+  }
+}

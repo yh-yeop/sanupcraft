@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "unload=false": {
+      "model": "sanupcraft:block/cargo_station"
+    },
+    "unload=true": {
+      "model": "sanupcraft:block/cargo_station_unload"
+    }
+  }
+}

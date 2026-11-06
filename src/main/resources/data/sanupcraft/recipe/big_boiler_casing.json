@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "sanupcraft:steel_plate",
+    "B": "minecraft:bricks"
+  },
+  "pattern": [
+    "PBP",
+    "B B",
+    "PBP"
+  ],
+  "result": {
+    "id": "sanupcraft:big_boiler_casing",
+    "count": 8
+  }
+}

@@ -20,6 +20,7 @@ import io.github.yhyeop.sanupcraft.gear.ProductionGear;
 import io.github.yhyeop.sanupcraft.gear.SteamGear;
 import io.github.yhyeop.sanupcraft.gear.SteelGear;
 import io.github.yhyeop.sanupcraft.gear.backpack.ModBackpack;
+import io.github.yhyeop.sanupcraft.industry.ModIndustry;
 import io.github.yhyeop.sanupcraft.logistics.ModLogistics;
 import io.github.yhyeop.sanupcraft.mining.ModMining;
 import io.github.yhyeop.sanupcraft.playtest.PlaytestCommand;
@@ -27,6 +28,7 @@ import io.github.yhyeop.sanupcraft.production.grinder.ModGrinder;
 import io.github.yhyeop.sanupcraft.power.ModPower;
 import io.github.yhyeop.sanupcraft.server.ModServer;
 import io.github.yhyeop.sanupcraft.production.ModProduction;
+import io.github.yhyeop.sanupcraft.transport.ModTransport;
 import io.github.yhyeop.sanupcraft.world.ModWorld;
 
 public class Sanupcraft implements ModInitializer {
@@ -54,6 +56,9 @@ public class Sanupcraft implements ModInitializer {
 		ModServer.init(); // M10 서버 운영 (팀 · 기록판 · 목표판 · 설명서)
 		ModProduction.init(); // 확장 M9a
 		ProductionGear.init(); // 확장 M9a
+		// M8 묶음 A: 대형 보일러 · 증기 기관차
+		ModIndustry.init();
+		ModTransport.init();
 		ModTab.init();
 		CorpseGravesCompat.init();
 		PlaytestCommand.init();

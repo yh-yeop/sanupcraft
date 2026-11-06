@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "formed=false": {
+      "model": "sanupcraft:block/big_boiler_casing"
+    },
+    "formed=true": {
+      "model": "sanupcraft:block/big_boiler_casing_formed"
+    }
+  }
+}

@@ -45,6 +45,8 @@ import io.github.yhyeop.sanupcraft.production.grinder.ModGrinder;
 import io.github.yhyeop.sanupcraft.server.GuideBook;
 import io.github.yhyeop.sanupcraft.server.ModServer;
 import io.github.yhyeop.sanupcraft.production.ModProduction;
+import io.github.yhyeop.sanupcraft.industry.ModIndustry;
+import io.github.yhyeop.sanupcraft.transport.ModTransport;
 
 /**
  * 싱글 실테스트용: {@code /sanupcraft playtest <단계>} (OP). 그 단계를 시험하는 데 필요한 장비 · 재료를 주고,
@@ -67,7 +69,8 @@ public final class PlaytestCommand {
 		// 확장 M9a
 		PRODUCTION("생산 · 장비: 작물 수확기 · 벌목기 · 증기 드릴 · 전기톱 · 제트팩", null, PlaytestCommand::kitProduction),
 		// M9b 몹 분쇄기 · 경험치 탱크 · 배낭
-		PRODUCTION2("생산 2: 몹 분쇄기 · 경험치 탱크 · 배낭", null, PlaytestCommand::kitProduction2);
+		PRODUCTION2("생산 2: 몹 분쇄기 · 경험치 탱크 · 배낭", null, PlaytestCommand::kitProduction2),
+		INDUSTRY("산업 규모: 대형 보일러 · 증기 기관차 · 화물 열차", null, PlaytestCommand::kitIndustry);
 
 		final String description;
 		final ResourceKey<Level> dimension;
@@ -306,6 +309,34 @@ public final class PlaytestCommand {
 		give(p, Items.COBBLESTONE, 64);
 		give(p, Items.BOW, 1);
 		give(p, Items.ARROW, 64);
+		food(p);
+	}
+
+	/** M8 묶음 A: 외벽 33 + 제어기로 대형 보일러, 레일 위 기관차 + 화물칸 + 역 (꺼진 동력 레일 = 정거장). */
+	private static void kitIndustry(ServerPlayer p) {
+		give(p, ModIndustry.BIG_BOILER_CASING.asItem(), 40);
+		give(p, ModIndustry.BIG_BOILER_CONTROLLER.asItem(), 1);
+		give(p, Items.COAL, 64);
+		give(p, Items.WATER_BUCKET, 2);
+		give(p, ModFluid.PUMP.asItem(), 1);
+		give(p, ModFluid.TANK.asItem(), 1);
+		give(p, ModPower.STEAM_PIPE.asItem(), 16);
+		give(p, ModPower.STEAM_GAUGE.asItem(), 1);
+		give(p, ModMachines.CRUSHER.asItem(), 1);
+		give(p, Items.COMPARATOR, 1);
+		give(p, Items.RAIL, 64);
+		give(p, Items.RAIL, 64);
+		give(p, Items.POWERED_RAIL, 8);
+		give(p, Items.LEVER, 2);
+		give(p, ModTransport.STEAM_LOCOMOTIVE_ITEM, 1);
+		give(p, ModTransport.CARGO_WAGON_ITEM, 1);
+		give(p, ModTransport.CARGO_WAGON_ITEM, 1);
+		give(p, ModTransport.COUPLER, 4);
+		give(p, ModTransport.CARGO_STATION.asItem(), 2);
+		give(p, charged(SteamGear.STEAM_CANISTER));
+		give(p, Items.HOPPER, 4);
+		give(p, Items.CHEST, 2);
+		give(p, Items.COBBLESTONE, 64);
 		food(p);
 	}
 

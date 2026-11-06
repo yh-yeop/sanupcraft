@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "front": "sanupcraft:block/big_boiler_controller_front_on",
+    "side": "sanupcraft:block/big_boiler_casing",
+    "top": "sanupcraft:block/big_boiler_casing"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "P": "sanupcraft:steel_plate",
+    "H": "minecraft:hopper",
+    "G": "sanupcraft:gear_part",
+    "C": "minecraft:chest",
+    "R": "minecraft:rail"
+  },
+  "pattern": [
+    "PHP",
+    "GCG",
+    "PRP"
+  ],
+  "result": {
+    "id": "sanupcraft:cargo_station"
+  }
+}

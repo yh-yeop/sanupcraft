@@ -38,6 +38,9 @@ import io.github.yhyeop.sanupcraft.power.GeothermalVentBlockEntity;
 import io.github.yhyeop.sanupcraft.power.SteamChargerBlockEntity;
 import io.github.yhyeop.sanupcraft.production.CropHarvesterBlockEntity;
 import io.github.yhyeop.sanupcraft.production.TreeFellerBlockEntity;
+import io.github.yhyeop.sanupcraft.industry.BigBoilerControllerBlockEntity;
+import io.github.yhyeop.sanupcraft.transport.CargoStationBlockEntity;
+import io.github.yhyeop.sanupcraft.transport.SteamLocomotive;
 
 /**
  * 서버 설정 파일 {@code config/sanupcraft.json}. 서버(싱글은 내장 서버)가 시작될 때 읽고, 파일이 없으면 기본값으로 만든다.
@@ -117,6 +120,13 @@ public final class SanupcraftConfig {
 	public int grinderSteamPerHit = MobGrinderBlockEntity.STEAM_PER_HIT;
 	/** 몹 분쇄기: 베는 간격(틱). */
 	public int grinderTicksPerHit = MobGrinderBlockEntity.TICKS_PER_HIT;
+	// M8 묶음 A: 대형 보일러 · 증기 기관차
+	/** 대형 보일러: 모양이 맞을 때 틱당 증기 (보일러는 4). */
+	public int bigBoilerSteamPerTick = BigBoilerControllerBlockEntity.STEAM_PER_TICK;
+	/** 증기 기관차: 최고 속도 (블록/틱, 화로 수레 0.2, 수레 한도 0.4). */
+	public double locomotiveMaxSpeed = SteamLocomotive.MAX_SPEED;
+	/** 적재 · 하역 역: 한 번(2틱)에 옮기는 아이템 수. */
+	public int stationItemsPerTransfer = CargoStationBlockEntity.ITEMS_PER_TRANSFER;
 
 	/** float 상수를 0.05F -> 0.05처럼 보이는 그대로의 double로 (파일에 0.0500000007...이 안 찍히게). */
 	private static double asDouble(float value) {
@@ -192,7 +202,14 @@ public final class SanupcraftConfig {
 			new Option("mobGrinder", "steamPerHit", MobGrinderBlockEntity.STEAM_PER_HIT, 0, MobGrinderBlockEntity.STEAM_CAPACITY, true,
 					c -> c.grinderSteamPerHit, (c, v) -> c.grinderSteamPerHit = (int) v),
 			new Option("mobGrinder", "ticksPerHit", MobGrinderBlockEntity.TICKS_PER_HIT, 1, 1200, true,
-					c -> c.grinderTicksPerHit, (c, v) -> c.grinderTicksPerHit = (int) v));
+					c -> c.grinderTicksPerHit, (c, v) -> c.grinderTicksPerHit = (int) v),
+			// M8 묶음 A
+			new Option("bigBoiler", "steamPerTick", BigBoilerControllerBlockEntity.STEAM_PER_TICK, 1, 1000, true,
+					c -> c.bigBoilerSteamPerTick, (c, v) -> c.bigBoilerSteamPerTick = (int) v),
+			new Option("locomotive", "maxSpeed", SteamLocomotive.MAX_SPEED, 0.05, 0.4, false,
+					c -> c.locomotiveMaxSpeed, (c, v) -> c.locomotiveMaxSpeed = v),
+			new Option("cargoStation", "itemsPerTransfer", CargoStationBlockEntity.ITEMS_PER_TRANSFER, 1, 64, true,
+					c -> c.stationItemsPerTransfer, (c, v) -> c.stationItemsPerTransfer = (int) v));
 
 	/** 읽은 결과: 설정, 경고 문구, 파일에 빠진 키가 있었는지, 파일을 새로 썼는지. */
 	public record Loaded(SanupcraftConfig config, List<String> warnings, boolean missingKeys, boolean wroteFile) {
