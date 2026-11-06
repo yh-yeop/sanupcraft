@@ -146,8 +146,8 @@ public class SanupcraftNetherEndGameTest {
 	 * 먼저 꺼지는 닻 C가 공유 청크를 풀지 않고 A에게 넘긴다.
 	 * 전제: C가 실제로 청크를 하나 이상 소유해야 한다 (시험 구역 청크가 이미 강제 로드돼 0개면 고치기 전에도 통과하므로).
 	 */
-	// 혼자 돈다: 같은 묶음의 다른 시험 구역이 강제 로드돼 있으면 C가 소유할 청크가 없다
-	@GameTest(environment = "sanupcraft-test:alone")
+	// 전용 환경에서 혼자 돈다: 같은 묶음의 다른 시험 구역이 강제 로드돼 있으면 C가 소유할 청크가 없다
+	@GameTest(environment = "sanupcraft-test:alone_anchor")
 	public void anchorHandsOverAfterReload(GameTestHelper helper) {
 		BlockPos cPos = new BlockPos(1, 1, 1);
 		BlockPos aPos = new BlockPos(3, 1, 1);
