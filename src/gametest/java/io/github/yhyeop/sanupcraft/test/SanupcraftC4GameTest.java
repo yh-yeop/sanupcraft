@@ -139,7 +139,7 @@ public class SanupcraftC4GameTest {
 	}
 
 	/** 녹 폭풍: 장판 자리는 서바이벌 플레이어 발밑 (크리에이티브는 고르지 않음), 30틱 뒤 장판 다섯, 안에 서면 녹 II. 크리에이티브는 장판 안이어도 안 걸린다. */
-	@GameTest(environment = "sanupcraft-test:alone_c4")
+	@GameTest(environment = "sanupcraft-test:alone_c4_1")
 	public void rustStormRustsSurvivalNotCreative(GameTestHelper helper) {
 		ServerLevel level = helper.getLevel();
 		RustyGuardian boss = helper.spawn(ModBoss.RUSTY_GUARDIAN, new BlockPos(4, 1, 4));
@@ -179,7 +179,7 @@ public class SanupcraftC4GameTest {
 	}
 
 	/** 용암 기둥: 서바이벌 발밑에만 원 (최대 4), 솟으면 피해 6 + 과열 II. 크리에이티브는 기둥 안이어도 멀쩡. */
-	@GameTest(environment = "sanupcraft-test:alone_c4")
+	@GameTest(environment = "sanupcraft-test:alone_c4_2")
 	public void lavaPillarsBurnSurvivalNotCreative(GameTestHelper helper) {
 		ServerLevel level = helper.getLevel();
 		FurnaceWarden boss = helper.spawn(ModBoss.FURNACE_WARDEN, new BlockPos(4, 1, 4));
@@ -207,7 +207,7 @@ public class SanupcraftC4GameTest {
 	}
 
 	/** 공허 균열: 서바이벌 근처에 셋, 닿으면 공허 침식 II, 둘레 플레이어를 조금 끌어당긴다. 크리에이티브는 닿아도 · 둘레여도 그대로. */
-	@GameTest(environment = "sanupcraft-test:alone_c4")
+	@GameTest(environment = "sanupcraft-test:alone_c4_3")
 	public void voidRiftsErodeSurvivalNotCreative(GameTestHelper helper) {
 		ServerLevel level = helper.getLevel();
 		VoidColossus boss = helper.spawn(ModEnd.VOID_COLOSSUS, new BlockPos(4, 1, 4));
@@ -246,7 +246,7 @@ public class SanupcraftC4GameTest {
 	}
 
 	/** 주인 보스가 사라지면 위험 구역도 곧 사라진다. 수명이 다해도 사라진다. */
-	@GameTest(environment = "sanupcraft-test:alone_c4", maxTicks = 100)
+	@GameTest(environment = "sanupcraft-test:alone_c4_4", maxTicks = 100)
 	public void hazardsVanishWithOwnerOrTime(GameTestHelper helper) {
 		ServerLevel level = helper.getLevel();
 		RustyGuardian boss = helper.spawn(ModBoss.RUSTY_GUARDIAN, new BlockPos(4, 1, 4));
@@ -263,7 +263,7 @@ public class SanupcraftC4GameTest {
 	// ---- 전용 장비 보상 ----
 
 	/** 확률을 1로 두면 기여자가 보스마다 그 장비를 받고, 0이면 안 받는다. 기본 확률 = 10% + 단계마다 5%. */
-	@GameTest(environment = "sanupcraft-test:alone_c4")
+	@GameTest(environment = "sanupcraft-test:alone_c4_5")
 	public void bossGearDropsToContributors(GameTestHelper helper) {
 		helper.assertValueEqual(BossGearDrops.chance(0), 0.10, "기본 확률");
 		helper.assertTrue(Math.abs(BossGearDrops.chance(2) - 0.20) < 1.0E-9, "단계 2 확률: " + BossGearDrops.chance(2));
